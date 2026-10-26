@@ -4,9 +4,9 @@ import { F } from '../../shared/protocol';
 import type { AbilitySlot, ItemCategory, ItemDef, Team } from '../../shared/types';
 import { HERO_BY_ID } from '../../shared/data/heroes';
 import { ITEMS, ITEM_BY_ID } from '../../shared/data/items';
-import { UPGRADES, MERCENARY, type UpgradeId } from '../../shared/upgrades';
+import { UPGRADES, MERCENARY, DIRECTIVES, type UpgradeId, type Directive } from '../../shared/upgrades';
 import { BUILD_TOWER_KINDS, TOWERS, TOWER_UPGRADE_COST } from '../../shared/units';
-import { MAP, OBSTACLES, lanepath, buildPads, LANE_NAMES } from '../../shared/map';
+import { MAP, OBSTACLES, lanepath, buildPads, LANE_NAMES, BANNER_PERKS } from '../../shared/map';
 import { TEAM_COLORS, TEAM_NAMES } from '../../shared/constants';
 import { priceFor } from '../../shared/shop';
 import type { Session, ChatLine } from '../net';
@@ -48,6 +48,9 @@ export class Hud {
   private heroId: string;
   private lastBoard = '';
   onLeave: () => void = () => {};
+  /** Online only: the host asks the server to bring everyone back to the room lobby. */
+  onReplay: () => void = () => {};
+  private isHost = false;
   aiming: AbilitySlot | null = null;
 
   constructor(private init: GameInit, private session: Session, private world: World) {
@@ -88,7 +91,17 @@ export class Hud {
     const me = s.me;
     if (me) {
       this.death.classList.toggle('hidden', me.respawn <= 0);
-      if (me.respawn > 0) this.death.innerHTML = `<div class="t">You have fallen<br><span class="gold">${Math.ceil(me.respawn)}</span><div class="muted" style="font: 14px Inter">You can shop while dead (P)</div></div>`;
+      if (me.respawn > 0) {
+        const held = s.banners.filter((b) => b[0] !== this.myTeam && b[2] === this.myTeam).map((b) => b[1]);
+        const opts = [['fountain', '🏰 Fountain'], ...held.map((k) => [k, `${BANNER_PERKS[k].icon} ${BANNER_PERKS[k].name}`])];
+        const html = `<div class="t">You have fallen<br><span class="gold">${Math.ceil(me.respawn)}</span><div class="muted" style="font: 14px Inter">You can shop while dead (P)</div>
+          ${held.length ? `<div class="row" style="justify-content:center;margin-top:8px;pointer-events:auto;font:14px Inter">Respawn at: ${opts.map(([k, n]) => `<button class="btn small ${me.respawnAt === k ? 'primary' : ''}" data-spawn="${k}">${n}</button>`).join('')}</div>` : ''}</div>`;
+        if (this.death.dataset.h !== html) {
+          this.death.dataset.h = html;
+          this.death.innerHTML = html;
+          this.death.querySelectorAll<HTMLButtonElement>('[data-spawn]').forEach((b) => b.onclick = () => this.session.send({ c: 'respawnAt', at: b.dataset.spawn as 'fountain' }));
+        }
+      }
       this.recallBar.classList.toggle('hidden', me.recall <= 0);
       (this.recallBar.firstChild as HTMLElement).style.width = `${Math.round(me.recall * 100)}%`;
       this.buffs.innerHTML = me.buffs.map(([n, i, t]) => `<span class="buff">${i} ${esc(n)} <span class="muted">${t}s</span></span>`).join('');
@@ -99,8 +112,8 @@ export class Hud {
   private renderTop(s: Snapshot) {
     const pip = (team: number) => s.banners.filter((b) => b[0] === team).map((b) => {
       const owner = b[2], contested = b[4] >= 0 && b[3] > 0;
-      const name = { north: 'North', south: 'South', keep: 'Keep' }[b[1]];
-      return `<div class="banner-pip ${owner !== team ? 'lost' : ''} ${contested ? 'contested' : ''}" title="${TEAM_NAMES[team]} ${name} Banner${owner !== team ? ' (captured!)' : ''}${b[5] ? ' (locked)' : ''}" style="background:${TEAM_COLORS[owner]}"></div>`;
+      const perk = BANNER_PERKS[b[1]];
+      return `<div class="banner-pip ${owner !== team ? 'lost' : ''} ${contested ? 'contested' : ''}" title="${TEAM_NAMES[team]} ${perk.name}${owner !== team ? ' (captured!)' : ''}${b[5] ? ' (locked)' : ''}. Captors gain: ${esc(perk.perk)}" style="background:${TEAM_COLORS[owner]}"></div>`;
     }).join('');
     const t0 = s.teams[0], t1 = s.teams[1];
     this.top.innerHTML = `<div class="banners">${pip(0)}</div><span class="team0 serif">${TEAM_NAMES[0]}</span><span class="score team0">${t0.kills}</span>
@@ -468,10 +481,15 @@ export class Hud {
     if (!this.setModal(`<header><h2>${TEAM_NAMES[this.myTeam]} Fortress</h2><span class="gold-amt">🪙 ${me.gold}</span><span class="muted">Upgrades are shared by your whole team. You can fund them from anywhere.</span><span class="spacer"></span><button class="close">✕</button></header>
       <div class="body"><h3 class="gold">Fortress upgrades</h3><div class="base-grid">${upgrades}</div>
       <h3 class="gold">Defensive towers</h3><div class="base-grid">${pads}</div>
+      <h3 class="gold">Forge directives</h3><p class="muted" style="margin-top:-6px">Free to change. Applies from the next wave.</p>
+      <div class="base-grid">${[0, 1].map((lane) => `<div class="upg"><b>${LANE_NAMES[lane]} lane</b><div class="row" style="flex-wrap:wrap;gap:4px;margin-top:6px">
+        ${(Object.keys(DIRECTIVES) as Directive[]).map((d) => `<button class="btn small ${t.directives?.[lane] === d ? 'primary' : ''}" data-dir="${lane}:${d}" title="${esc(DIRECTIVES[d].text)}">${DIRECTIVES[d].icon} ${DIRECTIVES[d].name}</button>`).join('')}</div>
+        <div class="muted" style="font-size:12px;margin-top:4px">${esc(DIRECTIVES[t.directives?.[lane] ?? 'balanced'].text)}</div></div>`).join('')}</div>
       <h3 class="gold">Mercenaries</h3><div class="row">${LANE_NAMES.map((n, i) => `<button class="btn" data-hire="${i}" ${me.gold < MERCENARY.cost ? 'disabled' : ''}>💀 ${MERCENARY.name}: ${n} (${MERCENARY.cost}g)</button>`).join('')}</div>
       <p class="muted">${esc(MERCENARY.description)}</p></div>`)) return;
     this.modal!.querySelectorAll<HTMLButtonElement>('[data-up]').forEach((b) => b.onclick = () => this.session.send({ c: 'upgrade', id: b.dataset.up as UpgradeId }));
     this.modal!.querySelectorAll<HTMLButtonElement>('[data-pad]').forEach((b) => b.onclick = () => this.session.send({ c: 'build', pad: Number(b.dataset.pad), kind: b.dataset.kind as 'arrow' }));
+    this.modal!.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.onclick = () => { const [l, d] = b.dataset.dir!.split(':'); this.session.send({ c: 'directive', lane: Number(l) as 0 | 1, kind: d as Directive }); });
     this.modal!.querySelectorAll<HTMLButtonElement>('[data-hire]').forEach((b) => b.onclick = () => this.session.send({ c: 'hire', lane: Number(b.dataset.hire) as 0 | 1 }));
   }
 
@@ -490,8 +508,20 @@ export class Hud {
     this.closeModal();
     this.endScreen = h('div', { class: 'end-screen' }, `<div class="card panel"><h1 class="serif ${won ? 'gold' : 'team1'}">${won ? 'Victory' : 'Defeat'}</h1>
       <p class="muted">The ${TEAM_NAMES[s.winner!]} razed the enemy fortress in ${fmtTime(s.time)}.</p><div class="board">${this.boardTable(s.board)}</div>
-      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" id="end-leave">Back to menu</button></div></div>`);
+      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" id="end-leave">Back to menu</button><span id="end-again"></span></div></div>`);
     this.root.appendChild(this.endScreen);
     this.endScreen.querySelector<HTMLButtonElement>('#end-leave')!.onclick = () => this.onLeave();
+    this.refreshEndActions();
+  }
+
+  /** Online: tells the HUD whether we are the room host (only the host can start another round). */
+  setHost(isHost: boolean) { this.isHost = isHost; this.refreshEndActions(); }
+  private refreshEndActions() {
+    const slot = this.endScreen?.querySelector<HTMLElement>('#end-again');
+    if (!slot || !this.session.online) return;
+    if (this.isHost) {
+      slot.innerHTML = '<button class="btn primary" id="end-replay" style="margin-left:10px">Play again</button>';
+      slot.querySelector<HTMLButtonElement>('#end-replay')!.onclick = () => this.onReplay();
+    } else slot.innerHTML = '<span class="muted" style="margin-left:12px">Waiting for the host to start another round…</span>';
   }
 }

@@ -2,6 +2,7 @@ import type { AbilitySlot, ModelId, Team } from './types';
 import type { UpgradeId } from './upgrades';
 import type { TowerKind } from './units';
 import type { BannerKey, LaneId } from './map';
+import type { Directive } from './upgrades';
 
 // ---------- in-game commands (client -> sim) ----------
 export type Command =
@@ -17,7 +18,9 @@ export type Command =
   | { c: 'build'; pad: number; kind: TowerKind | 'upgrade' }
   | { c: 'hire'; lane: LaneId }
   | { c: 'recall' }
-  | { c: 'ping'; x: number; z: number; kind: 'go' | 'danger' | 'help' };
+  | { c: 'ping'; x: number; z: number; kind: 'go' | 'danger' | 'help' }
+  | { c: 'respawnAt'; at: 'fountain' | BannerKey }
+  | { c: 'directive'; lane: LaneId; kind: Directive };
 
 // ---------- static info sent at game start ----------
 export interface VisualInfo { model: ModelId | 'tower' | 'fortress'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind }
@@ -51,6 +54,7 @@ export interface MeSnap {
   items: (string | null)[]; itemCd: number[];
   stats: Record<string, number>;
   respawn: number;
+  respawnAt: string;
   canShop: boolean;
   recall: number; // 0..1 progress, 0 = not recalling
   buffs: [string, string, number][]; // [name, icon, remaining]
@@ -73,7 +77,7 @@ export type GameEvent =
   | { e: 'ping'; x: number; z: number; kind: string; from: string }
   | { e: 'blink'; id: number; x: number; z: number };
 
-export interface TeamSnap { kills: number; upgrades: Record<string, number>; banners: number; towers: number }
+export interface TeamSnap { kills: number; upgrades: Record<string, number>; banners: number; towers: number; directives: [Directive, Directive] }
 
 export interface Snapshot {
   tick: number;

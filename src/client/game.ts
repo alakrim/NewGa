@@ -28,10 +28,11 @@ export class GameScreen {
   private rightHeld = false;
   private lastRightMove = 0;
 
-  constructor(canvas: HTMLCanvasElement, private init: GameInit, private session: Session, onLeave: () => void) {
+  constructor(canvas: HTMLCanvasElement, private init: GameInit, private session: Session, onLeave: () => void, onReplay: () => void = () => {}) {
     this.world = new World(canvas, init);
     this.hud = new Hud(init, session, this.world);
     this.hud.onLeave = () => { this.dispose(); onLeave(); };
+    this.hud.onReplay = () => onReplay();
     this.hud.onMinimap = (x, z, button) => {
       if (button === 2) { this.session.send({ c: 'move', x, z }); this.world.showMoveMarker(x, z, false); }
       else { this.camLocked = false; this.world.camTarget.set(x, 0, z); }
@@ -194,11 +195,16 @@ export class GameScreen {
     this.session.send({ c: 'dir', x: (s.right ? 1 : 0) - (s.left ? 1 : 0), z: (s.down ? 1 : 0) - (s.up ? 1 : 0) });
   }
 
-  dispose() {
+  setHost(isHost: boolean) { this.hud.setHost(isHost); }
+
+  /** Tear the game down but keep the (online) session alive, e.g. to return to the room lobby. */
+  dispose(closeSession = true) {
+    this.session.onSnap = () => {};
+    this.session.onChat = () => {};
     cancelAnimationFrame(this.raf);
     for (const d of this.disposers) d();
     this.hud.destroy();
     this.world.dispose();
-    this.session.close();
+    if (closeSession) this.session.close();
   }
 }

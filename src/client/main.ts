@@ -118,12 +118,29 @@ function practiceLobby() {
 }
 
 // ------------------------------------------------------------------ online
+let lastRoom: RoomInfo | null = null;
+
 async function connect(): Promise<NetClient> {
   if (net) return net;
   const c = new NetClient();
   net = c;
-  c.onError = (m) => toast(m, '#ff8a8d');
-  c.onClose = () => { if (net === c) { net = null; if (!game) { toast('Disconnected from server', '#ff8a8d'); menu(); } } };
+  c.onError = (m) => {
+    toast(m, '#ff8a8d');
+    // a failed create/join (bad code, full room, match already running) leaves us nowhere: back to the menu
+    if (!c.roomCode && !game) { history.replaceState(null, '', location.pathname); if (!screen?.querySelector('#create')) menu(); }
+  };
+  c.onLink = (up) => toast(up ? 'Reconnected' : 'Connection lost, reconnecting…', up ? undefined : '#ff8a8d');
+  c.onClose = (why) => {
+    if (net !== c) return;
+    net = null;
+    lastRoom = null;
+    lobbyEl = null;
+    toast(why ?? 'Disconnected from server', '#ff8a8d');
+    if (game) { const g = game; game = null; g.dispose(false); }
+    history.replaceState(null, '', location.pathname);
+    menu();
+  };
+  c.onRoom = (r) => onlineLobby(c, r);
   try { await c.ready; } catch (err) { net = null; throw err; }
   return c;
 }
@@ -131,7 +148,6 @@ async function connect(): Promise<NetClient> {
 async function createOnline() {
   try {
     const c = await connect();
-    c.onRoom = (r) => onlineLobby(c, r);
     c.raw({ t: 'create', name: playerName() });
   } catch (err) { toast((err as Error).message, '#ff8a8d'); }
 }
@@ -139,17 +155,24 @@ async function createOnline() {
 async function joinOnline(code: string) {
   try {
     const c = await connect();
-    c.onRoom = (r) => onlineLobby(c, r);
     c.raw({ t: 'join', code, name: playerName() });
-  } catch (err) { toast((err as Error).message, '#ff8a8d'); menu(); }
+  } catch (err) { toast((err as Error).message, '#ff8a8d'); history.replaceState(null, '', location.pathname); menu(); }
 }
 
 let lobbyEl: HTMLElement | null = null;
 let lobbyPicker: HeroPicker | null = null;
 function onlineLobby(c: NetClient, r: RoomInfo) {
-  if (!r.code) { lobbyEl = null; lobbyPicker = null; menu(); return; }
+  lastRoom = r;
+  if (!r.code) { lobbyEl = null; lobbyPicker = null; if (game) { const g = game; game = null; g.dispose(false); } menu(); return; }
   c.onInit = (init) => startGame(c, undefined, init);
-  if (game) return;
+  if (game) {
+    if (r.started) { game.setHost(r.host === c.pid); return; }
+    // the host sent everyone back to the room lobby ("Play again")
+    const g = game;
+    game = null;
+    lobbyEl = null;
+    g.dispose(false);
+  }
   const mine = r.slots.find((s) => s.pid === c.pid);
   const isHost = r.host === c.pid;
   if (!lobbyEl || !document.body.contains(lobbyEl)) {
@@ -157,7 +180,8 @@ function onlineLobby(c: NetClient, r: RoomInfo) {
     show(lobbyEl);
     lobbyPicker = new HeroPicker(lobbyEl.querySelector('#grid')!, lobbyEl.querySelector('#detail')!, (id) => { c.raw({ t: 'hero', heroId: id }); safeSet('bf.hero', id); }, mine?.heroId ?? null);
     const pref = safeGet('bf.hero');
-    if (!mine?.heroId && pref) c.raw({ t: 'hero', heroId: pref });
+    const blocked = r.slots.some((x) => x.team === mine?.team && x.pid !== c.pid && x.heroId === pref);
+    if (!mine?.heroId && pref && !blocked) c.raw({ t: 'hero', heroId: pref });
     history.replaceState(null, '', `?room=${r.code}`);
   }
   const taken = new Set(r.slots.filter((s) => s.team === mine?.team && s.pid !== c.pid && s.heroId).map((s) => s.heroId!));
@@ -199,9 +223,10 @@ function startGame(s: Session, after?: () => void, init?: GameInit) {
     lobbyEl = null;
     game = new GameScreen(canvas, i, s, () => {
       game = null;
-      if (s.online) { net = null; history.replaceState(null, '', location.pathname); }
+      if (s.online) { net = null; lastRoom = null; history.replaceState(null, '', location.pathname); }
       menu();
-    });
+    }, () => { if (s.online) (s as NetClient).raw({ t: 'lobbyReturn' }); });
+    if (s.online) game.setHost(lastRoom?.host === (s as NetClient).pid);
   };
   if (init) begin(init);
   else s.onInit = begin;

@@ -6,6 +6,7 @@ import { TEAM_COLORS } from '../../shared/constants';
 import { rng } from '../../shared/math';
 import { assets } from '../assets';
 import { Vfx, GLOW } from './vfx';
+import { sfx } from '../sfx';
 
 const TEAM_HEX = TEAM_COLORS.map((c) => new THREE.Color(c));
 const NEUTRAL_HEX = new THREE.Color('#f5c542');
@@ -60,6 +61,7 @@ export class World {
   private time = 0;
   myTeam = 0;
   myUnit = 0;
+  spectator = false;
   camTarget = new THREE.Vector3(0, 0, 0);
   camDist = 42;
   private hoverRing: THREE.Mesh;
@@ -131,6 +133,8 @@ export class World {
     const me = init.players.find((p) => p.playerId === init.you);
     this.myTeam = me?.team ?? 0;
     this.myUnit = me?.unitId ?? 0;
+    this.spectator = !me;
+    if (this.spectator) this.fogMesh.visible = false;
     const f = FOUNTAIN[this.myTeam as 0 | 1];
     this.camTarget.set(f.x, 0, f.z);
     this.resize();
@@ -366,8 +370,9 @@ export class World {
       }
       height = tk === 'fortress' ? 9 : tk === 'lane' ? 8 : 6;
     } else {
-      const tint = info.kind === 'minion' || (info.kind === 'summon' && !info.tint) ? TEAM_COLORS[team] ?? undefined : info.tint;
-      const c = assets.character(info.model as never, info.weapons, tint, info.kind === 'hero' ? 0.55 : 0.7);
+      const teamTint = ['#1d4ed8', '#b91c1c'][team];
+      const tint = info.kind === 'minion' || (info.kind === 'summon' && !info.tint) ? teamTint : info.tint;
+      const c = assets.character(info.model as never, info.weapons, tint, info.kind === 'hero' ? 0.55 : 0.85);
       model = c.root;
       model.scale.setScalar(info.scale);
       height = 2.5 * info.scale;
@@ -568,7 +573,14 @@ export class World {
     if (v.ring) v.ring.visible = true;
   }
 
+  /** Distance-attenuated, panned sound at a world position. */
+  private sound(kind: Parameters<typeof sfx.play>[0], x: number, z: number, boost = 1) {
+    const d = Math.hypot(x - this.camTarget.x, z - this.camTarget.z);
+    sfx.play(kind, Math.max(0, 1 - d / (this.camDist * 1.1)) * boost, (x - this.camTarget.x) / 30);
+  }
+
   handleEvent(e: GameEvent) {
+    this.eventSound(e);
     switch (e.e) {
       case 'atk': {
         const v = this.units.get(e.id);
@@ -602,6 +614,30 @@ export class World {
         void v;
         return;
       }
+    }
+  }
+
+  private eventSound(e: GameEvent) {
+    const at = (id: number) => this.units.get(id);
+    switch (e.e) {
+      case 'atk': { const v = at(e.id); if (v && (v.isStructure || v.info.kind === 'hero') && !/Melee|Punch|Kick/.test(e.anim)) this.sound('shoot', v.pos.x, v.pos.z, v.isStructure ? 0.6 : 0.8); break; }
+      case 'dmg': {
+        const v = at(e.id);
+        if (!v) break;
+        const mine = e.id === this.myUnit || e.s === this.myUnit;
+        this.sound(e.c ? 'crit' : v.isStructure ? 'thud' : 'hit', v.pos.x, v.pos.z, mine ? 1 : v.info.kind === 'hero' ? 0.6 : 0.25);
+        break;
+      }
+      case 'cast': { const v = at(e.id); if (v) this.sound('cast', v.pos.x, v.pos.z, v.info.kind === 'hero' ? 0.9 : 0.5); break; }
+      case 'vfx': if (!e.delay) { if (/fire|earth|meteor/.test(e.style) && e.r >= 2.5) this.sound('boom', e.x, e.z, 0.7); else if (e.style === 'lightning') this.sound('zap', e.x, e.z, 0.7); } break;
+      case 'chain': this.sound('zap', e.pts[2] ?? 0, e.pts[3] ?? 0, 0.6); break;
+      case 'heal': if (e.id === this.myUnit && e.a > 25) sfx.play('heal', 0.6); break;
+      case 'gold': if (e.a >= 15) sfx.play('gold', e.a >= 100 ? 0.7 : 0.35); break;
+      case 'level': if (e.id === this.myUnit) sfx.play('level', 0.8); break;
+      case 'death': { const v = at(e.id); if (v && v.info.kind === 'hero') this.sound('death', v.pos.x, v.pos.z, 1.2); else if (v?.isStructure) sfx.play('boom', 1); break; }
+      case 'blink': { const v = at(e.id); if (v) this.sound('blink', e.x, e.z, 0.8); break; }
+      case 'banner': sfx.play('horn', 0.8); break;
+      case 'struct': sfx.play('boom', 0.9); break;
     }
   }
 
@@ -665,8 +701,9 @@ export class World {
   update(dt: number) {
     this.time += dt;
     const k = 1 - Math.exp(-dt * 14);
+    const kMe = 1 - Math.exp(-dt * 26); // own hero follows the server more tightly for responsiveness
     for (const v of this.units.values()) {
-      v.pos.lerp(v.target, k);
+      v.pos.lerp(v.target, v.id === this.myUnit ? kMe : k);
       let df = v.targetFacing - v.facing;
       while (df > Math.PI) df -= Math.PI * 2;
       while (df < -Math.PI) df += Math.PI * 2;

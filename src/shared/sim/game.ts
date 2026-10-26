@@ -4,7 +4,7 @@ import { F } from '../protocol';
 import { COMBAT, DT, ECON, MAX_LEVEL, SIGHT, TIMING, XP, XP_TABLE } from '../constants';
 import { BANNER_RADIUS, CAMPS, FORTRESS, FOUNTAIN, MAP, OBSTACLES, bannerSpots, buildPads, lanepath, towerSpots, type LaneId } from '../map';
 import { CAMP_BUFFS, CAMP_TEMPLATES, MINIONS, SUMMONS, TOWERS, TOWER_LEVEL_MULT, TOWER_UPGRADE_COST, ZERO_STATS, type MinionKind, type TowerKind, type UnitTemplate } from '../units';
-import { UPGRADE_BY_ID, MERCENARY, type UpgradeId } from '../upgrades';
+import { UPGRADE_BY_ID, MERCENARY, DIRECTIVES, type UpgradeId, type Directive } from '../upgrades';
 import { HERO_BY_ID } from '../data/heroes';
 import { ITEM_BY_ID } from '../data/items';
 import { angleOf, clamp, dist, distToSegment, norm, rng, type Vec2 } from '../math';
@@ -20,7 +20,11 @@ const STAT_KEYS = Object.keys(ZERO_STATS) as StatKey[];
 
 export interface PlayerSetup { pid: string; name: string; team: Team; heroId: string; bot: boolean }
 
-interface TeamState { kills: number; upgrades: Record<UpgradeId, number>; mercs: [number, number] }
+/** Everything needed to re-simulate a match exactly: the sim is deterministic given setups, seed and inputs. */
+export interface ReplayEntry { t: number; p: string; c?: Command; bot?: boolean }
+export interface Replay { v: 1; seed: number; setups: PlayerSetup[]; log: ReplayEntry[]; ticks: number; winner: Team | null }
+
+interface TeamState { kills: number; upgrades: Record<UpgradeId, number>; mercs: [number, number]; directives: [Directive, Directive] }
 interface CampState { id: string; aliveIds: number[]; respawnAt: number }
 type Tagged = GameEvent & { _team?: number; _pid?: string; _x?: number; _z?: number };
 
@@ -49,11 +53,14 @@ export class Game {
   night = false;
   private phaseEndsAt = TIMING.dayLength;
   private fortressIds: [number, number] = [0, 0];
+  readonly log: ReplayEntry[] = [];
+  readonly setups: PlayerSetup[];
 
   constructor(setups: PlayerSetup[], readonly seed = 1) {
     this.random = rng(seed);
+    this.setups = setups.map((s) => ({ ...s }));
     const up = (): Record<UpgradeId, number> => ({ forge: 0, armory: 0, bulwark: 0, treasury: 0, horn: 0, watch: 0 });
-    this.teams = [{ kills: 0, upgrades: up(), mercs: [0, 0] }, { kills: 0, upgrades: up(), mercs: [0, 0] }];
+    this.teams = [{ kills: 0, upgrades: up(), mercs: [0, 0], directives: ['balanced', 'balanced'] }, { kills: 0, upgrades: up(), mercs: [0, 0], directives: ['balanced', 'balanced'] }];
     for (const o of OBSTACLES) this.nav.setCircle(o.pos, o.r, 1);
     this.buildStructures();
     for (const c of CAMPS) this.camps.push({ id: c.id, aliveIds: [], respawnAt: c.kind === 'colossus' ? TIMING.bossFirstSpawn : 20 });
@@ -130,7 +137,7 @@ export class Game {
     u.hero = {
       def, pid: s.pid, pname: s.name, bot: s.bot, level: 1, xp: 0, gold: ECON.startGold, items: [null, null, null, null, null, null],
       itemCd: [0, 0, 0, 0, 0, 0], cd: [0, 0, 0, 0], cdMax: [1, 1, 1, 1], kills: 0, deaths: 0, assists: 0, cs: 0, streak: 0, respawnAt: 0,
-      nthCounter: 0, lowHpReadyAt: 0, itemLowHpReadyAt: {}, itemNth: {}, recallUntil: 0, steer: null,
+      nthCounter: 0, lowHpReadyAt: 0, itemLowHpReadyAt: {}, itemNth: {}, recallUntil: 0, steer: null, respawnAt_choice: 'fountain',
     };
     this.recompute(u);
     u.hp = u.stats.maxHp;
@@ -142,7 +149,8 @@ export class Game {
 
   setBot(pid: string, bot: boolean) {
     const p = this.players.find((x) => x.playerId === pid);
-    if (!p) return;
+    if (!p || p.bot === bot) return;
+    this.log.push({ t: this.tick, p: pid, bot });
     const u = this.units.get(p.unitId);
     if (!u?.hero) return;
     u.hero.bot = bot;
@@ -264,7 +272,7 @@ export class Game {
           else if (u.kind === 'summon') r = SIGHT.summon;
           src[t].push([u.x, u.z, r]);
         }
-        for (const b of this.banners) if (b.owner === t) src[t].push([b.x, b.z, SIGHT.banner + watch * 4]);
+        for (const b of this.banners) if (b.owner === t) src[t].push([b.x, b.z, b.key === 'keep' && b.homeTeam !== t ? 24 : SIGHT.banner + watch * 4]);
       }
       this.sightCache = { tick: this.tick, src };
     }
@@ -331,12 +339,14 @@ export class Game {
   }
 
   // ------------------------------------------------------------------ damage & healing
-  dealDamage(src: Unit | null, tgt: Unit, raw: number, dtype: DamageType, opts: { attack?: boolean; crit?: boolean; ability?: boolean } = {}): number {
+  dealDamage(src: Unit | null, tgt: Unit, raw: number, dtype: DamageType, opts: { attack?: boolean; crit?: boolean; ability?: boolean; vsStructures?: number } = {}): number {
     if (tgt.dead || raw <= 0) return 0;
     if (this.has(tgt, 'invulnerable')) return 0;
     let amt = raw;
     if (this.isStructure(tgt)) {
       if (opts.ability) amt *= 0.5;
+      if (opts.vsStructures) amt *= opts.vsStructures;
+      if (src?.siegeBonus) amt *= 1 + src.siegeBonus;
       if (tgt.kind === 'fortress') {
         const held = this.banners.filter((b) => b.homeTeam === tgt.team && b.owner === tgt.team).length;
         amt *= COMBAT.fortressDamageMult[held];
@@ -365,6 +375,7 @@ export class Game {
     tgt.shields = tgt.shields.filter((s) => s.amount > 0.5 && s.until > this.time);
     tgt.hp -= left;
     tgt.lastDamagedAt = this.time;
+    if (tgt.kind === 'fortress' && tgt.hp > 0 && tgt.hp < tgt.stats.maxHp * 0.3) this.lastStand(tgt);
     if (tgt.hero && tgt.hero.recallUntil) tgt.hero.recallUntil = 0;
     const credit = src ? this.creditUnit(src) : null;
     if (credit?.hero) tgt.damagedBy.set(credit.id, this.time);
@@ -376,6 +387,21 @@ export class Game {
     if (tgt.hp <= 0) this.kill(tgt, src);
     else if (tgt.hero) this.checkLowHp(tgt);
     return amt;
+  }
+
+  private lastStandUsed = [false, false];
+  /** One-time comeback: the first time a fortress drops below 30% it shields itself and rallies its heroes. */
+  private lastStand(f: Unit) {
+    const t = f.team as Team;
+    if (this.lastStandUsed[t]) return;
+    this.lastStandUsed[t] = true;
+    this.addShield(f, f.stats.maxHp * 0.2, 30);
+    this.emit({ e: 'vfx', style: 'holy', color: t === 0 ? '#7cb8ff' : '#ff8a8d', x: f.x, z: f.z, r: 14 });
+    this.emit({ e: 'msg', text: `LAST STAND! The ${t === 0 ? 'Dawnguard' : 'Duskborn'} fortress rallies its defenders.`, color: '#ffd166' });
+    for (const h of this.units.values()) if (h.hero && h.team === t) {
+      if (h.dead) h.hero.respawnAt = Math.min(h.hero.respawnAt, this.time + 2);
+      else this.addBuff(h, 'last_stand', 30, undefined, { attackDamage: 0.25, abilityPower: 0.25, armor: 0.2, magicResist: 0.2, moveSpeed: 0.1 }, 'Last Stand', '🏰');
+    }
   }
 
   heal(src: Unit, tgt: Unit, amount: number, quiet = false) {
@@ -616,13 +642,17 @@ export class Game {
     const n = this.waveCount;
     for (const team of [0, 1] as Team[]) {
       const forge = this.teams[team].upgrades.forge;
-      const mult = (1 + 0.15 * forge) * (1 + (this.time / 60) * 0.025);
+      const mult = (1 + 0.15 * forge) * (1 + (this.time / 60) * 0.025) * (this.holdsEnemyBanner(team, 'north') ? 1.2 : 1);
       for (const lane of [0, 1] as LaneId[]) {
         const path = lanepath(lane, team);
-        const kinds: MinionKind[] = ['melee', 'melee', 'melee'];
-        if (forge >= 2) kinds.push('melee');
-        kinds.push('ranged', 'ranged');
-        if (n % 3 === 0) kinds.push('siege');
+        const dir = this.teams[team].directives[lane];
+        const kinds: MinionKind[] = [];
+        const add = (k: MinionKind, c: number) => { for (let i = 0; i < c; i++) kinds.push(k); };
+        if (dir === 'swarm') { add('melee', 6); add('ranged', 3); }
+        else if (dir === 'phalanx') { add('melee', 4); add('ranged', 1); }
+        else if (dir === 'siege') { add('melee', 2); add('ranged', 1); add('siege', 1); }
+        else { add('melee', 3); add('ranged', 2); if (n % 3 === 0) add('siege', 1); }
+        if (forge >= 2) kinds.unshift('melee');
         if (forge >= 3) kinds.push('elite');
         for (let m = 0; m < this.teams[team].mercs[lane]; m++) kinds.push('siege');
         this.teams[team].mercs[lane] = 0;
@@ -630,7 +660,11 @@ export class Game {
           this.schedule(i * 0.6, () => {
             if (this.winner !== null) return;
             const start = path[0];
-            const u = this.spawnFromTemplate('minion', team, MINIONS[k], `m:${k}`, { x: start.x + (this.random() - 0.5) * 2, z: start.z + (this.random() - 0.5) * 2 }, mult);
+            const dm = dir === 'swarm' ? 0.7 : dir === 'phalanx' && k === 'melee' ? 1.4 : 1;
+            const u = this.spawnFromTemplate('minion', team, MINIONS[k], `m:${k}`, { x: start.x + (this.random() - 0.5) * 2, z: start.z + (this.random() - 0.5) * 2 }, mult * dm);
+            if (dir === 'swarm') { u.baseStats.attackDamage *= 0.75; this.recompute(u); }
+            if (dir === 'phalanx' && k === 'melee') { u.baseStats.armor += 20; u.baseStats.attackDamage /= 1.4; this.recompute(u); }
+            if (dir === 'siege' && k === 'siege') u.siegeBonus = 0.6;
             u.minion = { lane, wp: 1, path };
             u.facing = angleOf({ x: path[1].x - start.x, z: path[1].z - start.z });
           });
@@ -643,6 +677,7 @@ export class Game {
   command(pid: string, cmd: Command) {
     const u = this.heroOf(pid);
     if (!u || !u.hero || this.winner !== null) return;
+    if (!u.hero.bot) this.log.push({ t: this.tick, p: pid, c: cmd });
     const h = u.hero;
     const cancelRecall = () => { h.recallUntil = 0; };
     switch (cmd.c) {
@@ -690,6 +725,16 @@ export class Game {
         if (u.dead || h.recallUntil) return;
         u.order = { type: 'idle' }; u.path = []; h.steer = null;
         h.recallUntil = this.time + TIMING.recallTime;
+        break;
+      case 'respawnAt':
+        h.respawnAt_choice = cmd.at;
+        break;
+      case 'directive':
+        if (!DIRECTIVES[cmd.kind] || (cmd.lane !== 0 && cmd.lane !== 1)) return;
+        if (this.teams[u.team as Team].directives[cmd.lane] !== cmd.kind) {
+          this.teams[u.team as Team].directives[cmd.lane] = cmd.kind;
+          this.emit({ e: 'msg', text: `${h.pname} set the ${cmd.lane === 0 ? 'north' : 'south'} Forge directive: ${DIRECTIVES[cmd.kind].name}`, color: '#9be7ff' }, { team: u.team });
+        }
         break;
       case 'ping':
         this.emit({ e: 'ping', x: cmd.x, z: cmd.z, kind: cmd.kind, from: h.pname }, { team: u.team });
@@ -892,6 +937,7 @@ export class Game {
 
   // ------------------------------------------------------------------ tick
   step() {
+    this.applyPending();
     if (this.winner !== null) { this.tick++; return; }
     const dt = DT;
     this.time += dt;
@@ -919,7 +965,8 @@ export class Game {
       this.lastGoldTick = this.time;
       for (const team of [0, 1] as Team[]) {
         const held = this.banners.filter((b) => b.homeTeam !== team && b.owner === team).length;
-        const g = ECON.passiveGoldPerSec + 0.6 * this.teams[team].upgrades.treasury + held * ECON.bannerHeldPerSec;
+        const coin = this.holdsEnemyBanner(team, 'south') ? 2 : 0;
+        const g = ECON.passiveGoldPerSec + 0.6 * this.teams[team].upgrades.treasury + held * ECON.bannerHeldPerSec + coin;
         for (const u of this.units.values()) if (u.hero && u.team === team) u.hero.gold += g;
       }
     }
@@ -1026,7 +1073,9 @@ export class Game {
   }
 
   private respawn(u: Unit) {
-    const p = this.spawnPoint(u.team);
+    const choice = u.hero!.respawnAt_choice;
+    const forward = choice !== 'fountain' ? this.banners.find((b) => b.key === choice && b.homeTeam !== u.team && b.owner === u.team) : undefined;
+    const p = forward ? this.nav.nearestOpen({ x: forward.x + (this.random() - 0.5) * 3, z: forward.z + (this.random() - 0.5) * 3 }) : this.spawnPoint(u.team);
     u.x = p.x; u.z = p.z;
     u.dead = false;
     this.recompute(u);
@@ -1428,6 +1477,9 @@ export class Game {
   }
 
   // ------------------------------------------------------------------ banners
+  /** Does `team` currently hold the enemy's banner `key`? */
+  holdsEnemyBanner(team: number, key: string) { return this.banners.some((b) => b.homeTeam !== team && b.owner === team && b.key === key); }
+
   bannerLocked(b: Banner): boolean {
     if (b.owner !== b.homeTeam) return false; // recapturing your own banner is always allowed
     if (b.key === 'keep') return !this.banners.some((o) => o.homeTeam === b.homeTeam && o.key !== 'keep' && o.owner !== b.homeTeam);
@@ -1501,6 +1553,7 @@ export class Game {
       kills: this.teams[t].kills, upgrades: { ...this.teams[t].upgrades },
       banners: this.banners.filter((b) => b.homeTeam === t && b.owner === t).length,
       towers: [...this.units.values()].filter((u) => u.kind === 'tower' && u.team === t && !u.dead && u.tower?.pad === -1).length,
+      directives: [...this.teams[t].directives] as [Directive, Directive],
     });
     const board: HeroBoard[] = [];
     for (const u of this.units.values()) if (u.hero) {
@@ -1537,13 +1590,32 @@ export class Game {
       unit: u.id, gold: Math.floor(h.gold), xp: Math.floor(h.xp), xpPrev: XP_TABLE[h.level - 1] ?? 0, xpNext: XP_TABLE[h.level] ?? XP_TABLE[XP_TABLE.length - 1], level: h.level,
       cd: h.cd.map((c) => Math.round(c * 10) / 10), cdMax: h.cdMax.map((c) => Math.round(c * 10) / 10), ranks: [0, 1, 2, 3].map((i) => this.rank(u, i)),
       mana: Math.floor(u.mana), maxMana: Math.round(u.stats.maxMana), items: [...h.items], itemCd: h.itemCd.map((c) => Math.round(c * 10) / 10), stats: s,
-      respawn: u.dead ? Math.max(0, h.respawnAt - this.time) : 0, canShop: this.canShop(u),
+      respawn: u.dead ? Math.max(0, h.respawnAt - this.time) : 0, respawnAt: h.respawnAt_choice, canShop: this.canShop(u),
       recall: h.recallUntil ? 1 - (h.recallUntil - this.time) / TIMING.recallTime : 0,
       buffs: u.buffs.filter((b) => b.name).map((b) => [b.name!, b.icon ?? '✨', Math.round(b.until - this.time)]),
     };
   }
 
   flushEvents() { this.events = []; }
+
+  replay(): Replay { return { v: 1, seed: this.seed, setups: this.setups, log: [...this.log], ticks: this.tick, winner: this.winner }; }
+
+  /** Rebuilds a match from a replay; call step() and it re-applies recorded inputs on the right ticks. */
+  static fromReplay(r: Replay): Game {
+    const g = new Game(r.setups, r.seed);
+    g.pending = [...r.log];
+    return g;
+  }
+  private pending: ReplayEntry[] | null = null;
+  /** Applies recorded inputs for the current tick (replay mode only). */
+  private applyPending() {
+    if (!this.pending) return;
+    while (this.pending.length && this.pending[0].t <= this.tick) {
+      const e = this.pending.shift()!;
+      if (e.bot !== undefined) this.setBot(e.p, e.bot);
+      else if (e.c) this.command(e.p, e.c);
+    }
+  }
 
   // exposed for effects/bots
   newId() { return this.nextId++; }

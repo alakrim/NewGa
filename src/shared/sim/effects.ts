@@ -1,4 +1,4 @@
-import type { Effect, StatKey } from '../types';
+import type { Condition, Effect, StatKey } from '../types';
 import { angleOf, clamp, norm, type Vec2 } from '../math';
 import type { Game } from './game';
 import type { Ctx, Unit } from './world';
@@ -49,7 +49,7 @@ function runEffect(game: Game, e: Effect, ctx: Ctx) {
       if (!t || t.dead) return;
       if (t.id === c.id) return; // never self-damage from content
       if (t.team === c.team) return;
-      game.dealDamage(c, t, game.evalNum(e.amount, ctx), e.dtype, { ability: true });
+      game.dealDamage(c, t, game.evalNum(e.amount, ctx), e.dtype, { ability: true, vsStructures: e.vsStructures });
       return;
     }
     case 'heal': {
@@ -82,12 +82,29 @@ function runEffect(game: Game, e: Effect, ctx: Ctx) {
       for (const [k, v] of Object.entries(e.stats ?? {})) stats[k as StatKey] = game.evalNum(v, ctx);
       // a buff with negative values is a debuff: only enemies; positive buffs only allies
       const negative = Object.values(stats).some((v) => v < 0) || Object.values(e.pct ?? {}).some((v) => v < 0);
-      if (negative !== (t.team !== c.team)) return;
-      game.addBuff(t, `${c.id}:${e.id}`, e.duration, stats, e.pct ? { ...e.pct } : undefined);
+      // debuffs only land on enemies and buffs on allies, except self-inflicted trade-offs (stances)
+      if (t !== c && negative !== (t.team !== c.team)) return;
+      const id = `${c.id}:${e.id}`;
+      let pct = e.pct ? { ...e.pct } : undefined;
+      if (e.maxStacks && e.maxStacks > 1) {
+        const prev = t.buffs.find((b) => b.id === id);
+        const stacks = Math.min(e.maxStacks, (prev?.stacks ?? 0) + 1);
+        for (const k of Object.keys(stats) as StatKey[]) stats[k]! *= stacks;
+        if (pct) for (const k of Object.keys(pct) as StatKey[]) pct[k]! *= stacks;
+        game.addBuff(t, id, e.duration, stats, pct);
+        const b = t.buffs.find((x) => x.id === id);
+        if (b) b.stacks = stacks;
+        return;
+      }
+      game.addBuff(t, id, e.duration, stats, pct);
       return;
     }
     case 'area': {
       const o = originOf(game, ctx, e.at);
+      if (e.scatter) {
+        const a = game.random() * Math.PI * 2, r = Math.sqrt(game.random()) * e.scatter;
+        o.x += Math.cos(a) * r; o.z += Math.sin(a) * r;
+      }
       const dir = e.at === 'caster' || e.at === 'target' ? ctx.dir : e.shape === 'circle' ? ctx.dir : ctx.dir;
       const resolve = () => {
         if (c.dead && c.kind === 'hero' && e.delay) { /* delayed effects still land after death */ }
@@ -234,12 +251,29 @@ function runEffect(game: Game, e: Effect, ctx: Ctx) {
       runEffects(game, e.effects, { ...ctx, target: c });
       return;
     }
+    case 'if': {
+      runEffects(game, test(game, e.cond, ctx) ? e.then : e.else, ctx);
+      return;
+    }
     case 'resetCooldowns': {
       if (!c.hero) return;
       const slots = e.slots ?? ['Q', 'W', 'E'];
       for (const s of slots) c.hero.cd['QWER'.indexOf(s)] = 0;
       return;
     }
+  }
+}
+
+function test(game: Game, cond: Condition, ctx: Ctx): boolean {
+  const t = ctx.target, c = ctx.caster;
+  switch (cond.test) {
+    case 'targetHpBelow': return !!t && !t.dead && t.hp / t.stats.maxHp < cond.value;
+    case 'casterHpBelow': return c.hp / c.stats.maxHp < cond.value;
+    case 'targetDead': return !!t && t.dead;
+    case 'targetIsHero': return !!t && t.kind === 'hero';
+    case 'targetHasStatus': return !!t && game.has(t, cond.status);
+    case 'casterHasStatus': return game.has(c, cond.status);
+    case 'chance': return game.random() < cond.value;
   }
 }
 

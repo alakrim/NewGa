@@ -45,4 +45,13 @@ export const UPGRADES: UpgradeDef[] = [
 ];
 export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) as Record<UpgradeId, UpgradeDef>;
 
+export type Directive = 'balanced' | 'swarm' | 'phalanx' | 'siege';
+/** Per-lane orders for the Bone Forge. Free to change; applies from the next wave. */
+export const DIRECTIVES: Record<Directive, { name: string; icon: string; text: string }> = {
+  balanced: { name: 'Balanced', icon: '⚖️', text: '3 footmen, 2 hexers, a brute every third wave.' },
+  swarm: { name: 'Swarm', icon: '🐜', text: '6 footmen and 3 hexers, each 30% weaker. Floods the lane and soaks tower shots.' },
+  phalanx: { name: 'Phalanx', icon: '🛡️', text: '4 footmen with +40% health and +20 armor, 1 hexer. Fewer bodies, much harder to kill.' },
+  siege: { name: 'Siege', icon: '🏗️', text: '2 footmen, 1 hexer and a brute every wave; brutes deal +60% to structures.' },
+};
+
 export const MERCENARY = { cost: 350, name: 'Hire a Bone Brute', description: 'A heavy brute joins the next wave in the lane you pick.' };

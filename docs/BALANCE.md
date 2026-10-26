@@ -23,7 +23,7 @@ World units: a hero is ~2.4 units tall. The map is 220 x 130 units. Lanes are ~1
 
 - Q/W/E have 5 ranks (rank = 1 + floor((level-1)/3)); R has 3 ranks, unlocked at level 4 (rank 2 at 9, rank 3 at 14).
 - All arrays in `cooldown`, `manaCost` and `Scaling.base` are per rank: 5 entries for Q/W/E, 3 for R.
-- Basic damage ability: base 60-90 at rank 1 to 220-300 at rank 5, plus 0.5-0.9 `ap` (mages) or 0.7-1.2 `bonusAd` (physical).
+- Basic damage ability: base 60-90 at rank 1 to 220-300 at rank 5, plus 0.5-0.9 `ap` (mages) or 0.7-1.2 `bonusAd` (physical; bonus AD comes from items and buffs only, not level growth, so pair it with a solid base).
 - Ultimates: base 150-250 / 260-380 / 370-520 plus 0.7-1.1 ratio. Cooldowns 70-110s scaling down by rank.
 - Basic cooldowns 5-16s (mobility and hard CC on the longer end). Mana costs 40-100.
 - Hard CC (stun/root/knockup/taunt) 0.75-1.5s; ultimates up to 2s. Slows 0.2-0.5 power for 1-2.5s.

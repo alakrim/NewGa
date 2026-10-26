@@ -48,7 +48,7 @@ export const COMBAT = {
   critMultiplier: 1.75,
   meleeWindup: 0.28, // fraction of the attack period before the hit lands
   towerHeroRamp: 0.25, // +25% per consecutive tower shot on the same hero
-  fortressDamageMult: [1.25, 0.8, 0.5, 0], // index = banners still held by the fortress owner
+  fortressDamageMult: [1.0, 0.6, 0.35, 0], // index = banners still held by the fortress owner
   respawnBase: 6,
   respawnPerLevel: 2.2,
 };

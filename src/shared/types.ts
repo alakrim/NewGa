@@ -29,7 +29,7 @@ export type StatKey = keyof Stats;
 export interface Scaling {
   base?: number | number[]; // number[] = per ability rank (index 0 = rank 1)
   ad?: number; // x caster total attack damage
-  bonusAd?: number; // x caster attack damage from items/buffs/levels above base
+  bonusAd?: number; // x caster attack damage from items and buffs (level growth is NOT bonus, as in most MOBAs)
   ap?: number; // x caster ability power
   maxHp?: number; // x caster max hp
   bonusHp?: number; // x caster max hp above base
@@ -71,7 +71,7 @@ export type SummonKind = 'bone_soldier' | 'bone_archer' | 'wraith' | 'bone_brute
  * Use { type: 'self' } to apply effects to the caster from inside a nested context.
  */
 export type Effect =
-  | { type: 'damage'; amount: Num; dtype: DamageType }
+  | { type: 'damage'; amount: Num; dtype: DamageType; vsStructures?: number } // vsStructures multiplies damage to towers/fortress (after the 50% ability penalty)
   | { type: 'heal'; amount: Num }
   | { type: 'mana'; amount: Num } // restores mana
   | { type: 'shield'; amount: Num; duration: number }
@@ -83,6 +83,7 @@ export type Effect =
       stats?: Partial<Record<StatKey, Num>>; // flat bonus
       pct?: Partial<Record<StatKey, number>>; // multiplicative bonus, 0.2 = +20% (negative allowed)
       vfx?: VfxSpec;
+      maxStacks?: number; // re-applying adds a stack (values x stacks) up to this many, refreshing duration
     }
   | {
       type: 'area';
@@ -94,6 +95,7 @@ export type Effect =
       affects: Affects;
       effects: Effect[];
       delay?: number; // seconds before it resolves (telegraphed on the ground)
+      scatter?: number; // random offset of the origin within this radius each time it resolves (barrages)
       vfx?: VfxSpec;
     }
   | {
@@ -141,7 +143,21 @@ export type Effect =
   | { type: 'empower'; duration: number; effects: Effect[]; bonusRange?: number } // next basic attack within duration also runs effects on its target
   | { type: 'cleanse' } // removes stun/root/slow/silence/taunt from ctx.target
   | { type: 'self'; effects: Effect[] }
-  | { type: 'resetCooldowns'; slots?: AbilitySlot[] }; // refreshes caster cooldowns (default: basic abilities)
+  | { type: 'resetCooldowns'; slots?: AbilitySlot[] } // refreshes caster cooldowns (default: basic abilities)
+  | { type: 'if'; cond: Condition; then: Effect[]; else?: Effect[] };
+
+/**
+ * Conditions for { type: 'if' }, evaluated in the current context at that moment
+ * (so place an 'if targetDead' after the damage effect that may kill).
+ */
+export type Condition =
+  | { test: 'targetHpBelow'; value: number } // 0..1 of max hp
+  | { test: 'casterHpBelow'; value: number }
+  | { test: 'targetDead' }
+  | { test: 'targetIsHero' }
+  | { test: 'targetHasStatus'; status: StatusKind }
+  | { test: 'casterHasStatus'; status: StatusKind }
+  | { test: 'chance'; value: number }; // 0..1, uses the seeded match RNG
 
 export type AbilitySlot = 'Q' | 'W' | 'E' | 'R';
 export type Targeting = 'self' | 'point' | 'direction' | 'enemy' | 'ally' | 'unit';

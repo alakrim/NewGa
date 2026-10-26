@@ -22,7 +22,7 @@ function walk(effects: Effect[] | undefined, f: (e: Effect) => void) {
   for (const e of effects ?? []) {
     f(e);
     const n = e as unknown as Record<string, unknown>;
-    for (const k of ['effects', 'onEnd', 'onArrive', 'onDepart']) if (Array.isArray(n[k])) walk(n[k] as Effect[], f);
+    for (const k of ['effects', 'onEnd', 'onArrive', 'onDepart', 'then', 'else']) if (Array.isArray(n[k])) walk(n[k] as Effect[], f);
   }
 }
 
@@ -74,7 +74,13 @@ export class BotBrain {
     if (!u || !u.hero) return;
     const h = u.hero;
     if (g.canShop(u)) this.shop();
-    if (u.dead) return;
+    if (u.dead) {
+      // respawn at the furthest-forward enemy banner we hold, if any
+      const held = g.banners.filter((x) => x.homeTeam !== u.team && x.owner === u.team).sort((x, y) => (x.key === 'keep' ? -1 : 0) - (y.key === 'keep' ? -1 : 0));
+      const want = held[0]?.key ?? 'fountain';
+      if (h.respawnAt_choice !== want) this.cmd({ c: 'respawnAt', at: want });
+      return;
+    }
     if (h.recallUntil) return;
     if (u.cast || u.dash) return;
 
@@ -82,7 +88,10 @@ export class BotBrain {
     const fountain = FOUNTAIN[u.team as Team];
     const atFountain = Math.hypot(u.x - fountain.x, u.z - fountain.z) < 10;
 
-    if (atFountain && (hpFrac < 0.9 || u.mana < u.stats.maxMana * 0.5)) { this.retreating = false; return; }
+    if (atFountain) {
+      this.retreating = false;
+      if (hpFrac < 0.9 || u.mana < u.stats.maxMana * 0.5) return;
+    }
     if (hpFrac < 0.28) this.retreating = true;
     if (this.retreating) {
       const threat = g.nearestEnemy(u, 9, (o) => o.kind === 'hero' || o.kind === 'tower');
@@ -256,6 +265,13 @@ export class BotBrain {
     if (pads.length && g.random() < 0.5) {
       const kind = BUILD_TOWER_KINDS[Math.floor(g.random() * BUILD_TOWER_KINDS.length)];
       if (h.gold >= TOWERS[kind].cost + 800) { this.cmd({ c: 'build', pad: pads[0].index, kind }); return; }
+    }
+    // forge directives: siege the lane whose enemy tower still stands, swarm otherwise
+    if (g.random() < 0.3) {
+      const lane = this.lane;
+      const enemyTower = [...g.units.values()].some((t) => t.kind === 'tower' && t.team !== u.team && !t.dead && t.tower?.pad === -1 && t.tower.key.endsWith(lane === 0 ? '-n' : '-s'));
+      const want = enemyTower ? 'siege' : 'swarm';
+      if (team.directives[lane] !== want) { this.cmd({ c: 'directive', lane, kind: want }); return; }
     }
     const opts = UPGRADES.filter((x) => team.upgrades[x.id] < x.costs.length).sort((a, b) => a.costs[team.upgrades[a.id]] - b.costs[team.upgrades[b.id]]);
     if (opts[0] && h.gold >= opts[0].costs[team.upgrades[opts[0].id]] + 900) this.cmd({ c: 'upgrade', id: opts[0].id });

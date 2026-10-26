@@ -13,6 +13,7 @@ export interface Buff {
   until: number;
   stats?: Partial<Record<StatKey, number>>;
   pct?: Partial<Record<StatKey, number>>;
+  stacks?: number;
 }
 export interface Status { kind: StatusKind; until: number; power: number; src: number }
 export interface Shield { amount: number; until: number }
@@ -55,6 +56,7 @@ export interface HeroState {
   itemLowHpReadyAt: Record<string, number>;
   itemNth: Record<string, number>;
   recallUntil: number; // 0 = not recalling
+  respawnAt_choice: 'fountain' | 'north' | 'south' | 'keep';
   steer: Vec2 | null; // WASD direction
   bannerPings?: number;
 }
@@ -105,6 +107,7 @@ export interface Unit {
   tower?: { kind: TowerKind; level: number; pad: number; key: string; lastTarget: number; ramp: number };
   aiAt: number;
   scaleMul: number;
+  siegeBonus?: number;
 }
 
 export interface Projectile {

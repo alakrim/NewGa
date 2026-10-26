@@ -37,10 +37,17 @@ export function towerSpots(team: Team): TowerSpot[] {
 
 export type BannerKey = 'north' | 'south' | 'keep';
 export interface BannerSpot { key: BannerKey; name: string; pos: Vec2; lane?: LaneId }
+
+/** What each banner grants the team that holds it after capturing it from its owner. */
+export const BANNER_PERKS: Record<BannerKey, { name: string; icon: string; perk: string }> = {
+  north: { name: 'War Banner', icon: '⚔️', perk: 'Your monster waves gain +20% health and damage.' },
+  south: { name: 'Coin Banner', icon: '🪙', perk: 'Every hero on your team earns +2 gold per second.' },
+  keep: { name: 'Keep Banner', icon: '👁️', perk: 'Reveals the enemy fortress grounds, and strips one more shield layer from their core.' },
+};
 export function bannerSpots(team: Team): BannerSpot[] {
   return [
-    { key: 'north', name: 'North Banner', pos: mirror({ x: -74, z: -16 }, team), lane: 0 },
-    { key: 'south', name: 'South Banner', pos: mirror({ x: -74, z: 16 }, team), lane: 1 },
+    { key: 'north', name: 'War Banner', pos: mirror({ x: -74, z: -16 }, team), lane: 0 },
+    { key: 'south', name: 'Coin Banner', pos: mirror({ x: -74, z: 16 }, team), lane: 1 },
     { key: 'keep', name: 'Keep Banner', pos: mirror({ x: -80, z: 0 }, team) },
   ];
 }

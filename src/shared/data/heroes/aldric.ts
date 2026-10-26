@@ -72,7 +72,7 @@ export const aldric: HeroDef = {
           affects: 'enemies',
           stopOnHit: true,
           effects: [
-            { type: 'damage', amount: { base: [60, 100, 140, 180, 220], bonusAd: 0.4, armor: 0.5 }, dtype: 'physical' },
+            { type: 'damage', amount: { base: [85, 130, 175, 220, 265], bonusAd: 0.5, armor: 0.6 }, dtype: 'physical' },
             { type: 'status', status: 'stun', duration: 0.9 },
           ],
         },

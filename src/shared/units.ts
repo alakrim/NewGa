@@ -86,17 +86,17 @@ export const CAMP_TEMPLATES: Record<CampKind, CampTemplate> = {
 export const SUMMONS: Record<SummonKind, UnitTemplate> = {
   bone_soldier: {
     name: 'Bone Soldier', model: 'Skeleton_Minion', weapons: ['Skeleton_Blade'], scale: 0.8, radius: 0.6,
-    stats: mkStats({ maxHp: 260, attackDamage: 18, armor: 15, magicResist: 15, attackSpeed: 0.9, attackRange: 2, moveSpeed: 6 }),
+    stats: mkStats({ maxHp: 260, attackDamage: 11, armor: 15, magicResist: 15, attackSpeed: 0.9, attackRange: 2, moveSpeed: 6 }),
     attackAnims: ['1H_Melee_Attack_Chop'], gold: 8, xp: 10,
   },
   bone_archer: {
     name: 'Bone Archer', model: 'Skeleton_Rogue', weapons: ['Skeleton_Crossbow'], scale: 0.8, radius: 0.6,
-    stats: mkStats({ maxHp: 200, attackDamage: 22, armor: 5, magicResist: 10, attackSpeed: 0.8, attackRange: 7, moveSpeed: 6 }),
+    stats: mkStats({ maxHp: 200, attackDamage: 13, armor: 5, magicResist: 10, attackSpeed: 0.8, attackRange: 7, moveSpeed: 6 }),
     ranged: { style: 'arrow', color: '#e8e2cf', size: 0.5 }, attackAnims: ['1H_Ranged_Shoot'], gold: 8, xp: 10,
   },
   wraith: {
     name: 'Wraith', model: 'Skeleton_Rogue', weapons: ['Skeleton_Blade'], scale: 0.9, radius: 0.6, tint: '#7b5cff',
-    stats: mkStats({ maxHp: 220, attackDamage: 30, armor: 10, magicResist: 30, attackSpeed: 1.1, attackRange: 2, moveSpeed: 7.5 }),
+    stats: mkStats({ maxHp: 220, attackDamage: 22, armor: 10, magicResist: 30, attackSpeed: 1.1, attackRange: 2, moveSpeed: 7.5 }),
     attackAnims: ['Dualwield_Melee_Attack_Stab'], gold: 8, xp: 10,
   },
   bone_brute: {
@@ -120,7 +120,7 @@ export const TOWERS: Record<TowerKind, TowerTemplate> = {
   },
   fortress: {
     name: 'Fortress Core', description: 'Destroy it to win. Shielded by its banners.', icon: '🏯', cost: 0, radius: 6,
-    stats: mkStats({ maxHp: 8000, attackDamage: 220, armor: 60, magicResist: 60, attackSpeed: 1, attackRange: 13, hpRegen: 8 }),
+    stats: mkStats({ maxHp: 15000, attackDamage: 240, armor: 80, magicResist: 80, attackSpeed: 1, attackRange: 13, hpRegen: 15 }),
     projectile: { style: 'orb', color: '#fff2b0', size: 1.2 },
   },
   arrow: {
