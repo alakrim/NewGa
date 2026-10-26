@@ -127,3 +127,32 @@ These are photoscans. Desaturate or posterize them for a stylized look.
 - Confirm the KayKit Godot library listing.
 - Find a working ansimuz Sunny Land URL if we ever need its art.
 - Add game-icons attributions and any CC BY items to the README "Credits and licenses" section.
+
+## HD-2D direction (sources reviewed 2026-10-26)
+
+Target look: **Lumina / "Luminati"** (https://gitlab.com/stubborn-hug/lumina, MIT): pixel-art sprites in a lit
+3D voxel-ish world with dynamic shadows, golden-hour lighting, bloom, tilt-shift depth of field, particles.
+It is a three.js engine whose textures, sprites, effects and audio are **generated procedurally at runtime**,
+so there is no art folder to copy; the value is the rendering recipe and the generators (MIT, reusable).
+
+| Source | What it is | Licence | Use for us |
+|---|---|---|---|
+| Lumina (`stubborn-hug/lumina`) | HD-2D engine, three.js, procedural art | MIT | Reference look; port its lighting/post stack (shadows, bloom, tilt-shift DOF, fireflies, wind grass); optionally run its generators headless and export textures to PNG |
+| RPGAtlas (`DriftwoodGaming/RPGAtlas`) | Open-source RPG maker, procedural art, no shipped assets | GPL v3 | Ideas only. GPL code must not be copied into our client |
+| Diorama (`leduardo99/diorama`) | "2.5D assets as code": agent-written TypeScript renders props, rigged characters, VFX, icons to sprite sheets + atlas JSON (4 or 8 directions) | MIT | **Hero sprites**: 20 heroes with consistent style, 8-direction run/attack/cast sheets |
+| Pixelbolt (`skulitom/Pixelbolt`) | Pixel-art toolkit + MCP server, JSON recipes to PNG sheets/GIF, no image model | MIT | Ability icons, effects, UI bits, pixel-level fixes |
+| KayKit (kaylousberg.itch.io) | Stylized 3D packs (characters, dungeon, medieval hexagon, forest) | CC0 | 3D buildings, castles, props, terrain pieces |
+| Quaternius | Low-poly 3D characters, nature, buildings | CC0 | Trees, rocks, nature kit, monsters |
+| Poly Haven | HDRIs, PBR textures, models | CC0 | Sky/ambient HDRI and ground textures |
+| OpenGameArt, itch.io free pixel art | Mixed | Check each (CC0 / CC-BY / GPL) | Fill gaps |
+
+### Plan for the Godot client (Godot 4.7 can do HD-2D natively)
+
+1. Switch the battlefield from Node2D to a **3D scene**: orthographic-ish tilted camera (~35-45 deg), ground from
+   KayKit/Quaternius terrain pieces + Poly Haven textures, DirectionalLight3D with shadows, WorldEnvironment
+   (glow, SSAO on Forward+/Mobile, DOF blur near/far for tilt-shift, fog), GPUParticles3D fireflies/embers.
+2. Units stay pixel art as **Sprite3D billboards** (`texture_filter = nearest`, `shaded = true`, `alpha_cut`),
+   reusing Tiny Swords now and Diorama-generated hero sheets later. This is the Octopath/Lumina recipe.
+3. Buildings: KayKit medieval 3D models (already used by the web prototype) or Tiny Swords sprites as billboards.
+4. Renderer: Mobile renderer for phones (shadows + glow + DOF), Compatibility as fallback for low-end devices.
+5. Keep `visuals.gd` as the single table mapping sim ids to art, so assets can be swapped without touching game logic.
