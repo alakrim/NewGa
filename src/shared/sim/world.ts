@@ -3,7 +3,7 @@ import type { Vec2 } from '../math';
 import type { LaneId, BannerKey } from '../map';
 import type { TowerKind } from '../units';
 
-export type UnitKind = 'hero' | 'minion' | 'monster' | 'tower' | 'fortress' | 'summon';
+export type UnitKind = 'hero' | 'minion' | 'monster' | 'tower' | 'fortress' | 'summon' | 'building';
 export const NEUTRAL = 2;
 
 export interface Buff {
@@ -109,6 +109,12 @@ export interface Unit {
   scaleMul: number;
   siegeBonus?: number;
   stealthBrokeAt?: number;
+  /** Frontline army/miner state. */
+  fl?: import('../frontline/sim').FlUnitState;
+  /** Basic attacks also hit enemies within this radius of the target (60% damage). */
+  splash?: number;
+  /** Frontline: the building plot this structure stands on. */
+  flPlot?: number;
 }
 
 export interface Projectile {

@@ -9,9 +9,13 @@ import { HERO_BY_ID } from '../data/heroes';
 import { ITEM_BY_ID } from '../data/items';
 import { angleOf, clamp, dist, distToSegment, norm, rng, type Vec2 } from '../math';
 import { NavGrid } from './nav';
+import { Frontline } from '../frontline/sim';
+import { FL, PLAYER_HEX, dropPos, type FlBuildingDef, type FlUnitDef, type PlayerColor } from '../frontline/data';
+import type { GameMode } from '../protocol';
 import { priceFor } from '../shop';
 import { runEffects } from './effects';
 import { BotBrain } from './bots';
+import { FrontlineBot } from '../frontline/bot';
 import { NEUTRAL, type Banner, type Ctx, type Pad, type Projectile, type Scheduled, type Unit, type UnitKind, type Zone } from './world';
 
 const SLOTS: AbilitySlot[] = ['Q', 'W', 'E', 'R'];
@@ -22,7 +26,7 @@ export interface PlayerSetup { pid: string; name: string; team: Team; heroId: st
 
 /** Everything needed to re-simulate a match exactly: the sim is deterministic given setups, seed and inputs. */
 export interface ReplayEntry { t: number; p: string; c?: Command; bot?: boolean }
-export interface Replay { v: 1; seed: number; setups: PlayerSetup[]; log: ReplayEntry[]; ticks: number; winner: Team | null }
+export interface Replay { v: 1; seed: number; setups: PlayerSetup[]; log: ReplayEntry[]; ticks: number; winner: Team | null; mode?: GameMode }
 
 interface TeamState { kills: number; upgrades: Record<UpgradeId, number>; mercs: [number, number]; directives: [Directive, Directive] }
 interface CampState { id: string; aliveIds: number[]; respawnAt: number }
@@ -48,19 +52,35 @@ export class Game {
   private nextWaveAt = TIMING.firstWave;
   private waveCount = 0;
   private camps: CampState[] = [];
-  private bots = new Map<number, BotBrain>();
+  private bots = new Map<number, { update(dt: number): void }>();
+  private makeBot(id: number) { return this.front ? new FrontlineBot(this, id) : new BotBrain(this, id); }
   private lastGoldTick = 0;
   night = false;
   private phaseEndsAt = TIMING.dayLength;
   private fortressIds: [number, number] = [0, 0];
   readonly log: ReplayEntry[] = [];
   readonly setups: PlayerSetup[];
+  readonly mode: GameMode;
+  /** Frontline systems (null in the Crossing mode). */
+  readonly front: Frontline | null = null;
+  readonly bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
 
-  constructor(setups: PlayerSetup[], readonly seed = 1) {
+  constructor(setups: PlayerSetup[], readonly seed = 1, opts: { mode?: GameMode } = {}) {
     this.random = rng(seed);
     this.setups = setups.map((s) => ({ ...s }));
+    this.mode = opts.mode ?? 'crossing';
+    this.bounds = this.mode === 'frontline' ? { minX: FL.minX, maxX: FL.maxX, minZ: FL.minZ, maxZ: FL.maxZ } : MAP;
     const up = (): Record<UpgradeId, number> => ({ forge: 0, armory: 0, bulwark: 0, treasury: 0, horn: 0, watch: 0 });
     this.teams = [{ kills: 0, upgrades: up(), mercs: [0, 0], directives: ['balanced', 'balanced'] }, { kills: 0, upgrades: up(), mercs: [0, 0], directives: ['balanced', 'balanced'] }];
+    if (this.mode === 'frontline') {
+      this.front = new Frontline(this);
+      this.front.setup(setups);
+      for (const s of setups) this.front.bindHero(s.pid, this.addHero(s).id);
+      this.front.start();
+      this.phaseEndsAt = Infinity;
+      this.nextWaveAt = Infinity;
+      return;
+    }
     for (const o of OBSTACLES) this.nav.setCircle(o.pos, o.r, 1);
     this.buildStructures();
     for (const c of CAMPS) this.camps.push({ id: c.id, aliveIds: [], respawnAt: c.kind === 'colossus' ? TIMING.bossFirstSpawn : 20 });
@@ -68,7 +88,7 @@ export class Game {
   }
 
   // ------------------------------------------------------------------ setup
-  private register(key: string, v: VisualInfo) { if (!this.visuals[key]) this.visuals[key] = v; }
+  register(key: string, v: VisualInfo) { if (!this.visuals[key]) this.visuals[key] = v; }
 
   private buildStructures() {
     for (const team of [0, 1] as Team[]) {
@@ -84,7 +104,7 @@ export class Game {
     }
   }
 
-  private spawnStructure(kind: TowerKind, team: Team, pos: Vec2, key: string, level = 1, pad = -1): Unit {
+  spawnStructure(kind: TowerKind, team: Team, pos: Vec2, key: string, level = 1, pad = -1): Unit {
     const t = TOWERS[kind];
     const visKey = `tw:${kind}`;
     this.register(visKey, { model: kind === 'fortress' ? 'fortress' : 'tower', scale: 1, weapons: [], name: t.name, kind: 'tower', towerKind: kind });
@@ -124,6 +144,29 @@ export class Game {
     return u;
   }
 
+  /** Frontline: a building on a plot (no attack until a watchtower finishes). */
+  spawnBuilding(team: Team, pos: Vec2, def: FlBuildingDef, color: PlayerColor): Unit {
+    const env = def.model.replace('{color}', color);
+    const visKey = `b:${def.id}:${color}`;
+    this.register(visKey, { model: 'env', env, width: def.id === 'house' ? 4 : 5.2, scale: 1, weapons: [], name: def.name, kind: 'building', color });
+    const u = this.makeUnit('building', team, visKey, def.name, pos, 2.2, { ...ZERO_STATS, maxHp: def.hp, armor: 30, magicResist: 30 });
+    this.nav.setCircle(pos, 2.2, 1);
+    return u;
+  }
+
+  /** Frontline: a miner or soldier owned by a player. */
+  spawnArmyUnit(team: Team, def: FlUnitDef, color: PlayerColor, pos: Vec2): Unit {
+    const visKey = `f:${def.id}:${color}`;
+    this.register(visKey, { model: def.model, tint: PLAYER_HEX[color], scale: def.scale, weapons: def.weapons, name: def.name, kind: 'minion', color });
+    const u = this.makeUnit('minion', team, visKey, def.name, this.nav.nearestOpen(pos), def.radius, { ...def.stats });
+    u.ranged = def.ranged ?? null;
+    u.attackAnims = def.attackAnims;
+    u.attackDtype = def.role === 'caster' ? 'magic' : 'physical';
+    u.xp = Math.round(def.cost * 0.3);
+    u.facing = team === 0 ? Math.PI / 2 : -Math.PI / 2;
+    return u;
+  }
+
   addHero(s: PlayerSetup): Unit {
     const def = HERO_BY_ID[s.heroId];
     if (!def) throw new Error(`unknown hero ${s.heroId}`);
@@ -143,7 +186,7 @@ export class Game {
     u.hp = u.stats.maxHp;
     u.mana = u.stats.maxMana;
     this.players.push({ playerId: s.pid, name: s.name, team: s.team, heroId: def.id, bot: s.bot, unitId: u.id });
-    if (s.bot) this.bots.set(u.id, new BotBrain(this, u.id));
+    if (s.bot) this.bots.set(u.id, this.makeBot(u.id));
     return u;
   }
 
@@ -155,11 +198,12 @@ export class Game {
     if (!u?.hero) return;
     u.hero.bot = bot;
     p.bot = bot;
-    if (bot && !this.bots.has(u.id)) this.bots.set(u.id, new BotBrain(this, u.id));
+    if (bot && !this.bots.has(u.id)) this.bots.set(u.id, this.makeBot(u.id));
     if (!bot) this.bots.delete(u.id);
   }
 
   private spawnPoint(team: number): Vec2 {
+    if (this.front) return this.front.spawnPoint(team as Team);
     const f = FOUNTAIN[team as Team];
     const a = this.random() * Math.PI * 2;
     return this.nav.nearestOpen({ x: f.x + Math.cos(a) * 2.5, z: f.z + Math.sin(a) * 2.5 });
@@ -172,7 +216,7 @@ export class Game {
   }
 
   init(you: string): GameInit {
-    return { you, players: this.players.map((p) => ({ ...p })), visuals: this.visuals, seed: this.seed };
+    return { you, players: this.players.map((p) => ({ ...p })), visuals: this.visuals, seed: this.seed, mode: this.mode };
   }
 
   heroOf(pid: string): Unit | undefined {
@@ -196,7 +240,7 @@ export class Game {
     for (const s of u.statuses) if (s.kind === k && s.until > this.time) p = Math.max(p, s.power);
     return p;
   }
-  isStructure(u: Unit) { return u.kind === 'tower' || u.kind === 'fortress'; }
+  isStructure(u: Unit) { return u.kind === 'tower' || u.kind === 'fortress' || u.kind === 'building'; }
   disabled(u: Unit) { return this.has(u, 'stun') || this.has(u, 'knockup') || !!u.displaced; }
   canAct(u: Unit) { return !u.dead && !this.disabled(u) && !u.dash; }
   rank(u: Unit, slot: number): number {
@@ -250,6 +294,7 @@ export class Game {
     if (u.team === team) return true;
     if (this.isStructure(u)) return true;
     const stealth = this.has(u, 'stealth');
+    if (this.front && !stealth) return true; // Frontline has no fog of war
     for (const s of this.sightSources(team)) {
       const d = Math.hypot(s[0] - u.x, s[1] - u.z);
       if (stealth ? d <= SIGHT.stealthReveal + u.radius : d <= s[2] + u.radius) return true;
@@ -259,6 +304,11 @@ export class Game {
   private sightCache: { tick: number; src: [number[][], number[][]] } = { tick: -1, src: [[], []] };
   sightSources(team: number): number[][] {
     if (team !== 0 && team !== 1) return [];
+    if (this.front) {
+      const out: number[][] = [];
+      for (const u of this.units.values()) if (!u.dead && u.team === team) out.push([u.x, u.z, 12]);
+      return out;
+    }
     if (this.sightCache.tick !== this.tick) {
       const src: [number[][], number[][]] = [[], []];
       for (const t of [0, 1] as Team[]) {
@@ -279,6 +329,7 @@ export class Game {
     return this.sightCache.src[team as 0 | 1];
   }
   pointVisible(team: number, x: number, z: number) {
+    if (this.front) return true;
     return this.sightSources(team).some((s) => Math.hypot(s[0] - x, s[1] - z) <= s[2]);
   }
 
@@ -347,7 +398,7 @@ export class Game {
       if (opts.ability) amt *= 0.5;
       if (opts.vsStructures) amt *= opts.vsStructures;
       if (src?.siegeBonus) amt *= 1 + src.siegeBonus;
-      if (tgt.kind === 'fortress') {
+      if (tgt.kind === 'fortress' && !this.front) {
         const held = this.banners.filter((b) => b.homeTeam === tgt.team && b.owner === tgt.team).length;
         amt *= COMBAT.fortressDamageMult[held];
         if (amt <= 0) {
@@ -361,7 +412,8 @@ export class Game {
       amt *= res >= 0 ? 100 / (100 + res) : 2 - 100 / (100 - res);
     }
     if (src && src.team !== tgt.team) {
-      if (src.kind === 'minion' && tgt.kind === 'hero') amt *= 0.6;
+      if (this.front && tgt.fl && opts.ability && (src.hero || src.summon)) amt *= FL.heroAbilityVsArmy;
+      else if (src.kind === 'minion' && tgt.kind === 'hero' && !this.front) amt *= 0.6;
       if ((tgt.kind === 'minion' || tgt.kind === 'monster') && src.kind === 'tower') amt *= tgt.kind === 'minion' ? 1.6 : 1;
     }
     // shields
@@ -490,7 +542,7 @@ export class Game {
     const nightMult = this.night ? 1.5 : 1;
 
     if (u.kind === 'hero') this.onHeroDeath(u, killer);
-    else if (u.kind === 'tower' || u.kind === 'fortress') this.onStructureDeath(u, killer);
+    else if (u.kind === 'tower' || u.kind === 'fortress' || u.kind === 'building') this.onStructureDeath(u, killer);
     else {
       u.removeAt = this.time + 3;
       if (killer?.hero && killer.team !== u.team) {
@@ -505,6 +557,7 @@ export class Game {
       for (const h of near) this.giveXp(h, (u.xp * (near.length > 1 ? 1.25 : 1)) / near.length);
       if (u.camp) this.onCampUnitDeath(u, killer);
       if (u.summon) u.removeAt = this.time + 1.5;
+      if (u.fl) this.front?.onUnitKilled(u, src);
     }
     if (killer?.hero) {
       const ok = killer.hero.def.passive.onKill;
@@ -526,16 +579,18 @@ export class Game {
     const h = u.hero!;
     h.deaths++;
     const horn = this.teams[u.team as Team].upgrades.horn;
-    const timer = (COMBAT.respawnBase + h.level * COMBAT.respawnPerLevel + Math.min(this.time / 60, 25) * 0.4) * (1 - 0.2 * horn);
+    const timer = this.front ? FL.heroRespawnBase + FL.heroRespawnPerLevel * h.level
+      : (COMBAT.respawnBase + h.level * COMBAT.respawnPerLevel + Math.min(this.time / 60, 25) * 0.4) * (1 - 0.2 * horn);
     h.respawnAt = this.time + timer;
     h.recallUntil = 0;
     const enemyTeam = u.team === 0 ? 1 : 0;
     // kill credit: killer hero, otherwise the most recent enemy hero damager within 10s
     let kh = killer?.hero && killer.team !== u.team ? killer : null;
+    if (!kh && this.front) { const o = this.front.ownerHero(killer); if (o && o.team !== u.team) kh = o; }
     const recent = [...u.damagedBy.entries()].filter(([id, t]) => this.time - t <= 10 && this.units.get(id)?.team === enemyTeam).sort((a, b) => b[1] - a[1]);
     if (!kh && recent.length) kh = this.units.get(recent[0][0]) ?? null;
     const assists = recent.map(([id]) => id).filter((id) => id !== kh?.id);
-    const bounty = ECON.heroKill + Math.min(Math.max(0, h.streak - 1), ECON.streakCap) * ECON.streakBonus;
+    const bounty = (this.front ? FL.heroKillGold : ECON.heroKill) + Math.min(Math.max(0, h.streak - 1), ECON.streakCap) * ECON.streakBonus;
     if (kh?.hero) {
       kh.hero.kills++;
       kh.hero.streak++;
@@ -567,6 +622,7 @@ export class Game {
       this.emit({ e: 'msg', text: `The ${u.team === 0 ? 'Dawnguard' : 'Duskborn'} fortress has fallen!`, color: '#ffd166' });
       return;
     }
+    if (u.flPlot !== undefined) { this.front?.onBuildingDestroyed(u); u.removeAt = this.time + 30; return; }
     if (u.tower && u.tower.pad < 0) for (const h of this.units.values()) if (h.hero && h.team === enemy) this.giveGold(h, ECON.towerDestroy);
     if (u.tower && u.tower.pad >= 0) {
       const pad = this.pads[u.tower.pad];
@@ -683,6 +739,7 @@ export class Game {
     if (!u.hero.bot) this.log.push({ t: this.tick, p: pid, c: cmd });
     const h = u.hero;
     const cancelRecall = () => { h.recallUntil = 0; };
+    if (this.front?.command(u, cmd)) return;
     switch (cmd.c) {
       case 'move':
         if (u.dead) return;
@@ -748,7 +805,7 @@ export class Game {
   canShop(u: Unit) {
     if (!u.hero) return false;
     if (u.dead) return true;
-    const f = FOUNTAIN[u.team as Team];
+    const f = this.homeSpot(u.team);
     return Math.hypot(u.x - f.x, u.z - f.z) <= TIMING.shopRadius;
   }
 
@@ -963,8 +1020,9 @@ export class Game {
       }
     }
 
-    // passive gold
-    if (this.time - this.lastGoldTick >= 1) {
+    this.front?.step(dt);
+    // passive gold (Crossing; Frontline pays per player in front.step)
+    if (!this.front && this.time - this.lastGoldTick >= 1) {
       this.lastGoldTick = this.time;
       for (const team of [0, 1] as Team[]) {
         const held = this.banners.filter((b) => b.homeTeam !== team && b.owner === team).length;
@@ -979,7 +1037,7 @@ export class Game {
     for (const u of [...this.units.values()]) this.updateUnit(u, dt);
     this.updateProjectiles(dt);
     this.updateZones();
-    this.updateBanners(dt);
+    if (!this.front) this.updateBanners(dt);
     this.separate();
 
     for (const u of [...this.units.values()]) if (u.dead && u.removeAt && this.time >= u.removeAt && u.kind !== 'hero') this.units.delete(u.id);
@@ -1004,8 +1062,8 @@ export class Game {
     if (h) {
       for (let i = 0; i < 4; i++) h.cd[i] = Math.max(0, h.cd[i] - dt);
       for (let i = 0; i < 6; i++) h.itemCd[i] = Math.max(0, h.itemCd[i] - dt);
-      const f = FOUNTAIN[u.team as Team];
-      if (Math.hypot(u.x - f.x, u.z - f.z) <= TIMING.fountainRadius) {
+      const f = this.homeSpot(u.team);
+      if (Math.hypot(u.x - f.x, u.z - f.z) <= (this.front ? 8 : TIMING.fountainRadius)) {
         u.hp = Math.min(u.stats.maxHp, u.hp + u.stats.maxHp * 0.08 * dt);
         u.mana = Math.min(u.stats.maxMana, u.mana + u.stats.maxMana * 0.08 * dt);
       }
@@ -1031,8 +1089,10 @@ export class Game {
       if (u.cast.t <= 0) this.finishCast(u);
       return;
     }
+    if (u.kind === 'building') return;
     if (u.kind === 'tower' || u.kind === 'fortress') { this.updateTower(u); return; }
-    if (u.kind === 'minion') this.minionAI(u);
+    if (u.fl) this.front?.unitAI(u, dt);
+    else if (u.kind === 'minion') this.minionAI(u);
     else if (u.kind === 'monster') this.campAI(u);
     else if (u.kind === 'summon') this.summonAI(u);
 
@@ -1151,6 +1211,10 @@ export class Game {
     let dmg = u.stats.attackDamage * (crit ? COMBAT.critMultiplier : 1);
     if (u.kind === 'minion' && t.kind === 'minion') dmg *= 1;
     this.dealDamage(u, t, dmg, u.attackDtype, { attack: true, crit });
+    if (u.splash) {
+      this.emit({ e: 'vfx', style: u.attackDtype === 'magic' ? 'fire' : 'earth', color: u.ranged?.color ?? '#d9c27a', x: t.x, z: t.z, r: u.splash });
+      for (const o of this.unitsNear(t, u.splash, (o) => o.team !== u.team && o.id !== t.id && o.team !== NEUTRAL)) this.dealDamage(u, o, dmg * 0.6, u.attackDtype, { attack: true });
+    }
     if (!u.hero) return;
     const h = u.hero;
     const rank1 = { caster: u, target: t, point: { x: t.x, z: t.z }, dir: norm({ x: t.x - u.x, z: t.z - u.z }), origin: { x: u.x, z: u.z }, rank: 1 };
@@ -1348,8 +1412,13 @@ export class Game {
   }
 
   /** Moves with sliding against blocked cells. */
+  /** Where heroes heal and shop: the fountain (Crossing) or in front of the keep (Frontline). */
+  homeSpot(team: number): Vec2 { return this.front ? dropPos(team as Team) : FOUNTAIN[team as Team]; }
+
   moveBy(u: Unit, dx: number, dz: number) {
-    const nx = clamp(u.x + dx, MAP.minX + 1, MAP.maxX - 1), nz = clamp(u.z + dz, MAP.minZ + 1, MAP.maxZ - 1);
+    const b = this.bounds;
+    const zMax = this.front ? FL.laneMaxZ + 4 : b.maxZ - 1, zMin = this.front ? FL.laneMinZ - 3 : b.minZ + 1;
+    const nx = clamp(u.x + dx, b.minX + 1, b.maxX - 1), nz = clamp(u.z + dz, zMin, zMax);
     if (!this.nav.blockedAt({ x: nx, z: nz })) { u.x = nx; u.z = nz; return; }
     if (!this.nav.blockedAt({ x: nx, z: u.z })) { u.x = nx; return; }
     if (!this.nav.blockedAt({ x: u.x, z: nz })) { u.z = nz; return; }
@@ -1580,6 +1649,7 @@ export class Game {
       units, projs, zones, banners, pads, teams: [teamSnap(0), teamSnap(1)], board, events, sight,
     };
     if (this.winner !== null) snap.winner = this.winner;
+    if (this.front) snap.fl = this.front.snapshot(pid, team);
     const me = pid ? this.heroOf(pid) : undefined;
     if (me?.hero) snap.me = this.meSnap(me);
     return snap;
@@ -1601,11 +1671,11 @@ export class Game {
 
   flushEvents() { this.events = []; }
 
-  replay(): Replay { return { v: 1, seed: this.seed, setups: this.setups, log: [...this.log], ticks: this.tick, winner: this.winner }; }
+  replay(): Replay { return { v: 1, seed: this.seed, setups: this.setups, log: [...this.log], ticks: this.tick, winner: this.winner, mode: this.mode }; }
 
   /** Rebuilds a match from a replay; call step() and it re-applies recorded inputs on the right ticks. */
   static fromReplay(r: Replay): Game {
-    const g = new Game(r.setups, r.seed);
+    const g = new Game(r.setups, r.seed, { mode: r.mode ?? 'crossing' });
     g.pending = [...r.log];
     return g;
   }

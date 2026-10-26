@@ -1,4 +1,4 @@
-import type { ClientMsg, Command, GameInit, RoomInfo, ServerMsg, Snapshot } from '../shared/protocol';
+import type { GameMode, ClientMsg, Command, GameInit, RoomInfo, ServerMsg, Snapshot } from '../shared/protocol';
 import type { Team } from '../shared/types';
 import { TICK_RATE } from '../shared/constants';
 import { Game, type PlayerSetup, type Replay } from '../shared/sim/game';
@@ -30,8 +30,8 @@ export class LocalSession implements Session {
   private me: PlayerSetup;
   paused = false;
 
-  constructor(setups: PlayerSetup[], me: string) {
-    this.game = new Game(setups, Math.floor(Math.random() * 1e9));
+  constructor(setups: PlayerSetup[], me: string, mode: GameMode = 'frontline') {
+    this.game = new Game(setups, Math.floor(Math.random() * 1e9), { mode });
     this.me = setups.find((s) => s.pid === me)!;
   }
   start() {

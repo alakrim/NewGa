@@ -5,7 +5,7 @@ import { extname, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMsg, LobbySlot, RoomInfo, ServerMsg } from '../shared/protocol';
+import type { GameMode, ClientMsg, LobbySlot, RoomInfo, ServerMsg } from '../shared/protocol';
 import type { Team } from '../shared/types';
 import { MAX_PLAYERS_PER_TEAM, TICK_RATE } from '../shared/constants';
 import { HEROES } from '../shared/data/heroes';
@@ -67,6 +67,7 @@ interface Room {
   autoBots: Set<string>;
   fillBots: boolean;
   teamSize: number;
+  mode: GameMode;
   game: Game | null;
   loop: NodeJS.Timeout | null;
   endedAt: number;
@@ -89,7 +90,7 @@ function roomCode(): string {
 }
 
 function info(r: Room): RoomInfo {
-  return { code: r.code, host: r.host, slots: r.slots, started: !!r.game, fillBots: r.fillBots, teamSize: r.teamSize };
+  return { code: r.code, host: r.host, slots: r.slots, started: !!r.game, fillBots: r.fillBots, teamSize: r.teamSize, mode: r.mode };
 }
 function broadcastRoom(r: Room) { for (const c of r.clients.values()) send(c, { t: 'room', room: info(r) }); }
 
@@ -186,7 +187,7 @@ function startGame(r: Room) {
   }
   for (const s of r.slots) if (!s.heroId) s.heroId = pickFree();
   const setups: PlayerSetup[] = r.slots.map((s) => ({ pid: s.pid, name: s.name, team: s.team, heroId: s.heroId!, bot: s.bot || !r.clients.get(s.pid)?.ws }));
-  const game = new Game(setups, Math.floor(Math.random() * 1e9));
+  const game = new Game(setups, Math.floor(Math.random() * 1e9), { mode: r.mode });
   r.game = game;
   r.endedAt = 0;
   for (const c of r.clients.values()) send(c, { t: 'init', init: game.init(c.pid) });
@@ -219,7 +220,7 @@ function handle(c: Client, m: ClientMsg) {
   switch (m.t) {
     case 'create': {
       c.name = clean(m.name);
-      const room: Room = { code: roomCode(), host: c.pid, slots: [], autoBots: new Set(), fillBots: true, teamSize: 3, game: null, loop: null, endedAt: 0, clients: new Map() };
+      const room: Room = { code: roomCode(), host: c.pid, slots: [], autoBots: new Set(), fillBots: true, teamSize: 2, mode: 'frontline', game: null, loop: null, endedAt: 0, clients: new Map() };
       rooms.set(room.code, room);
       if (!joinRoom(c, room)) rooms.delete(room.code);
       return;
@@ -231,7 +232,7 @@ function handle(c: Client, m: ClientMsg) {
       joinRoom(c, room);
       return;
     }
-    case 'leave': leaveRoom(c); send(c, { t: 'room', room: { code: '', host: '', slots: [], started: false, fillBots: false, teamSize: 0 } }); return;
+    case 'leave': leaveRoom(c); send(c, { t: 'room', room: { code: '', host: '', slots: [], started: false, fillBots: false, teamSize: 0, mode: 'frontline' } }); return;
     case 'ping': send(c, { t: 'pong', ts: m.ts }); return;
   }
   if (!r) return;
@@ -261,6 +262,11 @@ function handle(c: Client, m: ClientMsg) {
       if (r.game || c.pid !== r.host) return;
       r.fillBots = !!m.on;
       if (m.teamSize) r.teamSize = Math.max(1, Math.min(MAX_PLAYERS_PER_TEAM, Math.floor(Number(m.teamSize)) || 3));
+      break;
+    case 'mode':
+      if (r.game || c.pid !== r.host || (m.mode !== 'frontline' && m.mode !== 'crossing')) return;
+      r.mode = m.mode;
+      if (m.mode === 'frontline') r.teamSize = Math.min(r.teamSize, 2);
       break;
     case 'start':
       if (r.game) return;

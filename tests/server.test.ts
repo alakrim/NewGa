@@ -226,6 +226,7 @@ test('full match: init, 20Hz snapshots with me, vision filter, move command, cha
   const aTeam = slotOf(rt, a.pid).team;
   await a.act({ t: 'hero', heroId: HEROES[2].id }, (r) => slotOf(r, a.pid).heroId === HEROES[2].id);
   await b.act({ t: 'hero', heroId: HEROES[3].id }, (r) => slotOf(r, b.pid).heroId === HEROES[3].id);
+  await a.act({ t: 'mode', mode: 'crossing' }, (r) => r.mode === 'crossing'); // fog of war is a Crossing feature
   await a.act({ t: 'fillBots', on: true, teamSize: 2 }, (r) => r.teamSize === 2);
 
   const initA = a.next<Extract<ServerMsg, { t: 'init' }>>((m) => m.t === 'init');

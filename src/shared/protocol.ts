@@ -4,6 +4,9 @@ import type { UpgradeId } from './upgrades';
 import type { TowerKind } from './units';
 import type { BannerKey, LaneId } from './map';
 import type { Directive } from './upgrades';
+import type { FlBannerKey, FlBuildingId, FlResearch, FlUnitId, PlayerColor, Stance, Trainer } from './frontline/data';
+
+export type GameMode = 'frontline' | 'crossing';
 
 // ---------- in-game commands (client -> sim) ----------
 export type Command =
@@ -21,12 +24,18 @@ export type Command =
   | { c: 'recall' }
   | { c: 'ping'; x: number; z: number; kind: 'go' | 'danger' | 'help' }
   | { c: 'respawnAt'; at: 'fountain' | BannerKey }
-  | { c: 'directive'; lane: LaneId; kind: Directive };
+  | { c: 'directive'; lane: LaneId; kind: Directive }
+  // Frontline mode
+  | { c: 'train'; unit: FlUnitId; count?: number }
+  | { c: 'cancelTrain'; unit: FlUnitId }
+  | { c: 'buildAt'; plot: number; building: FlBuildingId }
+  | { c: 'research'; kind: FlResearch }
+  | { c: 'stance'; stance: Stance; x?: number };
 
 // ---------- static info sent at game start ----------
-export interface VisualInfo { model: ModelId | 'tower' | 'fortress'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind }
+export interface VisualInfo { model: ModelId | 'tower' | 'fortress' | 'env'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind; env?: string; width?: number; color?: PlayerColor }
 export interface PlayerInfo { playerId: string; name: string; team: Team; heroId: string; bot: boolean; unitId: number }
-export interface GameInit { you: string; players: PlayerInfo[]; visuals: Record<string, VisualInfo>; seed: number }
+export interface GameInit { you: string; players: PlayerInfo[]; visuals: Record<string, VisualInfo>; seed: number; mode: GameMode }
 
 // ---------- snapshots (sim -> client), filtered by the viewer's team vision ----------
 /** [id, vis, team, x, z, facing, hp, maxHp, shield, flags, level] */
@@ -97,11 +106,33 @@ export interface Snapshot {
   /** Allied unit sight circles for the fog of war: [x, z, r] flattened */
   sight: number[];
   winner?: Team;
+  /** Frontline mode state (absent in the Crossing mode). */
+  fl?: FrontlineSnap;
+}
+
+export interface FlPlayerSnap {
+  pid: string; name: string; team: Team; slot: 0 | 1; color: PlayerColor; hero: number; stance: Stance; rallyX: number;
+  pop: number; popCap: number; army: Partial<Record<FlUnitId, number>>; garrison: number; research: Record<FlResearch, number>;
+  gold: number; // -1 for enemies
+  income: number; // gold per second (passive + markets + banners)
+}
+export interface FrontlineSnap {
+  players: FlPlayerSnap[];
+  /** Your training queues: `left` seconds for the unit in training, `total` = full train time. */
+  queue: { unit: FlUnitId; trainer: Trainer; left: number; total: number }[];
+  /** [plotIndex, ownerPid ('' = empty), building ('' = none), construction progress 0..1, building unit id] */
+  plots: [number, string, FlBuildingId | '', number, number][];
+  /** miners currently assigned to each FL_NODES entry */
+  nodes: number[];
+  /** [key, owner team (-1 none), capture progress 0..1, capturing team (-1 none)] */
+  banners: [FlBannerKey, number, number, number][];
+  /** castle unit ids, team 0 then team 1 */
+  castles: [number, number];
 }
 
 // ---------- lobby / network envelope ----------
 export interface LobbySlot { pid: string; name: string; team: Team; heroId: string | null; bot: boolean; ready: boolean }
-export interface RoomInfo { code: string; host: string; slots: LobbySlot[]; started: boolean; fillBots: boolean; teamSize: number }
+export interface RoomInfo { code: string; host: string; slots: LobbySlot[]; started: boolean; fillBots: boolean; teamSize: number; mode: GameMode }
 
 export type ClientMsg =
   | { t: 'create'; name: string }
@@ -113,6 +144,7 @@ export type ClientMsg =
   | { t: 'addBot'; team: Team }
   | { t: 'removeBot'; pid: string }
   | { t: 'fillBots'; on: boolean; teamSize?: number }
+  | { t: 'mode'; mode: GameMode }
   | { t: 'start' }
   | { t: 'lobbyReturn' }
   | { t: 'cmd'; cmd: Command }
