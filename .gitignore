@@ -3,3 +3,6 @@ dist/
 assets-src/
 *.log
 .DS_Store
+
+# scratch downloads from research runs
+/*.html
