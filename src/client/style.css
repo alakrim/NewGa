@@ -145,7 +145,7 @@ input.field:focus { border-color: var(--gold); }
 .feed { position: fixed; right: 10px; top: 60px; width: 320px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
 .feed > div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 13px; animation: fadeout 7s forwards; }
 @keyframes fadeout { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
-.chat { position: fixed; left: 10px; bottom: 210px; width: 360px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+.chat { position: fixed; left: 10px; bottom: 280px; width: 360px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
 .chat .line { font-size: 13px; text-shadow: 0 1px 2px #000, 0 0 6px #000; animation: fadeout 12s forwards; }
 .chat input { pointer-events: auto; margin-top: 4px; }
 .helpbox { position: fixed; left: 10px; top: 10px; padding: 8px 12px; font-size: 12px; max-width: 280px; }

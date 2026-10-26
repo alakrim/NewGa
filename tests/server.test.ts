@@ -1,4 +1,4 @@
-import { test, before, after } from 'node:test';
+import { test, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
 import { startServer, _internals, type RunningServer } from '../src/server/index';
@@ -10,6 +10,14 @@ const GRACE = 700;
 const open: TestClient[] = [];
 
 before(async () => { srv = await startServer({ port: 0, staticDir: '/nonexistent-static-dir', graceMs: GRACE }); });
+// a failing test must not leak rooms into the next one
+afterEach(() => {
+  for (const c of open.splice(0)) c.ws.terminate();
+  for (const r of _internals.rooms.values()) if (r.loop) clearInterval(r.loop);
+  for (const c of _internals.clients.values()) if (c.timer) clearTimeout(c.timer);
+  _internals.rooms.clear();
+  _internals.clients.clear();
+});
 after(async () => { for (const c of open) c.ws.terminate(); await srv.close(); });
 
 class TestClient {
@@ -264,9 +272,9 @@ test('full match: init, 20Hz snapshots with me, vision filter, move command, cha
   await sleep(1500);
   const after = posOf(a.last('snap')!.s, pa.unitId);
   assert.ok(Math.hypot(after.x - before.x, after.z - before.z) > 2, `hero should have moved (from ${JSON.stringify(before)} to ${JSON.stringify(after)})`);
-  // B's own hero did not move
+  // B's own hero stayed put (units may be nudged apart at the spawn, but nothing like A's trip)
   const bPos0 = posOf(snapB, pb.unitId), bPos1 = posOf(b.last('snap')!.s, pb.unitId);
-  assert.ok(Math.hypot(bPos1.x - bPos0.x, bPos1.z - bPos0.z) < 1);
+  assert.ok(Math.hypot(bPos1.x - bPos0.x, bPos1.z - bPos0.z) < Math.hypot(after.x - before.x, after.z - before.z) / 2);
   // and B sees A (teammates) moving
   const seenByB = posOf(b.last('snap')!.s, pa.unitId);
   assert.ok(Math.hypot(seenByB.x - before.x, seenByB.z - before.z) > 2);

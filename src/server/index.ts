@@ -326,7 +326,10 @@ function onConnection(ws: WebSocket, req: IncomingMessage) {
     try { handle(client, m); } catch (err) { console.error('handler error', err); }
   });
   ws.on('error', () => {});
-  ws.on('close', () => {
+  const dbg = (what: string) => { if (process.env.DEBUG_NET) console.log(new Date().toISOString(), what, client.pid, client.room?.code ?? '-'); };
+  dbg('open');
+  ws.on('close', (code) => {
+    dbg(`close ${code}${client.ws !== ws ? ' (superseded)' : ''}`);
     if (client.ws !== ws) return; // superseded by a newer connection
     client.ws = null;
     const r = client.room;
@@ -351,12 +354,12 @@ export function startServer(opts: ServerOptions = {}): Promise<RunningServer> {
   const server = createServer((req, res) => { serveStatic(req, res).catch(() => { try { res.writeHead(500); res.end('error'); } catch { /* socket gone */ } }); });
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024, perMessageDeflate: { threshold: 512 } });
   wss.on('connection', onConnection);
-  // drop dead sockets within ~40s so their seats are handed to a bot / can be reclaimed quickly
+  // drop dead sockets within ~60s so their seats are handed to a bot / can be reclaimed quickly
   const beat = setInterval(() => {
     for (const c of clients.values()) {
       if (!c.ws) continue;
-      // a busy browser tab (loading a match) can go quiet for a while: only give up after 3 silent beats
-      if (!c.alive && ++c.missed >= 3) { c.ws.terminate(); continue; }
+      // a busy browser tab (loading a match) can go quiet for a while: only give up after 6 silent beats
+      if (!c.alive && ++c.missed >= 6) { if (process.env.DEBUG_NET) console.log('heartbeat timeout', c.pid); c.ws.terminate(); continue; }
       if (c.alive) c.missed = 0;
       c.alive = false;
       c.ws.ping();
