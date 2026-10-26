@@ -23,6 +23,8 @@ var _clouds: Array[Sprite2D] = []
 var _grass: Texture2D
 var _sand: Texture2D
 var _shadow: Texture2D
+var _blob: Texture2D
+var _deco: Array = []  # [texture, pos, scale, mod] drawn flat on the ground
 
 
 func _ready() -> void:
@@ -30,6 +32,8 @@ func _ready() -> void:
 	_grass = Sprites.tex(V.FREE + "Terrain/Tileset/Tilemap_color1.png")
 	_sand = Sprites.tex(V.CC0 + "Terrain/Ground/Tilemap_Flat.png")
 	_shadow = Sprites.tex(V.FREE + "Terrain/Tileset/Shadow.png")
+	_blob = _radial(Color(1, 1, 1, 1), Color(1, 1, 1, 0))
+	_scatter_ground()
 	_build_foam()
 	ground = Node2D.new()
 	ground.z_index = -10
@@ -64,6 +68,15 @@ func _draw_ground(ci: Node2D) -> void:
 	for tz in range(TZ0, TZ1 + 1):
 		for tx in range(TX0, TX1 + 1):
 			_tile(ci, _grass, tx, tz, _edge(tx, TX0, TX1), _edge(tz, TZ0, TZ1))
+	# soft light/dark patches break up the flat grass
+	var prng := RandomNumberGenerator.new()
+	prng.seed = 11
+	for i in range(90):
+		var c := Vector2(prng.randf_range(TX0 * T, TX1 * T), prng.randf_range(TZ0 * T, TZ1 * T))
+		var r := prng.randf_range(140, 360)
+		var dark := prng.randf() < 0.55
+		var col := Color(0.12, 0.3, 0.08, 0.13) if dark else Color(1.0, 0.95, 0.6, 0.09)
+		ci.draw_texture_rect(_blob, Rect2(c - Vector2(r, r * 0.6), Vector2(r * 2, r * 1.2)), false, col)
 	# sand road along the lane
 	var rx0 := int(M.MIN_X / 2) - 1
 	var rx1 := int(M.MAX_X / 2)
@@ -88,6 +101,11 @@ func _draw_ground(ci: Node2D) -> void:
 				elif tz == PZ_EDGE + 2:
 					row = 5
 				_tile(ci, _grass, tx, tz, col, row)
+	# small flat decorations: grass tufts, pebbles, mushrooms, bones
+	for d in _deco:
+		var t: Texture2D = d[0]
+		var sz: Vector2 = t.get_size() * d[2]
+		ci.draw_texture_rect(t, Rect2(d[1] - Vector2(sz.x / 2, sz.y * 0.8), sz), false, d[3])
 	# building plots: a small sand foundation each
 	for p in M.plots():
 		var c := V.to_px(p.x, p.z)
@@ -125,6 +143,61 @@ func _build_foam() -> void:
 			a.play("f")
 			a.frame = _rng.randi_range(0, n - 1)
 			foam.add_child(a)
+
+
+func _radial(a: Color, b: Color) -> Texture2D:
+	var g := Gradient.new()
+	g.set_color(0, a)
+	g.set_color(1, b)
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.5)
+	gt.fill_to = Vector2(1, 0.5)
+	gt.width = 128
+	gt.height = 128
+	return gt
+
+
+func _on_cliff(p: Vector2) -> bool:
+	var tx := int(floor(p.x / T))
+	var tz := int(floor(p.y / T))
+	if tx <= TX0 or tx >= TX1 or tz <= TZ0 or tz >= TZ1:
+		return true
+	return _on_plateau(tx) and tz >= PZ_EDGE and tz <= PZ_EDGE + 2
+
+
+func _scatter_ground() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 23
+	var deco := V.CC0 + "Deco/%02d.png"
+	var tufts := [7, 8, 10, 11, 7, 10]
+	var small := [1, 2, 4, 5, 6]
+	for i in range(520):
+		var p := Vector2(rng.randf_range(TX0 * T, TX1 * T), rng.randf_range(TZ0 * T, TZ1 * T))
+		if _on_cliff(p):
+			continue
+		var w := p / V.PX
+		if w.y > -3.5 and w.y < 4.5:
+			continue  # keep the road clean
+		var near_plot := false
+		for pl in M.plots():
+			if absf(pl.x - w.x) < 3.6 and absf(pl.z - w.y) < 2.6:
+				near_plot = true
+				break
+		if near_plot:
+			continue
+		var n: int = tufts[rng.randi() % tufts.size()] if rng.randf() < 0.75 else small[rng.randi() % small.size()]
+		var t := Sprites.tex(deco % n)
+		if t:
+			_deco.append([t, p, rng.randf_range(0.8, 1.15), Color(1, 1, 1, 0.95)])
+	# battle debris along the road edges: bones and pebbles
+	for i in range(70):
+		var x := rng.randf_range(M.MIN_X + 14, M.MAX_X - 14)
+		var z := rng.randf_range(-3.6, -2.6) if rng.randf() < 0.5 else rng.randf_range(3.6, 4.6)
+		var t := Sprites.tex(deco % [14, 15, 4, 5][rng.randi() % 4])
+		if t:
+			_deco.append([t, V.to_px(x, z), rng.randf_range(0.7, 1.0), Color(1, 1, 1, 0.85)])
 
 
 # ------------------------------------------------------------------ props
@@ -203,6 +276,15 @@ func _decorate() -> void:
 			ysort.add_child(_anim_sprite(V.FREE + "Terrain/Decorations/Bushes/Bushe%d.png" % _rng.randi_range(1, 4), Vector2i(128, 128), 8, 8, p, 0.8, 40))
 		else:
 			ysort.add_child(_static_sprite(V.FREE + "Terrain/Decorations/Rocks/Rock%d.png" % _rng.randi_range(1, 4), p, 1.0, 16))
+	# signposts by the outposts, scarecrows and pumpkin patches near the farms
+	for b in M.BANNERS:
+		var sp := _static_sprite(V.CC0 + "Deco/%d.png" % (16 if b[2] < 0 else 17), V.to_px(b[2] + 5.5, b[3] - 2.5), 1.0, 52)
+		sp.flip_h = b[2] > 0
+		ysort.add_child(sp)
+	for sx in [-1, 1]:
+		ysort.add_child(_static_sprite(V.CC0 + "Deco/18.png", V.to_px(sx * 34, -24), 0.8, 80))
+		for i in range(5):
+			ysort.add_child(_static_sprite(V.CC0 + "Deco/%d.png" % _rng.randi_range(12, 13), V.to_px(sx * 34 + _rng.randf_range(-4, 4), -24 + _rng.randf_range(1, 3)), 1.0, 20))
 	# sheep grazing in the meadow
 	for i in range(8):
 		var p := Vector2(_rng.randf_range(-30, 30) * V.PX, _rng.randf_range(-22, -13) * V.PX)
