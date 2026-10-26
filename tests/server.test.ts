@@ -195,6 +195,7 @@ test('lobby: create, join by code, team switch, hero pick rules, bots, host-only
 test('room full / one start with no bots needs both teams', async () => {
   const a = await TestClient.connect();
   const code = (await a.act({ t: 'create', name: 'H' }, () => true)).code;
+  await a.act({ t: 'mode', mode: 'crossing' }, (r) => r.mode === 'crossing'); // 5v5 rooms are a Crossing thing
   // 10 seats: fill with bots (5+5), host is one of them => 9 more
   for (let i = 0; i < 5; i++) await a.act({ t: 'addBot', team: 1 }, (r) => r.slots.filter((s) => s.team === 1).length >= Math.min(5, i + 1));
   const joiners: TestClient[] = [];

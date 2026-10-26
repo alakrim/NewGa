@@ -117,8 +117,8 @@ function joinRoom(c: Client, r: Room): boolean {
       if (!takeover) { send(c, { t: 'error', msg: 'Match in progress and no bot seat to take over.' }); return false; }
     } else {
       team = teamCount(r, 0) <= teamCount(r, 1) ? 0 : 1;
-      if (teamCount(r, team) >= MAX_PLAYERS_PER_TEAM) team = team === 0 ? 1 : 0;
-      if (teamCount(r, team) >= MAX_PLAYERS_PER_TEAM) { send(c, { t: 'error', msg: 'Room is full.' }); return false; }
+      if (teamCount(r, team) >= teamCap(r)) team = team === 0 ? 1 : 0;
+      if (teamCount(r, team) >= teamCap(r)) { send(c, { t: 'error', msg: 'Room is full.' }); return false; }
     }
   }
   if (c.room && c.room !== r) leaveRoom(c);
@@ -175,7 +175,7 @@ function startGame(r: Room) {
     return h.id;
   };
   if (r.fillBots) {
-    const size = Math.min(MAX_PLAYERS_PER_TEAM, Math.max(r.teamSize, teamCount(r, 0), teamCount(r, 1)));
+    const size = Math.min(teamCap(r), Math.max(r.teamSize, teamCount(r, 0), teamCount(r, 1)));
     for (const team of [0, 1] as Team[]) {
       let n = 1;
       while (teamCount(r, team) < size) {
