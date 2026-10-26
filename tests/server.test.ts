@@ -283,8 +283,10 @@ test('full match: init, 20Hz snapshots with me, vision filter, move command, cha
 
   // chat: all-chat reaches everyone, team-chat only the team (A and B are teammates: use the bot-less angle by adding a spectator-free check)
   const chatB = b.next<Extract<ServerMsg, { t: 'chat' }>>((m) => m.t === 'chat');
+  const chatA = a.next<Extract<ServerMsg, { t: 'chat' }>>((m) => m.t === 'chat' && m.text === 'hello all');
   a.send({ t: 'chat', text: 'hello all', team: false });
   const cm = await chatB;
+  await chatA; // the sender's own echo can arrive a moment after the other client's copy
   assert.deepEqual([cm.from, cm.text, cm.team, cm.teamId], ['Alice', 'hello all', false, aTeam]);
   assert.ok(a.msgs.some((m) => m.t === 'chat' && m.text === 'hello all'), 'sender gets own chat echo');
   const teamB = b.next<Extract<ServerMsg, { t: 'chat' }>>((m) => m.t === 'chat' && m.team);
