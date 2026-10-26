@@ -178,7 +178,7 @@ class Card extends Control:
 # ------------------------------------------------------------------ construction
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_panel = PanelContainer.new()
 	_panel.theme_type_variation = ""
 	add_child(_panel)
@@ -391,7 +391,7 @@ func _apply(ctx: Dictionary) -> void:
 				t.queue_redraw()
 		else:
 			t.visible = false
-	var empty := not cur.is_empty() and cur.building == ""
+	var empty: bool = not cur.is_empty() and cur.building == ""
 	_rows_box.visible = empty
 	_card.visible = not empty and not cur.is_empty()
 	if empty:

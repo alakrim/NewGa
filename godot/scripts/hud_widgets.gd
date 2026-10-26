@@ -155,7 +155,7 @@ class CircleButton extends Control:
 			var asp := float(icon.get_width()) / maxf(1.0, float(icon.get_height()))
 			var sz := Vector2(isz * minf(1.0, asp), isz * minf(1.0, 1.0 / asp))
 			draw_texture_rect(icon, Rect2(c - sz / 2.0 + Vector2(0, -2 if not pressed else 2), sz), false, Color(1, 1, 1, 1) if ready or cd > 0.0 else Color(1, 1, 1, 0.7))
-		if label != "":
+		if label != "" and cd <= 0.0 and locked_text == "":
 			var fs := int(diameter * (0.34 if label.length() <= 2 else 0.26))
 			UiArt.dtext_c(self, label, c + Vector2(0, -2 if not pressed else 2), fs, Color.WHITE if ready else Color(0.85, 0.85, 0.9), 5)
 		if sub != "":
@@ -411,7 +411,7 @@ class KeepBar extends Control:
 	func _draw() -> void:
 		var d := UiArt.bar_base_big()
 		var s := UiArt.sb(d)
-		var h := minf(size.y, 56.0)
+		var h := minf(size.y, 48.0)
 		var r := Rect2(0, size.y - h, size.x, h)
 		s.draw(get_canvas_item(), r)
 		# fill inside the frame
@@ -430,7 +430,7 @@ class KeepBar extends Control:
 			draw_rect(Rect2(fr2.position, Vector2(fr2.size.x, fr2.size.y * 0.4)), Color(1, 1, 1, 0.22))
 		UiArt.dtext(self, value_text, Vector2(0, inner.position.y + inner.size.y * 0.5 + 7), 17, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER, size.x, 4)
 		if label != "":
-			UiArt.dtext(self, label, Vector2(10 if not align_right else 0, r.position.y - 4), 19, Color("fff1cf"), HORIZONTAL_ALIGNMENT_LEFT if not align_right else HORIZONTAL_ALIGNMENT_RIGHT, size.x - (10 if align_right else 0), 5)
+			UiArt.dtext(self, label, Vector2(10 if not align_right else 0, r.position.y - 3), 19, Color("fff1cf"), HORIZONTAL_ALIGNMENT_LEFT if not align_right else HORIZONTAL_ALIGNMENT_RIGHT, size.x - (10 if align_right else 0), 5)
 
 
 # ------------------------------------------------------------------ slim resource bar (hero hp / mana / xp)
@@ -681,7 +681,7 @@ class TimerPlate extends Control:
 			var c := Vector2(size.x * 0.64 + 44.0 + i * 0.0, size.y / 2.0 - 2.0)
 			c.x = size.x * 0.62 + i * 34.0 + 18.0
 			var owner := int(b[1])
-			var col := Color("9aa0ad") if owner < 0 else UiArt.PLAYER_COL["blue" if owner == 0 else "red"]
+			var col: Color = Color("9aa0ad") if owner < 0 else UiArt.PLAYER_COL["blue" if owner == 0 else "red"]
 			draw_circle(c, 13.0, UiArt.OUTLINE)
 			draw_circle(c, 10.5, col)
 			if int(b[3]) >= 0 and float(b[2]) > 0.0:

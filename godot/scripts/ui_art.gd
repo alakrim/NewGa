@@ -439,3 +439,16 @@ static func unit_icon_size(unit_id: String, box: float) -> Vector2:
 	if fit < 1.0:
 		sz *= fit
 	return sz
+
+
+## Portrait for the hero gallery / picker: a colour per hero (within its role) so the 20 heroes look distinct.
+static func gallery_portrait(hero_id: String) -> Texture2D:
+	var hd := HeroesData.by_id(hero_id)
+	var n := 0
+	for h in HeroesData.HEROES:
+		if h.role == hd.get("role", ""):
+			if h.id == hero_id:
+				break
+			n += 1
+	var colors := ["blue", "red", "yellow", "purple", "black"]
+	return hero_portrait(hero_id, colors[n % colors.size()])
