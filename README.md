@@ -72,6 +72,7 @@ The server is in-memory and one process handles many rooms. The simulation costs
 | `Space` / `Y` | Center camera / toggle camera lock (edge-pan and middle-drag when unlocked) |
 | Mouse wheel | Zoom |
 | Arrow keys | Steer your hero directly |
+| `M` | Mute sound |
 
 ## How it works
 

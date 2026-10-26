@@ -4,6 +4,8 @@ import type { AbilitySlot } from '../shared/types';
 import { HERO_BY_ID } from '../shared/data/heroes';
 import { MAP } from '../shared/map';
 import { World, type UnitView } from './render/world';
+import { sfx } from './sfx';
+import { toast } from './ui/dom';
 import { Hud } from './ui/hud';
 import type { Session } from './net';
 
@@ -171,6 +173,7 @@ export class GameScreen {
         case 'KeyS': this.session.send({ c: 'stop' }); break;
         case 'KeyG': this.pingMode = true; break;
         case 'KeyY': this.camLocked = !this.camLocked; break;
+        case 'KeyM': toast(sfx.toggleMute() ? 'Sound off (M)' : 'Sound on (M)'); break;
         case 'Space': e.preventDefault(); { const me = this.myView(); if (me) this.world.camTarget.set(me.pos.x, 0, me.pos.z); } break;
         case 'Escape': this.aiming = null; this.attackMove = false; this.pingMode = false; this.hud.closeModal(); break;
         case 'F1': e.preventDefault(); document.getElementById('helpbox')?.classList.toggle('hidden'); break;

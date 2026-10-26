@@ -35,7 +35,7 @@ That reads as a **MOBA with a tower-defense spine**: heroes fight, the bases run
 | **Information** | Every MOBA lives on scouting | ✅ Server-side **fog of war** (enemies outside your vision are never sent, so map hacks are impossible). ✅ Night shrinks vision. ✅ Pings. To do: wards and stealth-reveal items |
 | **Cheating** | It's online | ✅ Authoritative server. Clients only send intents. Fog is filtered on the server |
 | **Match length** | Friends' sessions are short | ✅ Measured: bot matches end in 17–30 min. Tune with fortress HP and banner multipliers |
-| **Sound** | Half of game feel | ❌ None yet. See the roadmap (CC0 audio exists) |
+| **Sound** | Half of game feel | ✅ Procedural WebAudio effects (hits, casts, gold, level-ups, the banner horn). Music still to do |
 | **Accessibility** | Colorblind players can't tell red from blue | ❌ To do: shapes on banners and rings, key rebinding, UI scale |
 
 ## 3. Ideas to make it more ambitious, fun and strategic
@@ -43,10 +43,10 @@ That reads as a **MOBA with a tower-defense spine**: heroes fight, the bases run
 Ranked by **fun ÷ effort** (S/M/L effort).
 
 ### Tier 1: cheap, big payoff
-1. **Replays for free** (S). The simulation is deterministic (seeded RNG, fixed 20 Hz tick), so a match is just `seed + roster + command log`. Save that (a few KB), then add watch mode, killcam and "share this fight".
+1. ✅ **Replays** (S, done in v0.1). The simulation is deterministic (seeded RNG, fixed 20 Hz tick), so a match is just `seed + roster + command log`. Save that (a few KB), then add watch mode, killcam and "share this fight".
 2. **Hero talents at levels 5 and 10** (M). Pick 1 of 2 perks per hero, defined as data (`PassiveDef` already covers it). Same hero, different builds, more depth.
-3. **Forward respawn** (S). Respawn at any enemy banner you hold, which makes banners worth defending even after the gold.
-4. **Forge Directives** (S). Per lane, choose *Swarm* (more, weaker), *Phalanx* (shields, slow) or *Siege* (brutes, tower bonus). It's the RTS layer the brief hints at.
+3. ✅ **Forward respawn** (S, done in v0.1). Respawn at any enemy banner you hold, which makes banners worth defending even after the gold.
+4. ✅ **Forge Directives** (S, done in v0.1). Per lane, choose *Swarm* (more, weaker), *Phalanx* (shields, slow) or *Siege* (brutes, tower bonus). It's the RTS layer the brief hints at.
 5. **Recommended builds + ability-order tips** in the Codex (S). Bots already have role builds; show them to players.
 6. **Emote/ping wheel** and **quick chat** (S). Most of the fun with friends is banter.
 
@@ -89,7 +89,7 @@ Ranked by **fun ÷ effort** (S/M/L effort).
 
 | Version | Scope |
 |---|---|
-| **v0.1** (this) | Playable online and offline, 20 heroes, 35 items, bots, banners with perks, towers, waves, camps, boss, day/night, fog, Last Stand |
-| v0.2 | Audio, talents, forward respawn, Forge Directives, recommended builds, balance pass from `docs/BALANCE-REPORT.md`, replays |
+| **v0.1** (this) | Playable online and offline, 20 heroes, 35 items, bots, banners with perks, towers, waves, camps, boss, day/night, fog, Last Stand, forge directives, forward respawn, replays, sound effects |
+| v0.2 | Music, talents, recommended builds, balance pass from `docs/BALANCE-REPORT.md` (Kaelen's burst), lobby layout for narrow screens, spectating for late joiners |
 | v0.3 | Horde co-op mode, siege payload, world events, draft/bans, generated splash art and icons |
 | v0.4 | Accounts and mastery, spectator, mobile controls, map variants |
