@@ -6,6 +6,12 @@ import { TEAM_COLORS } from '../../shared/constants';
 import { rng } from '../../shared/math';
 import { assets } from '../assets';
 import { Vfx, GLOW } from './vfx';
+import { FrontDressing } from './frontline';
+import { PLAYER_HEX, dropPos } from '../../shared/frontline/data';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { sfx } from '../sfx';
 
 const TEAM_HEX = TEAM_COLORS.map((c) => new THREE.Color(c));
@@ -38,6 +44,9 @@ export interface UnitView {
   baseY: number;
   height: number;
   statusFx: THREE.Sprite | null;
+  scaffold?: THREE.Object3D | null;
+  build?: number; // construction progress 0..1 (Frontline buildings)
+  sack?: THREE.Object3D | null;
 }
 
 const PX = 8; // ground texture pixels per world unit
@@ -64,6 +73,9 @@ export class World {
   spectator = false;
   camTarget = new THREE.Vector3(0, 0, 0);
   camDist = 42;
+  readonly frontline: boolean;
+  private front: FrontDressing | null = null;
+  private composer: EffectComposer | null = null;
   private hoverRing: THREE.Mesh;
   private rangeRing: THREE.Mesh;
   private aimMesh: THREE.Mesh;
@@ -91,10 +103,17 @@ export class World {
     this.scene.add(this.sun, this.sun.target);
 
     this.vfx = new Vfx(this.scene);
-    this.buildGround();
-    this.buildEnvironment();
-    this.buildBanners();
-    this.buildPads();
+    this.frontline = init.mode === 'frontline';
+    if (this.frontline) {
+      const meP = init.players.find((p) => p.playerId === init.you);
+      this.front = new FrontDressing(this.scene, this.vfx, meP?.team ?? 0, 0);
+      this.scene.fog = new THREE.Fog('#a9d2ee', 120, 320);
+    } else {
+      this.buildGround();
+      this.buildEnvironment();
+      this.buildBanners();
+      this.buildPads();
+    }
 
     this.fogCanvas.width = MAP.maxX - MAP.minX;
     this.fogCanvas.height = MAP.maxZ - MAP.minZ;
@@ -134,6 +153,19 @@ export class World {
     this.myTeam = me?.team ?? 0;
     this.myUnit = me?.unitId ?? 0;
     this.spectator = !me;
+    if (this.frontline) {
+      this.fogMesh.visible = false;
+      const d = dropPos((me?.team ?? 0) as 0 | 1);
+      this.camTarget.set(d.x + (me?.team === 1 ? -12 : 12), 0, -2);
+      this.camDist = 36;
+    }
+    // soft bloom makes spells, projectiles and gold glow (the HD-2D look)
+    try {
+      this.composer = new EffectComposer(this.renderer);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+      this.composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.45, 0.6, 0.82));
+      this.composer.addPass(new OutputPass());
+    } catch { this.composer = null; }
     if (this.spectator) this.fogMesh.visible = false;
     const f = FOUNTAIN[this.myTeam as 0 | 1];
     this.camTarget.set(f.x, 0, f.z);
@@ -143,6 +175,7 @@ export class World {
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
     this.renderer.setSize(w, h, false);
+    this.composer?.setSize(w, h);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
   }
@@ -354,9 +387,17 @@ export class World {
     let model: THREE.Object3D;
     let mixer: THREE.AnimationMixer | null = null;
     const actions = new Map<string, THREE.AnimationAction>();
-    const isStructure = info.model === 'tower' || info.model === 'fortress';
+    const isStructure = info.model === 'tower' || info.model === 'fortress' || info.model === 'env';
     let height = 2.6;
-    if (isStructure) {
+    let scaffold: THREE.Object3D | null = null;
+    if (info.model === 'env') {
+      model = assets.envModel(info.env ?? 'building_home_A_blue', info.width ?? 5);
+      model.userData.baseScale = model.scale.y;
+      scaffold = assets.envModel('building_scaffolding', (info.width ?? 5) * 0.95);
+      scaffold.visible = false;
+      root.add(scaffold);
+      height = 6;
+    } else if (isStructure) {
       const col = team === 0 ? 'blue' : 'red';
       const tk = info.towerKind ?? 'lane';
       const name = tk === 'fortress' ? `building_castle_${col}` : tk === 'cannon' ? `building_tower_catapult_${col}` : tk === 'lane' ? `building_tower_A_${col}` : `building_tower_B_${col}`;
@@ -371,7 +412,7 @@ export class World {
       height = tk === 'fortress' ? 9 : tk === 'lane' ? 8 : 6;
     } else {
       const teamTint = ['#1d4ed8', '#b91c1c'][team];
-      const tint = info.kind === 'minion' || (info.kind === 'summon' && !info.tint) ? teamTint : info.tint;
+      const tint = info.color ? PLAYER_HEX[info.color] : info.kind === 'minion' || (info.kind === 'summon' && !info.tint) ? teamTint : info.tint;
       const c = assets.character(info.model as never, info.weapons, tint, info.kind === 'hero' ? 0.55 : 0.85);
       model = c.root;
       model.scale.setScalar(info.scale);
@@ -397,7 +438,7 @@ export class World {
       root.add(blob);
     }
     // health bar
-    const barW = isStructure ? (info.towerKind === 'fortress' ? 6 : 3) : info.kind === 'hero' ? 1.8 : info.kind === 'monster' && info.scale > 2 ? 4 : 1.1;
+    const barW = isStructure ? (info.towerKind === 'fortress' ? 6 : info.model === 'env' ? 3.4 : 3) : info.kind === 'hero' ? 1.8 : info.kind === 'monster' && info.scale > 2 ? 4 : 1.1;
     const barH = info.kind === 'hero' || isStructure ? 0.2 : 0.12;
     const hpBar = new THREE.Group();
     const bg = new THREE.Mesh(new THREE.PlaneGeometry(barW + 0.08, barH + 0.08), new THREE.MeshBasicMaterial({ color: '#111111', depthTest: false, transparent: true, opacity: 0.85 }));
@@ -419,7 +460,7 @@ export class World {
     const v: UnitView = {
       id, vis, info, team, root, model, mixer, actions, loop: '', oneShotUntil: 0,
       pos: new THREE.Vector3(s[3], 0, s[4]), target: new THREE.Vector3(s[3], 0, s[4]), facing: s[5], targetFacing: s[5],
-      hpBar, hpFill, shieldFill, ring, snap: s, lastSeen: this.time, dead: false, isStructure, destroyed: null, baseY: 0, height, statusFx: null,
+      hpBar, hpFill, shieldFill, ring, snap: s, lastSeen: this.time, dead: false, isStructure, destroyed: null, baseY: 0, height, statusFx: null, scaffold, build: 1, sack: null,
     };
     root.position.copy(v.pos);
     model.rotation.y = v.facing;
@@ -537,6 +578,12 @@ export class World {
     }
     s.pads.forEach((p, i) => { const pv = this.padViews[i]; if (pv) pv.ring.visible = !p[2] && p[1] === this.myTeam; });
     // day / night
+    if (s.fl && this.front) {
+      const me = s.fl.players.find((p) => p.hero === this.myUnit);
+      if (me) this.front.setSlot(me.slot);
+      this.front.apply(s.fl);
+      for (const [, , , progress, unitId] of s.fl.plots) { const v = unitId ? this.units.get(unitId) : undefined; if (v) v.build = progress; }
+    }
     this.nightTarget = s.night ? 1 : 0;
     this.updateFog(s.sight);
   }
@@ -717,6 +764,19 @@ export class World {
       const stealth = (f & F.stealth) !== 0;
       if (stealth !== !!v.root.userData.ghost) { v.root.userData.ghost = stealth; setGhost(v.model, stealth); }
       v.model.visible = v.isStructure ? !v.dead : true;
+      if (v.scaffold) {
+        const b = v.build ?? 1;
+        v.scaffold.visible = b < 1 && !v.dead;
+        v.model.scale.y = (v.model.userData.baseScale ?? 1) * (b < 1 ? 0.12 + 0.88 * b : 1);
+      }
+      const carrying = (f & F.carrying) !== 0;
+      if (carrying && !v.sack && !v.dead) {
+        const sack = assets.envModel('sack', 0.9);
+        sack.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined; if (m && (o as THREE.Mesh).isMesh) { const c = m.clone(); c.color.set('#ffd34d'); c.emissive = new THREE.Color('#5a3b00'); (o as THREE.Mesh).material = c; } });
+        sack.position.set(0, 1.25 * v.info.scale, -0.45 * v.info.scale);
+        v.model.add(sack);
+        v.sack = sack;
+      } else if (!carrying && v.sack) { v.model.remove(v.sack); v.sack = null; }
       if (v.mixer) {
         if (!v.dead) {
           const moving = (f & F.moving) !== 0 || (f & F.dashing) !== 0;
@@ -784,12 +844,14 @@ export class World {
 
     this.vfx.update(dt);
     // camera
-    const off = new THREE.Vector3(0, this.camDist * 0.88, this.camDist * 0.47);
+    // Crossing: steep top-down. Frontline: low side view of the lane (Stick-War style, in 3D).
+    const off = this.frontline ? new THREE.Vector3(0, this.camDist * 0.42, this.camDist * 0.95) : new THREE.Vector3(0, this.camDist * 0.88, this.camDist * 0.47);
     this.camera.position.copy(this.camTarget).add(off);
-    this.camera.lookAt(this.camTarget);
+    this.camera.lookAt(this.camTarget.x, this.frontline ? 1.5 : 0, this.camTarget.z);
+    this.front?.update(dt);
     this.sun.position.set(this.camTarget.x - 30, 60, this.camTarget.z + 25);
     this.sun.target.position.copy(this.camTarget);
-    this.renderer.render(this.scene, this.camera);
+    if (this.composer) this.composer.render(); else this.renderer.render(this.scene, this.camera);
   }
 
   /** Ground point under the cursor (NDC coordinates). */

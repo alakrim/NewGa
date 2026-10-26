@@ -1,0 +1,158 @@
+{
+  "miner": {
+    "file": "icons/miner.svg",
+    "author": "Lorc",
+    "sourceName": "mining",
+    "url": "https://game-icons.net/1x1/lorc/mining.html"
+  },
+  "swordsman": {
+    "file": "icons/swordsman.svg",
+    "author": "Lorc",
+    "sourceName": "broadsword",
+    "url": "https://game-icons.net/1x1/lorc/broadsword.html"
+  },
+  "archer": {
+    "file": "icons/archer.svg",
+    "author": "Delapouite",
+    "sourceName": "bow-arrow",
+    "url": "https://game-icons.net/1x1/delapouite/bow-arrow.html"
+  },
+  "shieldbearer": {
+    "file": "icons/shieldbearer.svg",
+    "author": "Delapouite",
+    "sourceName": "roman-shield",
+    "url": "https://game-icons.net/1x1/delapouite/roman-shield.html"
+  },
+  "assassin": {
+    "file": "icons/assassin.svg",
+    "author": "Lorc",
+    "sourceName": "daggers",
+    "url": "https://game-icons.net/1x1/lorc/daggers.html"
+  },
+  "battlemage": {
+    "file": "icons/battlemage.svg",
+    "author": "Lorc",
+    "sourceName": "fireball",
+    "url": "https://game-icons.net/1x1/lorc/fireball.html"
+  },
+  "healer": {
+    "file": "icons/healer.svg",
+    "author": "Delapouite",
+    "sourceName": "caduceus",
+    "url": "https://game-icons.net/1x1/delapouite/caduceus.html"
+  },
+  "giant": {
+    "file": "icons/giant.svg",
+    "author": "Delapouite",
+    "sourceName": "giant",
+    "url": "https://game-icons.net/1x1/delapouite/giant.html"
+  },
+  "house": {
+    "file": "icons/house.svg",
+    "author": "Delapouite",
+    "sourceName": "house",
+    "url": "https://game-icons.net/1x1/delapouite/house.html"
+  },
+  "barracks": {
+    "file": "icons/barracks.svg",
+    "author": "Delapouite",
+    "sourceName": "barracks",
+    "url": "https://game-icons.net/1x1/delapouite/barracks.html"
+  },
+  "archery": {
+    "file": "icons/archery.svg",
+    "author": "Lorc",
+    "sourceName": "archery-target",
+    "url": "https://game-icons.net/1x1/lorc/archery-target.html"
+  },
+  "sanctum": {
+    "file": "icons/sanctum.svg",
+    "author": "Lorc",
+    "sourceName": "magic-portal",
+    "url": "https://game-icons.net/1x1/lorc/magic-portal.html"
+  },
+  "giantpit": {
+    "file": "icons/giantpit.svg",
+    "author": "Delapouite",
+    "sourceName": "hole",
+    "url": "https://game-icons.net/1x1/delapouite/hole.html"
+  },
+  "forge": {
+    "file": "icons/forge.svg",
+    "author": "Lorc",
+    "sourceName": "anvil",
+    "url": "https://game-icons.net/1x1/lorc/anvil.html"
+  },
+  "mineshaft": {
+    "file": "icons/mineshaft.svg",
+    "author": "Delapouite",
+    "sourceName": "mine-wagon",
+    "url": "https://game-icons.net/1x1/delapouite/mine-wagon.html"
+  },
+  "watchtower": {
+    "file": "icons/watchtower.svg",
+    "author": "Delapouite",
+    "sourceName": "watchtower",
+    "url": "https://game-icons.net/1x1/delapouite/watchtower.html"
+  },
+  "market": {
+    "file": "icons/market.svg",
+    "author": "Delapouite",
+    "sourceName": "shop",
+    "url": "https://game-icons.net/1x1/delapouite/shop.html"
+  },
+  "garrison": {
+    "file": "icons/garrison.svg",
+    "author": "Lorc",
+    "sourceName": "castle",
+    "url": "https://game-icons.net/1x1/lorc/castle.html"
+  },
+  "defend": {
+    "file": "icons/defend.svg",
+    "author": "Lorc",
+    "sourceName": "bordered-shield",
+    "url": "https://game-icons.net/1x1/lorc/bordered-shield.html"
+  },
+  "hold": {
+    "file": "icons/hold.svg",
+    "author": "Lorc",
+    "sourceName": "flying-flag",
+    "url": "https://game-icons.net/1x1/lorc/flying-flag.html"
+  },
+  "attack": {
+    "file": "icons/attack.svg",
+    "author": "Lorc",
+    "sourceName": "crossed-swords",
+    "url": "https://game-icons.net/1x1/lorc/crossed-swords.html"
+  },
+  "weapons": {
+    "file": "icons/weapons.svg",
+    "author": "Lorc",
+    "sourceName": "pointy-sword",
+    "url": "https://game-icons.net/1x1/lorc/pointy-sword.html"
+  },
+  "armor": {
+    "file": "icons/armor.svg",
+    "author": "Lorc",
+    "sourceName": "breastplate",
+    "url": "https://game-icons.net/1x1/lorc/breastplate.html"
+  },
+  "gold": {
+    "file": "icons/gold.svg",
+    "author": "Delapouite",
+    "sourceName": "coins",
+    "url": "https://game-icons.net/1x1/delapouite/coins.html"
+  },
+  "population": {
+    "file": "icons/population.svg",
+    "author": "Delapouite",
+    "sourceName": "person",
+    "url": "https://game-icons.net/1x1/delapouite/person.html"
+  },
+  "heart-banner": {
+    "file": "icons/heart-banner.svg",
+    "author": "Lorc",
+    "sourceName": "heart-tower",
+    "url": "https://game-icons.net/1x1/lorc/heart-tower.html"
+  }
+}

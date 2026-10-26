@@ -1602,6 +1602,7 @@ export class Game {
     if (u.dash) f |= F.dashing;
     if (u.hero?.recallUntil) f |= F.recalling;
     if (u.empowered && u.empowered.until > this.time) f |= F.empowered;
+    if (u.fl && u.fl.carry > 0) f |= F.carrying;
     const sh = u.shields.reduce((a, s) => a + (s.until > this.time ? s.amount : 0), 0);
     const r = (n: number) => Math.round(n * 100) / 100;
     void viewer;
@@ -1645,7 +1646,7 @@ export class Game {
     }).map((e) => { const { _team, _pid, _x, _z, ...rest } = e; void _team; void _pid; void _x; void _z; return rest as GameEvent; });
     const sight = team >= 0 ? this.sightSources(team).flatMap((s) => [Math.round(s[0]), Math.round(s[1]), s[2]]) : [];
     const snap: Snapshot = {
-      tick: this.tick, time: Math.round(this.time * 100) / 100, night: this.night, phaseLeft: Math.max(0, this.phaseEndsAt - this.time),
+      tick: this.tick, time: Math.round(this.time * 100) / 100, night: this.night, phaseLeft: Number.isFinite(this.phaseEndsAt) ? Math.max(0, this.phaseEndsAt - this.time) : 0,
       units, projs, zones, banners, pads, teams: [teamSnap(0), teamSnap(1)], board, events, sight,
     };
     if (this.winner !== null) snap.winner = this.winner;

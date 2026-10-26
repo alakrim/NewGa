@@ -7,7 +7,11 @@ import type { ModelId } from '../shared/types';
 const BASE = `${import.meta.env.BASE_URL}assets/`;
 export const CHARACTER_MODELS: ModelId[] = ['Knight', 'Barbarian', 'Mage', 'Rogue', 'Rogue_Hooded', 'Skeleton_Warrior', 'Skeleton_Mage', 'Skeleton_Rogue', 'Skeleton_Minion'];
 const SKELETON_WEAPONS = ['Skeleton_Blade', 'Skeleton_Axe', 'Skeleton_Staff', 'Skeleton_Shield_Small_A', 'Skeleton_Shield_Large_A', 'Skeleton_Crossbow'];
-export const ENV_MODELS = [
+const COLORS = ['blue', 'green', 'red', 'yellow'];
+const COLORED = ['castle', 'tower_A', 'tower_B', 'tower_catapult', 'tower_base', 'barracks', 'blacksmith', 'market', 'church', 'archeryrange', 'tavern', 'home_A', 'mine'];
+export const ENV_MODELS = [...new Set([
+  ...COLORS.flatMap((c) => COLORED.map((b) => `building_${b}_${c}`)),
+  'building_scaffolding', 'resource_stone',
   'building_castle_blue', 'building_castle_red', 'building_tower_A_blue', 'building_tower_A_red', 'building_tower_B_blue', 'building_tower_B_red',
   'building_tower_catapult_blue', 'building_tower_catapult_red', 'building_tower_base_blue', 'building_tower_base_red', 'building_barracks_blue', 'building_barracks_red',
   'building_blacksmith_blue', 'building_blacksmith_red', 'building_market_blue', 'building_market_red', 'building_church_blue', 'building_church_red',
@@ -15,7 +19,7 @@ export const ENV_MODELS = [
   'trees_A_large', 'trees_A_medium', 'trees_B_large', 'trees_B_medium', 'tree_single_A', 'tree_single_B', 'rock_single_A', 'rock_single_B', 'rock_single_C',
   'rock_single_D', 'rock_single_E', 'mountain_A_grass_trees', 'mountain_B_grass_trees', 'hills_A_trees', 'hills_B_trees', 'hill_single_A', 'cloud_big',
   'flag_blue', 'flag_red', 'flag_green', 'flag_yellow', 'barrel', 'crate_A_big', 'crate_open', 'tent', 'weaponrack', 'bucket_arrows', 'sack', 'target',
-];
+])];
 
 const OPTIONAL_MESH = /^(1H_|2H_|Badge_Shield|Rectangle_Shield|Round_Shield|Spike_Shield|Barbarian_Round_Shield|Mug|Spellbook|Knife|Throwable|Knight_Helmet|Knight_Cape|Barbarian_Hat|Barbarian_Cape|Mage_Hat|Mage_Cape|Rogue_Cape)/;
 const CLOTH = /(Cape|Hat|Helmet|Hood|Cloak|Body)/;

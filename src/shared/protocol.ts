@@ -42,7 +42,7 @@ export interface GameInit { you: string; players: PlayerInfo[]; visuals: Record<
 export type UnitSnap = [number, string, number, number, number, number, number, number, number, number, number];
 export const F = {
   dead: 1, moving: 2, stunned: 4, stealth: 8, casting: 16, slowed: 32, rooted: 64, invulnerable: 128,
-  dashing: 512, recalling: 1024, airborne: 2048, silenced: 4096, immune: 8192, empowered: 16384,
+  dashing: 512, recalling: 1024, airborne: 2048, silenced: 4096, immune: 8192, empowered: 16384, carrying: 32768,
 } as const;
 
 /** [id, x, z, style, color, size] */
