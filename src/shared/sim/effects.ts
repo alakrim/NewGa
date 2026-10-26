@@ -272,7 +272,7 @@ function test(game: Game, cond: Condition, ctx: Ctx): boolean {
     case 'targetDead': return !!t && t.dead;
     case 'targetIsHero': return !!t && t.kind === 'hero';
     case 'targetHasStatus': return !!t && game.has(t, cond.status);
-    case 'casterHasStatus': return game.has(c, cond.status);
+    case 'casterHasStatus': return game.has(c, cond.status) || (cond.status === 'stealth' && c.stealthBrokeAt === game.time);
     case 'chance': return game.random() < cond.value;
   }
 }

@@ -72,7 +72,7 @@ export const hrodgar: HeroDef = {
     {
       id: 'hrodgar_w',
       name: 'Earthshaker',
-      description: 'Stamps the ground, damaging nearby enemies and slowing them. Scales with his health.',
+      description: 'Stamps the ground, damaging nearby enemies and slowing them. Scales with his health, and cracks towers apart.',
       icon: '🌋',
       targeting: 'self',
       range: 0,
@@ -89,7 +89,7 @@ export const hrodgar: HeroDef = {
           affects: 'enemies',
           vfx: { style: 'earth', color: '#c9a36b' },
           effects: [
-            { type: 'damage', amount: { base: [50, 80, 110, 140, 170], maxHp: 0.04 }, dtype: 'physical' },
+            { type: 'damage', amount: { base: [50, 80, 110, 140, 170], maxHp: 0.04 }, dtype: 'physical', vsStructures: 1.8 },
             { type: 'status', status: 'slow', duration: 2, power: 0.4 },
           ],
         },
@@ -115,7 +115,7 @@ export const hrodgar: HeroDef = {
     {
       id: 'hrodgar_r',
       name: 'Rockfall Leap',
-      description: 'Leaps to a point and crashes down like a falling boulder, damaging and launching every enemy in the landing zone.',
+      description: 'Leaps to a point and crashes down like a falling boulder, damaging and launching every enemy in the landing zone. Towers in the landing zone take heavy damage.',
       icon: '⛰️',
       targeting: 'point',
       range: 12,
@@ -139,7 +139,7 @@ export const hrodgar: HeroDef = {
               affects: 'enemies',
               vfx: { style: 'earth', color: '#d9b26b' },
               effects: [
-                { type: 'damage', amount: { base: [150, 250, 350], maxHp: 0.08 }, dtype: 'physical' },
+                { type: 'damage', amount: { base: [150, 250, 350], maxHp: 0.08 }, dtype: 'physical', vsStructures: 1.8 },
                 { type: 'status', status: 'knockup', duration: 1.5 },
               ],
             },

@@ -418,7 +418,10 @@ export class Game {
   }
 
   breakStealth(u: Unit) {
-    if (u.statuses.some((s) => s.kind === 'stealth')) u.statuses = u.statuses.filter((s) => s.kind !== 'stealth');
+    if (u.statuses.some((s) => s.kind === 'stealth' && s.until > this.time)) {
+      u.statuses = u.statuses.filter((s) => s.kind !== 'stealth');
+      u.stealthBrokeAt = this.time; // "from stealth" conditions still count during the tick that broke it
+    }
   }
 
   applyStatus(src: Unit, tgt: Unit, kind: StatusKind, duration: number, power = 0) {

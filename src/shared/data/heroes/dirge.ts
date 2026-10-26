@@ -121,7 +121,7 @@ export const dirge: HeroDef = {
     {
       id: 'dirge_r',
       name: 'Guillotine',
-      description: 'Falls on an enemy for a brutal strike that deals far more damage the less health they have left.',
+      description: 'Falls on an enemy for a brutal strike that deals far more damage the less health they have left. Killing with it resets its cooldown.',
       icon: '🗡️',
       targeting: 'enemy',
       range: 9,
@@ -140,6 +140,7 @@ export const dirge: HeroDef = {
           stopOnHit: true,
           effects: [
             { type: 'damage', amount: { base: [100, 180, 260], bonusAd: 0.9, targetMissingHp: 0.35 }, dtype: 'physical' },
+            { type: 'if', cond: { test: 'targetDead' }, then: [{ type: 'resetCooldowns', slots: ['R'] }] },
           ],
         },
       ],

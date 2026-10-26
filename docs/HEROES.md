@@ -65,9 +65,9 @@ Hrodgar is chief of the Stonefang clan, and he earned the name Ironhide by survi
 
 - **Passive, Third Blow 🪨:** Every third basic attack deals bonus damage equal to a slice of the target's maximum health and heals Hrodgar. Devastating against bosses, camps and bulky heroes.
 - **Q, Chain Hook ⚓:** Hurls a barbed chain. The first enemy it strikes is damaged and yanked straight to Hrodgar.
-- **W, Earthshaker 🌋:** Stamps the ground, damaging nearby enemies and slowing them. Scales with his health.
+- **W, Earthshaker 🌋:** Stamps the ground, damaging nearby enemies and slowing them. Scales with his health, and cracks towers apart.
 - **E, Iron Will 💪:** Roars and shrugs off all crowd control for a moment, gaining a shield and a burst of speed to close the gap.
-- **R, Rockfall Leap ⛰️:** Leaps to a point and crashes down like a falling boulder, damaging and launching every enemy in the landing zone.
+- **R, Rockfall Leap ⛰️:** Leaps to a point and crashes down like a falling boulder, damaging and launching every enemy in the landing zone. Towers in the landing zone take heavy damage.
 
 **Playstyle.** Hook the most dangerous enemy and let your team collapse on them, then Earthshaker to keep them pinned. Iron Will makes you crowd-control proof, so use it to walk through a stun and land Rockfall Leap on the backline. Third Blow is strong when you trade blows with something big.
 
@@ -107,7 +107,7 @@ Valen Ashcroft is the Dawnguard's executioner, a title he hates and has never re
 - **Q, Rising Slash ⚔️:** A wide upward cut that damages enemies in front of him and throws them into the air.
 - **W, Lunge 🌅:** Leaps at an enemy and strikes them, then attacks much faster for a few seconds.
 - **E, Riposte 🤺:** Raises his guard, taking far less damage. His next attack within a few seconds reaches farther and strikes back hard, slowing the target.
-- **R, Final Verdict ⚖️:** Drops on a chosen enemy from above, dealing massive damage that grows with how wounded they already are. The shockwave hurts everyone nearby.
+- **R, Final Verdict ⚖️:** Drops on a chosen enemy from above, dealing massive damage that grows with how wounded they already are. Any enemy left below 15% health is executed with true damage. The shockwave hurts everyone nearby.
 
 **Playstyle.** Open with Lunge to start attacking faster, then chain Rising Slash into your passive for the third-hit burn. Riposte before an enemy stun lands, and use the empowered strike to slow a runner. Keep Final Verdict for a target below half health: it scales with missing health.
 
@@ -143,11 +143,11 @@ Skarra left the Stonefang clan at sixteen with a two-handed axe, a borrowed hors
 
 The pit masters of Karth-Mor say Kraghul died eleven times in the arena, and that each death earned the crowd a better show. Nobody knows what he was before the chains. The Duskborn Pact bought his contract, bound his bones with a Bone Forge rite, and pointed him at its enemies; he went willingly, because for the first time since waking in the sand he was being asked to fight someone who stayed down.
 
-- **Passive, Crowd's Favorite 🏆:** Kraghul ignores a portion of enemy armor. Whenever he scores a kill, his Gladiator's Hook is instantly ready again.
+- **Passive, Crowd's Favorite 🏆:** Kraghul ignores a portion of enemy armor. Whenever he scores a kill, his Gladiator's Hook is instantly ready again. Each blow he lands wins the crowd: attack speed rises 6% per hit, up to five hits, lasting 3 seconds.
 - **Q, Gladiator's Hook 🪝:** Flings a chained hook. The first enemy struck is wounded and dragged all the way to Kraghul.
 - **W, Spiked Chains 🔗:** Whips a ring of spiked chains around himself for a few seconds, cutting and slowing everything that gets close.
 - **E, Whip Crack 💢:** Cracks his chain in a wide arc, damaging and slowing every enemy in front of him.
-- **R, Last Man Standing 🥊:** Chains himself to an enemy and slams into them, rooting them in place for two seconds. Inside the duel Kraghul hits faster, hardens and steals life.
+- **R, Last Man Standing 🥊:** Chains himself to an enemy and slams into them, rooting them in place for two seconds. Against another hero the slam hits much harder. Inside the duel Kraghul hits faster, hardens and steals life.
 
 **Playstyle.** Gladiator's Hook is your whole game: drag the enemy carry in and drop Last Man Standing on them for a two-second root duel. Kills instantly reset the hook, so hook a wounded target for a chain of grabs. Spiked Chains gives armor while you brawl; use it just before engaging.
 
@@ -164,10 +164,10 @@ The pit masters of Karth-Mor say Kraghul died eleven times in the arena, and tha
 Rattle was a sapper in the Free City's mining guild, a short-tempered dwarf-sized man with a love of black powder and a firm belief that every problem was a wall in disguise. The Sundering buried his crew under three hundred tons of Mareth granite. When he woke, the rock was gone, his flesh was gone, and the last thing he remembered was a spark. He decided on the spot that the spark had been his best idea yet.
 
 - **Passive, Demolitionist 🔧:** Every basic attack deals bonus damage equal to a small percentage of the target's maximum health, which makes Rattle a boss and camp buster; his bombs and blasts also hit towers hard.
-- **Q, Powder Keg 🛢️:** Lobs a keg to a point. After a short fuse it explodes, damaging enemies (more against high-health targets) and blasting them back.
+- **Q, Powder Keg 🛢️:** Lobs a keg to a point. After a short fuse it explodes, damaging enemies (more against high-health targets) and blasting them back. Towers take heavy damage from it.
 - **W, Blast Jump 🚀:** Sets off a charge at his feet and rockets to a point, damaging and slowing enemies where he lands.
 - **E, Sapper's Charge 🧨:** Braces behind a shield and arms his next attack with a satchel charge, which deals heavy bonus damage based on target max health and splashes nearby enemies.
-- **R, Chain Reaction 💥:** Lights every fuse he has. After a short delay a giant blast tears through a huge area, dealing heavy damage (scaled by max health) and launching enemies. Rattle gains a shield while the fuse burns.
+- **R, Chain Reaction 💥:** Lights every fuse he has. After a short delay a giant blast tears through a huge area, dealing heavy damage (scaled by max health) and launching enemies. Towers take heavy damage from the blast. Rattle gains a shield while the fuse burns.
 
 **Playstyle.** Powder Keg on a choke point or tower to push waves and bases, Sapper's Charge before a boss or camp fight. Blast Jump is both an escape and an engage. Chain Reaction takes 1.3 seconds, so bait with Blast Jump or fight in tight spaces where enemies cannot step out of the circle.
 
@@ -184,7 +184,7 @@ Rattle was a sapper in the Free City's mining guild, a short-tempered dwarf-size
 Sable Thorne was the best cutpurse the Thornwood Guild ever trained, and the first to rob the Dawnguard's own vault. The Sun-Seal ring she lifted from the Bastion of Aurel is worth more than a small town and does nothing but sit on her finger, glowing slightly whenever Valen Ashcroft is within a mile. She finds this hilarious. He does not.
 
 - **Passive, Venomed Blades 🧪:** Basic attacks coat the target in nightshade, dealing magic damage over a few seconds.
-- **Q, Throwing Knives 🔪:** Flicks a knife in a straight line that pierces through everything in its path, wounding and slowing them.
+- **Q, Throwing Knives 🔪:** Flicks a knife in a straight line that pierces through everything in its path, wounding and slowing them. Thrown from stealth, the first blade hits for bonus damage.
 - **W, Cloak of Thorns 🌿:** Melts into the shadows and sprints away unseen. Her next attack from stealth strikes for bonus damage and silences the target.
 - **E, Thorn Step 💨:** Slips a short distance in any direction, leaving a cloud of choking thorns that damages and slows enemies where she started.
 - **R, Death Blossom 🌸:** Dashes onto an enemy and unleashes a flurry of blades, striking again and again while untouchable.
@@ -227,7 +227,7 @@ Dirge ran the Thornwood Guild for twenty years and sold half its best students t
 - **Q, Hamstring 🦵:** Dashes at an enemy and cuts their legs, damaging and slowing them.
 - **W, Rend 🩸:** Rakes both blades through a wide arc in front of him. The more wounded an enemy is, the more it bleeds.
 - **E, Shade Slip 🌫️:** Vanishes and reappears a short distance away, unseen for a moment and moving fast.
-- **R, Guillotine 🗡️:** Falls on an enemy for a brutal strike that deals far more damage the less health they have left.
+- **R, Guillotine 🗡️:** Falls on an enemy for a brutal strike that deals far more damage the less health they have left. Killing with it resets its cooldown.
 
 **Playstyle.** Hamstring a fleeing target and Rend them: Rend hurts more the lower their health. Every kill refreshes Shade Slip and hides you briefly, so a wave of weak targets becomes a ladder. Guillotine is a finisher, not an opener: wait for a target under half health.
 
@@ -267,7 +267,7 @@ Kaelen Emberfell was the most gifted pyromancer the Ivory Spire had produced in 
 - **Q, Fireball 🔥:** Hurls a ball of fire that damages the first enemy it strikes and then explodes, burning everything around the impact.
 - **W, Meteor Strike ☄️:** Calls a meteor on a target area. After a short delay it crashes down, dealing heavy damage and leaving the ground burning.
 - **E, Backdraft 🎆:** Vents a blast of flame in front of him, damaging enemies and throwing them back, while he gains a short burst of speed to flee.
-- **R, Skyfall 🌠:** Calls down a colossal meteor anywhere in a huge range. After a long warning it explodes for massive damage and leaves a lake of fire behind.
+- **R, Skyfall 🌠:** Calls down a colossal meteor anywhere in a huge range. A barrage of smaller meteors rains on random spots around the target first, then the great meteor explodes for massive damage and leaves a lake of fire behind.
 
 **Playstyle.** Every spell empowers your next basic attack, so weave auto-attacks between casts. Meteor Strike is slow but strong: throw it on banners and choke points where enemies must stand. Backdraft is your panic button. Skyfall reaches nearly anywhere; use it to punish a recall, a banner capture or an enemy base push.
 
@@ -366,7 +366,7 @@ Ossian was Marshal Hallen's best scout, a quiet man who could place a bolt throu
 - **Passive, Marked for the Grave 👁️:** After casting an ability, his next basic attack reaches farther and hits for bonus damage while slowing the target.
 - **Q, Longshot 🔭:** A single, fast, extremely accurate bolt with a long range and heavy damage.
 - **W, Hollow Snare 🕳️:** Drops a ghostly snare on the ground. After a heartbeat it springs, damaging and rooting everyone inside.
-- **E, Steady Aim 🧿:** Plants his feet in a sniper's stance for five seconds, gaining much longer reach and extra attack damage.
+- **E, Steady Aim 🧿:** Plants his feet in a sniper's stance for five seconds, gaining much longer reach and extra attack damage, but he moves a quarter slower while it lasts.
 - **R, Judgment from the Grave ☠️:** Fires a colossal bolt across half the map. It travels incredibly far, hits the first enemy hard (more if they are wounded) and slows them.
 
 **Playstyle.** After any spell, your next attack reaches farther and slows, so use Hollow Snare and then auto-attack at max range. Steady Aim lengthens your reach and damage for five seconds, so pop it before a poke war or a siege. Judgment from the Grave reaches half the map: use it to finish someone fleeing or to snipe a banner capturer.
@@ -452,10 +452,15 @@ Pell was the gravedigger of a small village on the edge of the Sundering fields,
 Mechanics the current data schema could not express, so the kits above work around them.
 
 1. **Structure damage.** `targetMaxHp` and `targetMissingHp` scalings are ignored against towers and fortresses by the sim (they only help against heroes, minions and monsters), so Rattle and Hrodgar are boss and camp busters, not tower killers. A `vsStructures` multiplier on `damage`, or a `Scaling` field like `structure`, would let siege heroes shine.
+   **Done (engine supports it now):** `vsStructures` on `damage` multiplies damage to towers and fortresses after the ability penalty. Used by Rattle (Powder Keg, Chain Reaction) and Hrodgar (Earthshaker, Rockfall Leap).
 2. **Self-penalty buffs.** A buff with a negative value is treated as a debuff and only lands on enemies, so a "sniper stance" with a move-speed penalty (Ossian's Steady Aim) cannot be written. Allowing negative `pct` on allies/self would fix it.
+   **Done (engine supports it now):** a negative `pct` or `stats` buff applied to the caster is a self-penalty. Negative buffs still land only on enemies or the caster, never on allies. Used by Ossian's Steady Aim (moveSpeed -0.25).
 3. **Conditional effects.** There is no "if the target dies / is stunned / is stealthed" branch. Dirge's Guillotine wants "refresh on kill", Sable's opener wants "bonus damage from stealth", Valen's ultimate wants "execute under 15%". A `when` condition on `Effect` would unlock a lot of kits.
+   **Done (engine supports it now):** `{ type: 'if', cond, then, else? }` with `targetDead`, `targetHpBelow`, `targetIsHero`, `casterHasStatus` and `chance` conditions, evaluated when reached, so `targetDead` must follow the damage. Used by Dirge's Guillotine, Sable's Throwing Knives, Valen's Final Verdict and Kraghul's Last Man Standing.
 4. **Scattered or random effects.** `repeat` repeats the same effect at the same location. A barrage that falls at random points inside an area (a true Skyfall) needs a `scatter` or `random` option.
+   **Done (engine supports it now):** `scatter` on `area` offsets each impact randomly within a radius. Used by Kaelen's Skyfall barrage (`repeat` of scattered meteors).
 5. **Per-rank counts, durations and radii.** Only `Scaling.base` is per rank. Summon `count` and `duration`, `radius`, `bounces` and `delay` cannot grow with rank.
 6. **Stacking buffs.** Re-applying the same buff id refreshes it; there are no stacks, so "gain 5% attack speed per hit up to 5 times" is impossible.
+   **Done (engine supports it now):** `maxStacks` on `buff` adds a stack per re-application, scaling its values, up to the cap. Used by Kraghul's Crowd's Favorite (+6% attack speed per hit, five stacks, 3s).
 7. **Reveal and terrain.** No effect reveals stealth, and no effect creates walls or terrain. Both would help counter-play for the three stealth heroes and give Hallen's Spectral Chains a true wall.
 8. **Choosing a summon spawn point.** Summons spawn at the caster, or around `ctx.point` when `count > 1`. A point or rank-scaled spawn position would help Pell's Mass Grave and Morvane's Legion.

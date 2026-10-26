@@ -6,7 +6,7 @@
 // Extensible: export `validateHeroes` / `validateItems`; each returns a Report you can merge.
 
 import { pathToFileURL } from 'node:url';
-import type { AbilityDef, Effect, HeroDef, ItemDef, Num, StatKey, Stats } from '../src/shared/types';
+import type { AbilityDef, Condition, Effect, HeroDef, ItemDef, Num, StatKey, Stats } from '../src/shared/types';
 import { HEROES } from '../src/shared/data/heroes';
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -56,6 +56,8 @@ const STAT_KEYS: StatKey[] = [
 const SCALING_KEYS = ['base', 'ad', 'bonusAd', 'ap', 'maxHp', 'bonusHp', 'targetMaxHp', 'targetMissingHp', 'armor', 'level'];
 const HOSTILE_STATUS = new Set(['stun', 'root', 'slow', 'silence', 'knockup', 'taunt']);
 const SUMMON_KINDS = new Set(['bone_soldier', 'bone_archer', 'wraith', 'bone_brute']);
+const CONDITION_TESTS = new Set(['targetHpBelow', 'casterHpBelow', 'targetDead', 'targetIsHero', 'targetHasStatus', 'casterHasStatus', 'chance']);
+const STATUS_KINDS = new Set(['stun', 'root', 'slow', 'silence', 'knockup', 'taunt', 'invulnerable', 'unstoppable', 'stealth']);
 const SLOTS = ['Q', 'W', 'E', 'R'] as const;
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -140,7 +142,13 @@ function checkStatMap(map: Partial<Record<StatKey, Num>> | undefined, o: WalkOpt
 export function walkEffects(effects: Effect[] | undefined, side: Side, o: WalkOpts, path: string) {
   if (!effects) return;
   if (!Array.isArray(effects)) { o.rep.error(o.where, `${path}: effects must be an array`); return; }
-  effects.forEach((e, i) => walkEffect(e, side, o, `${path}[${i}]`));
+  effects.forEach((e, i) => {
+    walkEffect(e, side, o, `${path}[${i}]`);
+    // an 'if targetDead' is evaluated when reached, so it only sees a kill made by an earlier sibling damage effect
+    if (e.type === 'if' && e.cond?.test === 'targetDead' && !effects.slice(0, i).some((x) => x.type === 'damage')) {
+      o.rep.warn(o.where, `${path}[${i}] (if): 'targetDead' has no damage effect before it in the same list, so nothing can have killed the target yet`);
+    }
+  });
 }
 
 function walkEffect(e: Effect, side: Side, o: WalkOpts, path: string) {
@@ -185,8 +193,9 @@ function walkEffect(e: Effect, side: Side, o: WalkOpts, path: string) {
       if (!(e.duration > 0)) err('duration must be > 0');
       if (signs.length === 0) warn('buff has no stats or pct');
       const negative = signs.some((s) => s < 0);
-      // The sim: a buff with any negative value is a debuff that only lands on enemies; otherwise only on allies/self.
-      if (negative && side !== 'enemy' && side !== 'any') err('buff with a negative value is a debuff and only lands on enemies (it would be ignored here)');
+      // The sim: a negative buff is a debuff that only lands on enemies, except on the caster (a self-penalty stance).
+      // Caster-side effects always have ctx.target = caster, so a negative buff there is a valid trade-off; on allies it is ignored.
+      if (negative && side === 'ally') err('buff with a negative value is a debuff and only lands on enemies or the caster (it would be ignored on allies)');
       if (!negative && side === 'enemy') err('positive buff here would target enemies, which the sim ignores');
       break;
     }
@@ -272,6 +281,17 @@ function walkEffect(e: Effect, side: Side, o: WalkOpts, path: string) {
       for (const s of e.slots ?? []) if (!SLOTS.includes(s)) err(`bad slot '${s}'`);
       o.features.add('reset');
       break;
+    case 'if': {
+      const c = e.cond as Condition | undefined;
+      if (!c || !CONDITION_TESTS.has(c.test)) { err(`unknown condition '${c?.test}'`); break; }
+      if (c.test === 'chance' && !(c.value >= 0 && c.value <= 1)) err('chance value must be in 0..1');
+      if ((c.test === 'targetHpBelow' || c.test === 'casterHpBelow') && !(c.value > 0 && c.value <= 1)) err('hp threshold must be in (0, 1]');
+      if ((c.test === 'targetHasStatus' || c.test === 'casterHasStatus') && !STATUS_KINDS.has(c.status)) err(`unknown status '${c.status}'`);
+      if (!Array.isArray(e.then) || (e.then.length === 0 && !e.else?.length)) err('then needs at least one effect');
+      walkEffects(e.then, side, o, `${path}.then`);
+      walkEffects(e.else, side, o, `${path}.else`);
+      break;
+    }
     default:
       err(`unknown effect type '${(e as { type: string }).type}'`);
   }
@@ -294,6 +314,7 @@ function hasWaveClear(a: AbilityDef): boolean {
           visit(e.onArrive, within); break;
         case 'blink': visit(e.onDepart, within); visit(e.onArrive, within); break;
         case 'delay': case 'repeat': case 'empower': case 'self': visit(e.effects, within); break;
+        case 'if': visit(e.then, within); visit(e.else, within); break;
         default: break;
       }
     }

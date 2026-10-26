@@ -104,17 +104,19 @@ const step = (m) => console.log(`[${((Date.now() - t0) / 1000).toFixed(1)}s] ${m
     await A.waitForFunction(() => [...document.querySelectorAll('.chat .line')].some((l) => l.textContent.includes('i am back')), null, { timeout: 5000 });
 
     step('bad invite link falls back to the menu');
+    await A.close(); await B.close(); // software GL is slow: free the CPU for the last page
     const C = await ctx.newPage();
     await C.goto(`${BASE}/?room=QQQQ`);
-    await C.waitForSelector('#create', { timeout: 60000 });
+    await C.waitForSelector('#create', { timeout: 90000 });
+    assert.ok(!C.url().includes('room='), 'stale ?room= is cleared');
     await shot(C, 'bad-code-menu');
     await C.close();
 
     assert.deepEqual(errors.filter((e) => !/favicon|GPU stall|WebGL|swiftshader/i.test(e)), [], 'no page errors');
     console.log('E2E OK');
   } catch (err) {
-    await shot(A, 'FAIL-A').catch(() => {});
-    await shot(B, 'FAIL-B').catch(() => {});
+    if (!A.isClosed()) await shot(A, 'FAIL-A').catch(() => {});
+    if (!B.isClosed()) await shot(B, 'FAIL-B').catch(() => {});
     console.error('E2E FAILED:', err);
     if (errors.length) console.error(errors.slice(0, 10).join('\n'));
     process.exitCode = 1;

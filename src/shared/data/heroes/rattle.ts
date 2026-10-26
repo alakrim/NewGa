@@ -40,7 +40,7 @@ export const rattle: HeroDef = {
     {
       id: 'rattle_q',
       name: 'Powder Keg',
-      description: 'Lobs a keg to a point. After a short fuse it explodes, damaging enemies (more against high-health targets) and blasting them back.',
+      description: 'Lobs a keg to a point. After a short fuse it explodes, damaging enemies (more against high-health targets) and blasting them back. Towers take heavy damage from it.',
       icon: '🛢️',
       targeting: 'point',
       range: 9,
@@ -59,7 +59,7 @@ export const rattle: HeroDef = {
           affects: 'enemies',
           vfx: { style: 'fire', color: '#ff9a3c' },
           effects: [
-            { type: 'damage', amount: { base: [70, 110, 150, 190, 230], bonusAd: 0.8, targetMaxHp: 0.03 }, dtype: 'physical' },
+            { type: 'damage', amount: { base: [70, 110, 150, 190, 230], bonusAd: 0.8, targetMaxHp: 0.03 }, dtype: 'physical', vsStructures: 1.8 },
             { type: 'displace', distance: 3 },
           ],
         },
@@ -134,7 +134,7 @@ export const rattle: HeroDef = {
     {
       id: 'rattle_r',
       name: 'Chain Reaction',
-      description: 'Lights every fuse he has. After a short delay a giant blast tears through a huge area, dealing heavy damage (scaled by max health) and launching enemies. Rattle gains a shield while the fuse burns.',
+      description: 'Lights every fuse he has. After a short delay a giant blast tears through a huge area, dealing heavy damage (scaled by max health) and launching enemies. Towers take heavy damage from the blast. Rattle gains a shield while the fuse burns.',
       icon: '💥',
       targeting: 'self',
       range: 0,
@@ -153,7 +153,7 @@ export const rattle: HeroDef = {
           affects: 'enemies',
           vfx: { style: 'fire', color: '#ff6b2d' },
           effects: [
-            { type: 'damage', amount: { base: [200, 320, 440], bonusAd: 0.8, targetMaxHp: 0.08 }, dtype: 'physical' },
+            { type: 'damage', amount: { base: [200, 320, 440], bonusAd: 0.8, targetMaxHp: 0.08 }, dtype: 'physical', vsStructures: 1.8 },
             { type: 'status', status: 'knockup', duration: 1.0 },
           ],
         },

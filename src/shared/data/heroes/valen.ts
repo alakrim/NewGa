@@ -125,7 +125,7 @@ export const valen: HeroDef = {
     {
       id: 'valen_r',
       name: 'Final Verdict',
-      description: 'Drops on a chosen enemy from above, dealing massive damage that grows with how wounded they already are. The shockwave hurts everyone nearby.',
+      description: 'Drops on a chosen enemy from above, dealing massive damage that grows with how wounded they already are. Any enemy left below 15% health is executed with true damage. The shockwave hurts everyone nearby.',
       icon: '⚖️',
       targeting: 'enemy',
       range: 8,
@@ -147,6 +147,11 @@ export const valen: HeroDef = {
               type: 'damage',
               amount: { base: [150, 260, 370], bonusAd: 1.0, targetMissingHp: 0.25 },
               dtype: 'physical',
+            },
+            {
+              type: 'if',
+              cond: { test: 'targetHpBelow', value: 0.15 },
+              then: [{ type: 'damage', amount: { base: [300, 450, 600] }, dtype: 'true' }],
             },
           ],
           onArrive: [

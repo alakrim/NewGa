@@ -42,7 +42,7 @@ export const sable: HeroDef = {
         type: 'repeat',
         count: 3,
         interval: 0.6,
-        effects: [{ type: 'damage', amount: { base: 6, level: 1.5, ad: 0.05 }, dtype: 'magic' }],
+        effects: [{ type: 'damage', amount: { base: 4.2, level: 1.05, ad: 0.035 }, dtype: 'magic' }],
       },
     ],
   },
@@ -50,7 +50,7 @@ export const sable: HeroDef = {
     {
       id: 'sable_q',
       name: 'Throwing Knives',
-      description: 'Flicks a knife in a straight line that pierces through everything in its path, wounding and slowing them.',
+      description: 'Flicks a knife in a straight line that pierces through everything in its path, wounding and slowing them. Thrown from stealth, the first blade hits for bonus damage.',
       icon: '🔪',
       targeting: 'direction',
       range: 9,
@@ -68,6 +68,7 @@ export const sable: HeroDef = {
           affects: 'enemies',
           visual: { style: 'dagger', color: '#4ade80', size: 1.0 },
           effects: [
+            { type: 'if', cond: { test: 'casterHasStatus', status: 'stealth' }, then: [{ type: 'damage', amount: { base: [40, 60, 80, 100, 120], bonusAd: 0.5 }, dtype: 'physical' }] },
             { type: 'damage', amount: { base: [50, 80, 110, 140, 170], bonusAd: 0.8 }, dtype: 'physical' },
             { type: 'status', status: 'slow', duration: 1, power: 0.2 },
           ],

@@ -105,7 +105,7 @@ export const ossian: HeroDef = {
     {
       id: 'ossian_e',
       name: 'Steady Aim',
-      description: 'Plants his feet in a sniper\'s stance for five seconds, gaining much longer reach and extra attack damage.',
+      description: 'Plants his feet in a sniper\'s stance for five seconds, gaining much longer reach and extra attack damage, but he moves a quarter slower while it lasts.',
       icon: '🧿',
       targeting: 'self',
       range: 0,
@@ -118,7 +118,7 @@ export const ossian: HeroDef = {
           type: 'buff',
           id: 'ossian_aim',
           duration: 5,
-          pct: { attackDamage: 0.2 },
+          pct: { attackDamage: 0.2, moveSpeed: -0.25 },
           stats: { attackRange: { base: [1.5, 1.8, 2.1, 2.4, 2.7] } },
           vfx: { style: 'ring', color: '#a3e635' },
         },

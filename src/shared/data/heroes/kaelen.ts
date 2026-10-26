@@ -154,7 +154,7 @@ export const kaelen: HeroDef = {
     {
       id: 'kaelen_r',
       name: 'Skyfall',
-      description: 'Calls down a colossal meteor anywhere in a huge range. After a long warning it explodes for massive damage and leaves a lake of fire behind.',
+      description: 'Calls down a colossal meteor anywhere in a huge range. A barrage of smaller meteors rains on random spots around the target first, then the great meteor explodes for massive damage and leaves a lake of fire behind.',
       icon: '🌠',
       targeting: 'point',
       range: 45,
@@ -164,6 +164,24 @@ export const kaelen: HeroDef = {
       castTime: 0.6,
       anim: 'Spellcast_Long',
       effects: [
+        {
+          type: 'repeat',
+          count: 3,
+          interval: 0.4,
+          effects: [
+            {
+              type: 'area',
+              shape: 'circle',
+              at: 'point',
+              radius: 2.2,
+              delay: 1.0,
+              scatter: 4.5,
+              affects: 'enemies',
+              vfx: { style: 'meteor', color: '#ff7a3c' },
+              effects: [{ type: 'damage', amount: { base: [50, 75, 100], ap: 0.25 }, dtype: 'magic' }],
+            },
+          ],
+        },
         {
           type: 'area',
           shape: 'circle',

@@ -33,9 +33,15 @@ export const kraghul: HeroDef = {
   },
   passive: {
     name: "Crowd's Favorite",
-    description: 'Kraghul ignores a portion of enemy armor. Whenever he scores a kill, his Gladiator\'s Hook is instantly ready again.',
+    description: 'Kraghul ignores a portion of enemy armor. Whenever he scores a kill, his Gladiator\'s Hook is instantly ready again. Each blow he lands wins the crowd: attack speed rises 6% per hit, up to five hits, lasting 3 seconds.',
     icon: '🏆',
     stats: { armorPen: 0.1 },
+    onHit: [
+      {
+        type: 'self',
+        effects: [{ type: 'buff', id: 'kraghul_crowd', duration: 3, pct: { attackSpeed: 0.06 }, maxStacks: 5, vfx: { style: 'sparkle', color: '#e5602b' } }],
+      },
+    ],
     onKill: [{ type: 'resetCooldowns', slots: ['Q'] }],
   },
   abilities: [
@@ -124,7 +130,7 @@ export const kraghul: HeroDef = {
     {
       id: 'kraghul_r',
       name: 'Last Man Standing',
-      description: 'Chains himself to an enemy and slams into them, rooting them in place for two seconds. Inside the duel Kraghul hits faster, hardens and steals life.',
+      description: 'Chains himself to an enemy and slams into them, rooting them in place for two seconds. Against another hero the slam hits much harder. Inside the duel Kraghul hits faster, hardens and steals life.',
       icon: '🥊',
       targeting: 'enemy',
       range: 7,
@@ -143,6 +149,7 @@ export const kraghul: HeroDef = {
           stopOnHit: true,
           effects: [
             { type: 'damage', amount: { base: [140, 230, 320], bonusAd: 1.0 }, dtype: 'physical' },
+            { type: 'if', cond: { test: 'targetIsHero' }, then: [{ type: 'damage', amount: { base: [60, 90, 120], bonusAd: 0.4 }, dtype: 'physical' }] },
             { type: 'status', status: 'root', duration: 2 },
           ],
           onArrive: [

@@ -108,6 +108,7 @@ export interface Unit {
   aiAt: number;
   scaleMul: number;
   siegeBonus?: number;
+  stealthBrokeAt?: number;
 }
 
 export interface Projectile {
