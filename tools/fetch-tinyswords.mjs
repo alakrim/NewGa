@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFile, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 
 const SITE = 'https://pixelfrog-assets.itch.io';
 const GAME = `${SITE}/tiny-swords`;
@@ -13,7 +14,7 @@ const UPLOAD_NAME = 'Tiny Swords (Free Pack).zip';
 const TOP_DIR = 'Tiny Swords (Free Pack)';
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(REPO, 'godot/assets/tinyswords_free');
-const SCRATCH = '/tmp/claude-0';
+const SCRATCH = tmpdir();
 const UA = 'bannerfall-asset-fetch/1.0';
 const force = process.argv.includes('--force');
 

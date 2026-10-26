@@ -44,7 +44,11 @@ func _my_slot() -> int:
 func _shot(name: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
-	get_viewport().get_texture().get_image().save_png("/tmp/claude-0/shots/vt-%s.png" % name)
+	var dir := OS.get_environment("VT_SHOTS")
+	if dir == "":
+		dir = ProjectSettings.globalize_path("user://shots")
+	DirAccess.make_dir_recursive_absolute(dir)
+	get_viewport().get_texture().get_image().save_png(dir.path_join("vt-%s.png" % name))
 	print("shot ", name, " units=", game.units.size(), " buildings=", game.buildings.size())
 
 
