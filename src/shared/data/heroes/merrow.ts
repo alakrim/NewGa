@@ -1,0 +1,177 @@
+import type { HeroDef } from '../../types';
+
+export const merrow: HeroDef = {
+  id: 'merrow',
+  name: 'Merrow',
+  title: 'Harpooner of the Grey Tide',
+  role: 'Marksman',
+  difficulty: 2,
+  faction: 'Tidewardens',
+  lore:
+    `Merrow grew up on the cold coast where the Tidewardens listen to the sea and hunt what the sea throws up. His sister Nerissa took the druid's path and learned the songs. Merrow took the harpoon and learned the dark water, where he fought something no Warden will name aloud and came home with a scar the shape of a hook. He still sleeps with his boots on.\n\n` +
+    `The Sundering sent the sea into the ash fields, and with it the things that live at the bottom. Merrow follows them inland. He is patient, laconic and a very good shot, and he fights from a distance because the things he hunts prefer to be close. Nerissa worries and says so. Wren the Thornwood assassin is the only other person who has ever asked him why he never talks about the scar. She did not ask twice, and he has not forgotten the courtesy.`,
+  quote: 'The sea gives back everything. Eventually.',
+  visual: {
+    model: 'Rogue_Hooded',
+    tint: '#0ea5e9',
+    accent: '#bae6fd',
+    scale: 1.0,
+    weapons: ['Throwable'],
+    vfx: '#38bdf8',
+  },
+  attack: {
+    kind: 'ranged',
+    anims: ['Throw'],
+    projectile: { style: 'spear', color: '#bae6fd', size: 0.9 },
+  },
+  base: {
+    maxHp: 550, hpRegen: 1.8, maxMana: 320, manaRegen: 1.8,
+    attackDamage: 64, abilityPower: 0, armor: 24, magicResist: 28,
+    attackSpeed: 0.7, attackRange: 8.0, moveSpeed: 6.0,
+    critChance: 0, lifesteal: 0, abilityHaste: 0, armorPen: 0, magicPen: 0,
+  },
+  growth: {
+    maxHp: 85, hpRegen: 0.13, maxMana: 36, manaRegen: 0.09,
+    attackDamage: 4.0, armor: 3.5, magicResist: 1.2, attackSpeed: 0.019,
+  },
+  passive: {
+    name: 'Sea Legs',
+    description: 'Each harpoon he lands gives Merrow a short burst of speed, which lets him kite melee enemies all day.',
+    icon: '🐚',
+    onHit: [
+      { type: 'self', effects: [{ type: 'buff', id: 'merrow_legs', duration: 1.5, pct: { moveSpeed: 0.1 }, vfx: { style: 'wind', color: '#38bdf8' } }] },
+    ],
+  },
+  abilities: [
+    {
+      id: 'merrow_q',
+      name: 'Pinning Harpoon',
+      description: 'Hurls a harpoon that damages the first enemy hit and pins them in place for a second.',
+      icon: '🔱',
+      targeting: 'direction',
+      range: 12,
+      cooldown: [13, 12, 11, 10, 9],
+      manaCost: [55, 60, 65, 70, 75],
+      castTime: 0.2,
+      anim: 'Throw',
+      effects: [
+        {
+          type: 'projectile',
+          speed: 30,
+          range: 12,
+          width: 0.8,
+          affects: 'enemies',
+          visual: { style: 'spear', color: '#7dd3fc', size: 1.4 },
+          effects: [
+            { type: 'damage', amount: { base: [60, 100, 140, 180, 220], bonusAd: 1.0 }, dtype: 'physical' },
+            { type: 'status', status: 'root', duration: 1.0 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'merrow_w',
+      name: 'Riptide Roll',
+      description: 'Rolls forward on a rush of water, then splashes outwards, hitting and shoving away anything close.',
+      icon: '🐬',
+      targeting: 'direction',
+      range: 5,
+      cooldown: [12, 11, 10, 9, 8],
+      manaCost: [45, 45, 45, 45, 45],
+      castTime: 0.05,
+      anim: 'Dodge_Forward',
+      effects: [
+        {
+          type: 'dash',
+          to: 'direction',
+          distance: 5,
+          speed: 26,
+          onArrive: [
+            {
+              type: 'area',
+              shape: 'circle',
+              at: 'caster',
+              radius: 3.5,
+              affects: 'enemies',
+              vfx: { style: 'frost', color: '#7dd3fc' },
+              effects: [
+                { type: 'damage', amount: { base: [30, 50, 70, 90, 110], bonusAd: 0.3 }, dtype: 'physical' },
+                { type: 'displace', distance: 3 },
+              ],
+            },
+            { type: 'buff', id: 'merrow_roll', duration: 1.5, pct: { moveSpeed: 0.2 } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'merrow_e',
+      name: 'Sharpened Line',
+      description: 'Tightens his lines, gaining a lot of attack speed and a little extra reach for a few seconds.',
+      icon: '🎣',
+      targeting: 'self',
+      range: 0,
+      cooldown: [14, 13, 12, 11, 10],
+      manaCost: [40, 40, 40, 40, 40],
+      castTime: 0.1,
+      anim: 'Cheer',
+      effects: [
+        {
+          type: 'buff',
+          id: 'merrow_line',
+          duration: 4,
+          pct: { attackSpeed: 0.4 },
+          stats: { attackRange: { base: [1, 1.2, 1.4, 1.6, 1.8] } },
+          vfx: { style: 'ring', color: '#38bdf8' },
+        },
+      ],
+    },
+    {
+      id: 'merrow_r',
+      name: 'Kraken Call',
+      description: 'Calls a tentacle from the deep. After a short delay it erupts, hurling every enemy in the area into the air, and leaves the ground churning and slowing.',
+      icon: '🦑',
+      targeting: 'point',
+      range: 14,
+      radius: 4.5,
+      cooldown: [95, 85, 75],
+      manaCost: [100, 110, 120],
+      castTime: 0.4,
+      anim: 'Throw',
+      effects: [
+        {
+          type: 'area',
+          shape: 'circle',
+          at: 'point',
+          radius: 4.5,
+          delay: 0.9,
+          affects: 'enemies',
+          vfx: { style: 'frost', color: '#0ea5e9' },
+          effects: [
+            { type: 'damage', amount: { base: [180, 290, 400], bonusAd: 1.0 }, dtype: 'physical' },
+            { type: 'status', status: 'knockup', duration: 1.5 },
+          ],
+        },
+        {
+          type: 'delay',
+          time: 0.9,
+          effects: [
+            {
+              type: 'zone',
+              at: 'point',
+              radius: 4.5,
+              duration: 3,
+              interval: 0.5,
+              affects: 'enemies',
+              vfx: { style: 'vortex', color: '#0ea5e9' },
+              effects: [
+                { type: 'damage', amount: { base: [10, 15, 20], bonusAd: 0.1 }, dtype: 'physical' },
+                { type: 'status', status: 'slow', duration: 0.8, power: 0.4 },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

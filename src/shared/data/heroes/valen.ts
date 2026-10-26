@@ -1,0 +1,167 @@
+import type { HeroDef } from '../../types';
+
+export const valen: HeroDef = {
+  id: 'valen',
+  name: 'Valen',
+  title: 'The Sunblade',
+  role: 'Fighter',
+  difficulty: 2,
+  faction: 'Dawnguard Order',
+  lore:
+    `Valen Ashcroft is the Dawnguard's executioner, a title he hates and has never refused. When the Order must end a traitor, a fallen paladin or a Hollow that has gone feral, it sends the Sunblade: a two-handed greatsword forged from the melted bells of Aurel's first chapel. Valen does not gloat and does not hurry. He waits until the enemy is bleeding, then finishes it in a single stroke.\n\n` +
+    `His one failure still keeps him awake. Three winters ago the Thornwood thief Sable Thorne walked out of the Bastion with the Order's Sun-Seal ring on her finger, and Valen, who had been guarding it, has chased her across Vael ever since. He trains with the barbarian Skarra whenever the road allows, because she is the only person alive who laughs when he wins. He is not yet sure whether that is a flaw in her or in him.`,
+  quote: 'Mercy is for those who still have something left to lose.',
+  visual: {
+    model: 'Knight',
+    tint: '#b3202a',
+    accent: '#ffd479',
+    scale: 1.05,
+    weapons: ['2H_Sword', 'Knight_Cape'],
+    vfx: '#ff8a5c',
+  },
+  attack: { kind: 'melee', anims: ['2H_Melee_Attack_Slice', '2H_Melee_Attack_Chop'] },
+  base: {
+    maxHp: 640, hpRegen: 2.0, maxMana: 320, manaRegen: 1.8,
+    attackDamage: 64, abilityPower: 0, armor: 30, magicResist: 30,
+    attackSpeed: 0.68, attackRange: 2.6, moveSpeed: 6.0,
+    critChance: 0, lifesteal: 0, abilityHaste: 0, armorPen: 0, magicPen: 0,
+  },
+  growth: {
+    maxHp: 98, hpRegen: 0.15, maxMana: 36, manaRegen: 0.09,
+    attackDamage: 3.8, armor: 4.0, magicResist: 1.5, attackSpeed: 0.016,
+  },
+  passive: {
+    name: "Sun's Judgment",
+    description: 'Every third basic attack burns with holy fire, dealing bonus magic damage that grows the more wounded the target is.',
+    icon: '☀️',
+    everyNthHit: {
+      n: 3,
+      effects: [
+        {
+          type: 'damage',
+          amount: { base: 15, level: 1, ad: 0.3, targetMissingHp: 0.07 },
+          dtype: 'magic',
+        },
+      ],
+    },
+  },
+  abilities: [
+    {
+      id: 'valen_q',
+      name: 'Rising Slash',
+      description: 'A wide upward cut that damages enemies in front of him and throws them into the air.',
+      icon: '⚔️',
+      targeting: 'direction',
+      range: 4.2,
+      cooldown: [9, 8.5, 8, 7.5, 7],
+      manaCost: [45, 50, 55, 60, 65],
+      castTime: 0.25,
+      anim: '2H_Melee_Attack_Slice',
+      effects: [
+        {
+          type: 'area',
+          shape: 'cone',
+          at: 'caster',
+          radius: 4.2,
+          angle: 100,
+          affects: 'enemies',
+          vfx: { style: 'slash', color: '#ff8a5c' },
+          effects: [
+            { type: 'damage', amount: { base: [70, 110, 150, 190, 230], bonusAd: 0.9 }, dtype: 'physical' },
+            { type: 'status', status: 'knockup', duration: 0.75 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'valen_w',
+      name: 'Lunge',
+      description: 'Leaps at an enemy and strikes them, then attacks much faster for a few seconds.',
+      icon: '🌅',
+      targeting: 'enemy',
+      range: 7,
+      cooldown: [10, 9.5, 9, 8.5, 8],
+      manaCost: [40, 45, 50, 55, 60],
+      castTime: 0.1,
+      anim: 'Dodge_Forward',
+      effects: [
+        {
+          type: 'dash',
+          to: 'target',
+          distance: 7,
+          speed: 30,
+          width: 1.2,
+          affects: 'enemies',
+          stopOnHit: true,
+          effects: [{ type: 'damage', amount: { base: [40, 70, 100, 130, 160], bonusAd: 0.6 }, dtype: 'physical' }],
+          onArrive: [{ type: 'buff', id: 'valen_lunge', duration: 3, pct: { attackSpeed: 0.3 }, vfx: { style: 'wind', color: '#ffd479' } }],
+        },
+      ],
+    },
+    {
+      id: 'valen_e',
+      name: 'Riposte',
+      description: 'Raises his guard, taking far less damage. His next attack within a few seconds reaches farther and strikes back hard, slowing the target.',
+      icon: '🤺',
+      targeting: 'self',
+      range: 0,
+      cooldown: [12, 11.5, 11, 10.5, 10],
+      manaCost: [40, 45, 50, 55, 60],
+      castTime: 0.15,
+      anim: 'Block',
+      effects: [
+        { type: 'buff', id: 'valen_riposte', duration: 1.5, pct: { armor: 1.0, magicResist: 1.0 }, vfx: { style: 'ring', color: '#ffd479' } },
+        {
+          type: 'empower',
+          duration: 4,
+          bonusRange: 1.5,
+          effects: [
+            { type: 'damage', amount: { base: [50, 80, 110, 140, 170], bonusAd: 0.7 }, dtype: 'physical' },
+            { type: 'status', status: 'slow', duration: 1.5, power: 0.4 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'valen_r',
+      name: 'Final Verdict',
+      description: 'Drops on a chosen enemy from above, dealing massive damage that grows with how wounded they already are. The shockwave hurts everyone nearby.',
+      icon: '⚖️',
+      targeting: 'enemy',
+      range: 8,
+      cooldown: [90, 80, 70],
+      manaCost: [100, 110, 120],
+      castTime: 0.2,
+      anim: 'Jump_Full_Short',
+      effects: [
+        {
+          type: 'dash',
+          to: 'target',
+          distance: 8,
+          speed: 28,
+          width: 1.2,
+          affects: 'enemies',
+          stopOnHit: true,
+          effects: [
+            {
+              type: 'damage',
+              amount: { base: [150, 260, 370], bonusAd: 1.0, targetMissingHp: 0.25 },
+              dtype: 'physical',
+            },
+          ],
+          onArrive: [
+            {
+              type: 'area',
+              shape: 'circle',
+              at: 'caster',
+              radius: 3.5,
+              affects: 'enemies',
+              vfx: { style: 'holy', color: '#ffd479' },
+              effects: [{ type: 'damage', amount: { base: [60, 100, 140], bonusAd: 0.4 }, dtype: 'physical' }],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

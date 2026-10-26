@@ -1,0 +1,155 @@
+import type { HeroDef } from '../../types';
+
+export const wren: HeroDef = {
+  id: 'wren',
+  name: 'Wren',
+  title: 'The Unseen Hand',
+  role: 'Assassin',
+  difficulty: 3,
+  faction: 'Thornwood',
+  lore:
+    `Wren was nine when Sable Thorne found her sleeping in a bell tower and eleven when she picked her first lock. Fourteen years later she is the fastest blade in the Thornwood Guild and has not spoken to her teacher in two of them. The break was nothing dramatic. Wren simply realised that Sable had never once asked where she wanted to go, and that she herself had never wondered.\n\n` +
+    `She now takes contracts from any banner that pays, which has put her on the Duskborn payroll more often than she likes. She wears the hood because her face is not for sale; her eyes are. Wren keeps one rule: she does not kill for anyone who cannot look her in the eye. It is a hard rule to follow, so she mostly works from behind. Merrow the Tidewarden once asked what she was running from. She told him a story about a bell tower, and he did not ask again.`,
+  quote: 'I was never hiding. You were just not looking.',
+  visual: {
+    model: 'Rogue_Hooded',
+    tint: '#d6336c',
+    accent: '#ffc2d9',
+    scale: 0.9,
+    weapons: ['Knife', 'Knife_Offhand'],
+    vfx: '#ff6ba0',
+  },
+  attack: {
+    kind: 'melee',
+    anims: ['Dualwield_Melee_Attack_Stab', 'Dualwield_Melee_Attack_Slice'],
+  },
+  base: {
+    maxHp: 540, hpRegen: 1.7, maxMana: 340, manaRegen: 1.9,
+    attackDamage: 60, abilityPower: 0, armor: 22, magicResist: 28,
+    attackSpeed: 0.72, attackRange: 2.4, moveSpeed: 6.5,
+    critChance: 0, lifesteal: 0, abilityHaste: 0, armorPen: 0, magicPen: 0,
+  },
+  growth: {
+    maxHp: 84, hpRegen: 0.12, maxMana: 38, manaRegen: 0.1,
+    attackDamage: 3.7, armor: 3.5, magicResist: 1.2, attackSpeed: 0.02,
+  },
+  passive: {
+    name: 'Ghost Step',
+    description: 'Casting any ability gives Wren a short burst of speed, so she can chain blinks and kills without slowing down.',
+    icon: '👣',
+    onAbilityCast: [{ type: 'buff', id: 'wren_ghost', duration: 1.5, pct: { moveSpeed: 0.2 }, vfx: { style: 'wind', color: '#ff6ba0' } }],
+  },
+  abilities: [
+    {
+      id: 'wren_q',
+      name: 'Boomerang Blades',
+      description: 'Throws a spinning blade that cuts everything in its path, then returns to her hand, cutting everything on the way back too.',
+      icon: '🪃',
+      targeting: 'direction',
+      range: 9,
+      cooldown: [8, 7.5, 7, 6.5, 6],
+      manaCost: [40, 44, 48, 52, 56],
+      castTime: 0.15,
+      anim: 'Throw',
+      effects: [
+        {
+          type: 'projectile',
+          speed: 26,
+          range: 9,
+          width: 1.0,
+          pierce: true,
+          returns: true,
+          affects: 'enemies',
+          visual: { style: 'dagger', color: '#ff6ba0', size: 1.2 },
+          effects: [{ type: 'damage', amount: { base: [45, 70, 95, 120, 145], bonusAd: 0.6 }, dtype: 'physical' }],
+        },
+      ],
+    },
+    {
+      id: 'wren_w',
+      name: 'Shadow Blink',
+      description: 'Teleports to a point and slashes everyone around her on arrival, slowing them.',
+      icon: '🌑',
+      targeting: 'point',
+      range: 7,
+      radius: 2.6,
+      cooldown: [12, 11, 10, 9, 8],
+      manaCost: [50, 55, 60, 65, 70],
+      castTime: 0.1,
+      anim: 'Dodge_Forward',
+      effects: [
+        {
+          type: 'blink',
+          distance: 7,
+          onArrive: [
+            {
+              type: 'area',
+              shape: 'circle',
+              at: 'caster',
+              radius: 2.6,
+              affects: 'enemies',
+              vfx: { style: 'shadow', color: '#ff6ba0' },
+              effects: [
+                { type: 'damage', amount: { base: [50, 80, 110, 140, 170], bonusAd: 0.7 }, dtype: 'physical' },
+                { type: 'status', status: 'slow', duration: 1.2, power: 0.3 },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'wren_e',
+      name: 'Shadowmeld',
+      description: 'Shakes off every crowd control effect and fades from sight for a moment, moving faster while hidden.',
+      icon: '🕶️',
+      targeting: 'self',
+      range: 0,
+      cooldown: [18, 17, 16, 15, 14],
+      manaCost: [50, 50, 50, 50, 50],
+      castTime: 0.1,
+      anim: 'Dodge_Forward',
+      effects: [
+        { type: 'cleanse' },
+        { type: 'status', status: 'stealth', duration: 2 },
+        { type: 'buff', id: 'wren_meld', duration: 2, pct: { moveSpeed: 0.15 }, vfx: { style: 'smoke', color: '#ff6ba0' } },
+      ],
+    },
+    {
+      id: 'wren_r',
+      name: 'Umbral Rush',
+      description: 'Blinks forward three times in a row, carving up everything at each landing. She picks the line; nothing in it stays standing.',
+      icon: '🦅',
+      targeting: 'direction',
+      range: 14,
+      cooldown: [90, 80, 70],
+      manaCost: [90, 100, 110],
+      castTime: 0.15,
+      anim: 'Dualwield_Melee_Attack_Slice',
+      effects: [
+        {
+          type: 'repeat',
+          count: 3,
+          interval: 0.3,
+          effects: [
+            {
+              type: 'blink',
+              distance: 5,
+              onArrive: [
+                {
+                  type: 'area',
+                  shape: 'circle',
+                  at: 'caster',
+                  radius: 2.8,
+                  affects: 'enemies',
+                  vfx: { style: 'slash', color: '#ff6ba0' },
+                  effects: [{ type: 'damage', amount: { base: [70, 110, 150], bonusAd: 0.5 }, dtype: 'physical' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

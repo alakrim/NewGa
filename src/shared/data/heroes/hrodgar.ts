@@ -1,0 +1,151 @@
+import type { HeroDef } from '../../types';
+
+export const hrodgar: HeroDef = {
+  id: 'hrodgar',
+  name: 'Hrodgar',
+  title: 'Ironhide of the Stonefang',
+  role: 'Tank',
+  difficulty: 1,
+  faction: 'Ashen Wilds',
+  lore:
+    `Hrodgar is chief of the Stonefang clan, and he earned the name Ironhide by surviving three winters of the Ashen Wilds with a spear through his shoulder and no one willing to pull it out. He fights in a cracked bronze cap, with a round shield and an axe he calls Stubborn. He does not understand why anyone would dodge a blow when a body can simply be made wide enough to absorb it.\n\n` +
+    `He came south for the Banner Wars because the Ley Banners are rewriting the weather over the Wilds, and the clan elders say the old magic must be taken before the Crown's heirs take it all. At the gates of Aurel he put a notch in Aldric Vane's shield and has respected the knight ever since; the two trade grudging nods across the battlefield. His younger sister Skarra left the clan to chase glory in the arenas of Mareth. Hrodgar pretends not to read her letters, and keeps every one.`,
+  quote: 'You want to get past me? Then we will both be here a long while.',
+  visual: {
+    model: 'Barbarian',
+    tint: '#7a6a2a',
+    accent: '#d9b26b',
+    scale: 1.2,
+    weapons: ['1H_Axe', 'Barbarian_Round_Shield', 'Barbarian_Hat'],
+    vfx: '#c9a36b',
+  },
+  attack: { kind: 'melee', anims: ['1H_Melee_Attack_Chop', '1H_Melee_Attack_Slice_Horizontal'] },
+  base: {
+    maxHp: 720, hpRegen: 2.5, maxMana: 280, manaRegen: 1.5,
+    attackDamage: 58, abilityPower: 0, armor: 34, magicResist: 32,
+    attackSpeed: 0.62, attackRange: 2.4, moveSpeed: 5.8,
+    critChance: 0, lifesteal: 0, abilityHaste: 0, armorPen: 0, magicPen: 0,
+  },
+  growth: {
+    maxHp: 115, hpRegen: 0.2, maxMana: 32, manaRegen: 0.08,
+    attackDamage: 3.2, armor: 4.4, magicResist: 1.8, attackSpeed: 0.012,
+  },
+  passive: {
+    name: 'Third Blow',
+    description: 'Every third basic attack deals bonus damage equal to a slice of the target\'s maximum health and heals Hrodgar. Devastating against bosses, camps and bulky heroes.',
+    icon: '🪨',
+    everyNthHit: {
+      n: 3,
+      effects: [
+        { type: 'damage', amount: { base: 20, targetMaxHp: 0.04 }, dtype: 'physical' },
+        { type: 'self', effects: [{ type: 'heal', amount: { base: 20, maxHp: 0.01 } }] },
+      ],
+    },
+  },
+  abilities: [
+    {
+      id: 'hrodgar_q',
+      name: 'Chain Hook',
+      description: 'Hurls a barbed chain. The first enemy it strikes is damaged and yanked straight to Hrodgar.',
+      icon: '⚓',
+      targeting: 'direction',
+      range: 12,
+      cooldown: [14, 13, 12, 11, 10],
+      manaCost: [60, 65, 70, 75, 80],
+      castTime: 0.25,
+      anim: 'Throw',
+      effects: [
+        {
+          type: 'projectile',
+          speed: 26,
+          range: 12,
+          width: 1.0,
+          affects: 'enemies',
+          visual: { style: 'spear', color: '#c9c9c9', size: 1.2 },
+          effects: [
+            { type: 'damage', amount: { base: [60, 100, 140, 180, 220], maxHp: 0.05 }, dtype: 'physical' },
+            { type: 'displace', distance: 8, toward: true },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'hrodgar_w',
+      name: 'Earthshaker',
+      description: 'Stamps the ground, damaging nearby enemies and slowing them. Scales with his health.',
+      icon: '🌋',
+      targeting: 'self',
+      range: 0,
+      cooldown: [9, 8.5, 8, 7.5, 7],
+      manaCost: [45, 50, 55, 60, 65],
+      castTime: 0.25,
+      anim: '1H_Melee_Attack_Chop',
+      effects: [
+        {
+          type: 'area',
+          shape: 'circle',
+          at: 'caster',
+          radius: 4.5,
+          affects: 'enemies',
+          vfx: { style: 'earth', color: '#c9a36b' },
+          effects: [
+            { type: 'damage', amount: { base: [50, 80, 110, 140, 170], maxHp: 0.04 }, dtype: 'physical' },
+            { type: 'status', status: 'slow', duration: 2, power: 0.4 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'hrodgar_e',
+      name: 'Iron Will',
+      description: 'Roars and shrugs off all crowd control for a moment, gaining a shield and a burst of speed to close the gap.',
+      icon: '💪',
+      targeting: 'self',
+      range: 0,
+      cooldown: [16, 15, 14, 13, 12],
+      manaCost: [50, 55, 60, 65, 70],
+      castTime: 0.1,
+      anim: 'Cheer',
+      effects: [
+        { type: 'shield', amount: { base: [80, 110, 140, 170, 200], maxHp: 0.08 }, duration: 3 },
+        { type: 'status', status: 'unstoppable', duration: 1.5 },
+        { type: 'buff', id: 'hrodgar_will', duration: 2.5, pct: { moveSpeed: 0.2 }, vfx: { style: 'wind', color: '#c9a36b' } },
+      ],
+    },
+    {
+      id: 'hrodgar_r',
+      name: 'Rockfall Leap',
+      description: 'Leaps to a point and crashes down like a falling boulder, damaging and launching every enemy in the landing zone.',
+      icon: '⛰️',
+      targeting: 'point',
+      range: 12,
+      radius: 5,
+      cooldown: [90, 80, 70],
+      manaCost: [100, 110, 120],
+      castTime: 0.3,
+      anim: 'Jump_Full_Short',
+      effects: [
+        {
+          type: 'dash',
+          to: 'point',
+          distance: 12,
+          speed: 22,
+          onArrive: [
+            {
+              type: 'area',
+              shape: 'circle',
+              at: 'caster',
+              radius: 5,
+              affects: 'enemies',
+              vfx: { style: 'earth', color: '#d9b26b' },
+              effects: [
+                { type: 'damage', amount: { base: [150, 250, 350], maxHp: 0.08 }, dtype: 'physical' },
+                { type: 'status', status: 'knockup', duration: 1.5 },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

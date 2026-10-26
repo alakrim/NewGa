@@ -1,0 +1,60 @@
+{
+  "source": "KayKit by Kay Lousberg (CC0 1.0) via cdn.jsdelivr.net/gh/KayKit-Game-Assets",
+  "built": "2026-10-26",
+  "files": [
+    {
+      "file": "characters/Barbarian.glb",
+      "before": 3613268,
+      "after": 2191796,
+      "clips": 38
+    },
+    {
+      "file": "characters/Knight.glb",
+      "before": 3659532,
+      "after": 2210068,
+      "clips": 38
+    },
+    {
+      "file": "characters/Mage.glb",
+      "before": 3589240,
+      "after": 2174160,
+      "clips": 38
+    },
+    {
+      "file": "characters/Rogue.glb",
+      "before": 3616284,
+      "after": 2186840,
+      "clips": 38
+    },
+    {
+      "file": "characters/Rogue_Hooded.glb",
+      "before": 3597652,
+      "after": 2182060,
+      "clips": 38
+    },
+    {
+      "file": "characters/Skeleton_Mage.glb",
+      "before": 4761048,
+      "after": 2892680,
+      "clips": 46
+    },
+    {
+      "file": "characters/Skeleton_Minion.glb",
+      "before": 4814296,
+      "after": 2909468,
+      "clips": 46
+    },
+    {
+      "file": "characters/Skeleton_Rogue.glb",
+      "before": 4827024,
+      "after": 2915584,
+      "clips": 46
+    },
+    {
+      "file": "characters/Skeleton_Warrior.glb",
+      "before": 4863620,
+      "after": 2930544,
+      "clips": 46
+    }
+  ]
+}

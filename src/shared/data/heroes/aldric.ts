@@ -1,0 +1,181 @@
+import type { HeroDef } from '../../types';
+
+export const aldric: HeroDef = {
+  id: 'aldric',
+  name: 'Aldric',
+  title: 'Shieldwarden of Aurel',
+  role: 'Tank',
+  difficulty: 1,
+  faction: 'Dawnguard Order',
+  lore:
+    `Aldric Vane was nineteen when the Sundering split the Old Crown, and he spent that night on the walls of the Bastion of Aurel holding a shield taller than he was. The wall stood. Half the men beside him did not. Since then he has carried that shield into every siege and never once struck first, because the Dawnguard teach that a banner is held by those who refuse to move.\n\n` +
+    `Marshal Hallen trained him, and the night Hallen fell in the ash fields and rose again among the Hollow was the only time Aldric ever lowered his guard. His sister Seraphine patches him up after every battle. The barbarian chief Hrodgar left a notch in his shield at the gates of Aurel and has been asked about it every winter since. Aldric always answers the same way: he is keeping it as a reminder to hit back harder.`,
+  quote: 'A banner does not fall while someone is still standing in front of it.',
+  visual: {
+    model: 'Knight',
+    tint: '#2e6be6',
+    accent: '#f2c94c',
+    scale: 1.15,
+    weapons: ['1H_Sword', 'Rectangle_Shield', 'Knight_Helmet'],
+    vfx: '#6aa9ff',
+  },
+  attack: { kind: 'melee', anims: ['1H_Melee_Attack_Chop', '1H_Melee_Attack_Slice_Horizontal'] },
+  base: {
+    maxHp: 700, hpRegen: 2.4, maxMana: 300, manaRegen: 1.7,
+    attackDamage: 56, abilityPower: 0, armor: 36, magicResist: 32,
+    attackSpeed: 0.62, attackRange: 2.4, moveSpeed: 5.7,
+    critChance: 0, lifesteal: 0, abilityHaste: 0, armorPen: 0, magicPen: 0,
+  },
+  growth: {
+    maxHp: 112, hpRegen: 0.18, maxMana: 34, manaRegen: 0.09,
+    attackDamage: 3.0, armor: 4.6, magicResist: 1.8, attackSpeed: 0.012,
+  },
+  passive: {
+    name: 'Oathbound',
+    description:
+      'Every ability Aldric casts wraps him in a small shield. When he drops below 30% health he steels himself, gaining a surge of armor and magic resistance (long cooldown).',
+    icon: '🛡️',
+    onAbilityCast: [{ type: 'shield', amount: { base: 30, maxHp: 0.03 }, duration: 3 }],
+    onLowHp: {
+      threshold: 0.3,
+      cooldown: 60,
+      effects: [
+        {
+          type: 'buff',
+          id: 'aldric_steel',
+          duration: 4,
+          pct: { armor: 0.4, magicResist: 0.4 },
+          vfx: { style: 'holy', color: '#6aa9ff' },
+        },
+      ],
+    },
+  },
+  abilities: [
+    {
+      id: 'aldric_q',
+      name: 'Shield Rush',
+      description: 'Charges forward and slams into the first enemy in the way, damaging and briefly stunning them.',
+      icon: '🐂',
+      targeting: 'direction',
+      range: 7,
+      cooldown: [12, 11, 10, 9, 8],
+      manaCost: [50, 55, 60, 65, 70],
+      castTime: 0.15,
+      anim: 'Dodge_Forward',
+      effects: [
+        {
+          type: 'dash',
+          to: 'direction',
+          distance: 7,
+          speed: 24,
+          width: 1.5,
+          affects: 'enemies',
+          stopOnHit: true,
+          effects: [
+            { type: 'damage', amount: { base: [60, 100, 140, 180, 220], bonusAd: 0.4, armor: 0.5 }, dtype: 'physical' },
+            { type: 'status', status: 'stun', duration: 0.9 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'aldric_w',
+      name: 'Hold the Line',
+      description: 'Raises a rallying aura. Nearby allies and Aldric gain a burst of armor and magic resistance, and Aldric gains a shield.',
+      icon: '🚩',
+      targeting: 'self',
+      range: 0,
+      cooldown: [16, 15, 14, 13, 12],
+      manaCost: [60, 65, 70, 75, 80],
+      castTime: 0.2,
+      anim: 'Cheer',
+      effects: [
+        {
+          type: 'area',
+          shape: 'circle',
+          at: 'caster',
+          radius: 9,
+          affects: 'alliesAndSelf',
+          vfx: { style: 'holy', color: '#6aa9ff' },
+          effects: [
+            {
+              type: 'buff',
+              id: 'aldric_hold',
+              duration: 4,
+              stats: {
+                armor: { base: [20, 30, 40, 50, 60] },
+                magicResist: { base: [20, 30, 40, 50, 60] },
+              },
+              vfx: { style: 'ring', color: '#6aa9ff' },
+            },
+          ],
+        },
+        { type: 'shield', amount: { base: [60, 90, 120, 150, 180], maxHp: 0.06 }, duration: 4 },
+      ],
+    },
+    {
+      id: 'aldric_e',
+      name: 'Provoke',
+      description: 'Bellows a challenge. Nearby enemies take damage and are forced to attack Aldric for a moment while he hardens his guard.',
+      icon: '📣',
+      targeting: 'self',
+      range: 0,
+      cooldown: [14, 13, 12, 11, 10],
+      manaCost: [50, 55, 60, 65, 70],
+      castTime: 0.2,
+      anim: 'Block',
+      effects: [
+        {
+          type: 'area',
+          shape: 'circle',
+          at: 'caster',
+          radius: 5,
+          affects: 'enemies',
+          vfx: { style: 'ring', color: '#f2c94c' },
+          effects: [
+            { type: 'damage', amount: { base: [30, 50, 70, 90, 110], armor: 0.3 }, dtype: 'physical' },
+            { type: 'status', status: 'taunt', duration: 1.25 },
+          ],
+        },
+        { type: 'buff', id: 'aldric_provoke', duration: 3, pct: { armor: 0.3, magicResist: 0.3 } },
+      ],
+    },
+    {
+      id: 'aldric_r',
+      name: 'Bastion Unbroken',
+      description: 'Plants himself and becomes unstoppable behind a huge shield, projecting a sanctuary that hardens every ally standing near him.',
+      icon: '🏰',
+      targeting: 'self',
+      range: 0,
+      cooldown: [100, 90, 80],
+      manaCost: [100, 120, 140],
+      castTime: 0.4,
+      anim: 'Spellcast_Raise',
+      effects: [
+        { type: 'shield', amount: { base: [250, 350, 450], maxHp: 0.1 }, duration: 6 },
+        { type: 'status', status: 'unstoppable', duration: 4 },
+        {
+          type: 'zone',
+          at: 'caster',
+          follow: true,
+          radius: 7,
+          duration: 6,
+          interval: 0.5,
+          affects: 'alliesAndSelf',
+          vfx: { style: 'holy', color: '#f2c94c' },
+          effects: [
+            {
+              type: 'buff',
+              id: 'aldric_bastion',
+              duration: 1,
+              stats: {
+                armor: { base: [40, 60, 80] },
+                magicResist: { base: [40, 60, 80] },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
