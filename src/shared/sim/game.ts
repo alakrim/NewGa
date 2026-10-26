@@ -10,7 +10,7 @@ import { ITEM_BY_ID } from '../data/items';
 import { angleOf, clamp, dist, distToSegment, norm, rng, type Vec2 } from '../math';
 import { NavGrid } from './nav';
 import { Frontline } from '../frontline/sim';
-import { FL, PLAYER_HEX, dropPos, type FlBuildingDef, type FlUnitDef, type PlayerColor } from '../frontline/data';
+import { FL, PLAYER_HEX, dropPos, kaykitColor, type FlBuildingDef, type FlUnitDef, type PlayerColor } from '../frontline/data';
 import type { GameMode } from '../protocol';
 import { priceFor } from '../shop';
 import { runEffects } from './effects';
@@ -88,7 +88,9 @@ export class Game {
   }
 
   // ------------------------------------------------------------------ setup
-  register(key: string, v: VisualInfo) { if (!this.visuals[key]) this.visuals[key] = v; }
+  /** Visuals registered since the last flush; sent in the next snapshot so clients learn new unit/building types. */
+  private newVisuals: Record<string, VisualInfo> = {};
+  register(key: string, v: VisualInfo) { if (!this.visuals[key]) { this.visuals[key] = v; this.newVisuals[key] = v; } }
 
   private buildStructures() {
     for (const team of [0, 1] as Team[]) {
@@ -146,7 +148,7 @@ export class Game {
 
   /** Frontline: a building on a plot (no attack until a watchtower finishes). */
   spawnBuilding(team: Team, pos: Vec2, def: FlBuildingDef, color: PlayerColor): Unit {
-    const env = def.model.replace('{color}', color);
+    const env = def.model.replace('{color}', kaykitColor(color));
     const visKey = `b:${def.id}:${color}`;
     this.register(visKey, { model: 'env', env, width: def.id === 'house' ? 4 : 5.2, scale: 1, weapons: [], name: def.name, kind: 'building', color });
     const u = this.makeUnit('building', team, visKey, def.name, pos, 2.2, { ...ZERO_STATS, maxHp: def.hp, armor: 30, magicResist: 30 });
@@ -171,7 +173,7 @@ export class Game {
     const def = HERO_BY_ID[s.heroId];
     if (!def) throw new Error(`unknown hero ${s.heroId}`);
     const visKey = `h:${def.id}`;
-    this.register(visKey, { model: def.visual.model, tint: def.visual.tint, scale: def.visual.scale, weapons: def.visual.weapons, name: def.name, kind: 'hero' });
+    this.register(visKey, { model: def.visual.model, tint: def.visual.tint, scale: def.visual.scale, weapons: def.visual.weapons, name: def.name, kind: 'hero', role: def.role });
     const pos = this.spawnPoint(s.team);
     const u = this.makeUnit('hero', s.team, visKey, def.name, pos, 0.8, this.heroBase(def, 1));
     u.ranged = def.attack.kind === 'ranged' ? def.attack.projectile ?? { style: 'arrow', color: '#ffffff' } : null;
@@ -1651,6 +1653,7 @@ export class Game {
     };
     if (this.winner !== null) snap.winner = this.winner;
     if (this.front) snap.fl = this.front.snapshot(pid, team);
+    if (Object.keys(this.newVisuals).length) snap.vis = this.newVisuals;
     const me = pid ? this.heroOf(pid) : undefined;
     if (me?.hero) snap.me = this.meSnap(me);
     return snap;
@@ -1670,7 +1673,7 @@ export class Game {
     };
   }
 
-  flushEvents() { this.events = []; }
+  flushEvents() { this.events = []; this.newVisuals = {}; }
 
   replay(): Replay { return { v: 1, seed: this.seed, setups: this.setups, log: [...this.log], ticks: this.tick, winner: this.winner, mode: this.mode }; }
 

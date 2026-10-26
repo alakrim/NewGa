@@ -1,0 +1,35 @@
+; Bannerfall mobile client (Godot 4.7). Renders the Frontline match served by the Node server (../src/server).
+config_version=5
+
+[application]
+
+config/name="Bannerfall"
+config/description="Lane battles with friends: mine gold, build your keep, raise an army, lead it with your hero."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/tinyswords/Factions/Knights/Troops/Warrior/Blue/Warrior_Blue.png"
+
+[autoload]
+
+Net="*res://scripts/net.gd"
+Sprites="*res://scripts/sprites.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=false
+environment/defaults/default_clear_color=Color(0.278, 0.67, 0.663, 1)

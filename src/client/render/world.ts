@@ -499,6 +499,7 @@ export class World {
   }
 
   applySnapshot(s: Snapshot) {
+    if (s.vis) Object.assign(this.init.visuals, s.vis);
     const seen = new Set<number>();
     for (const u of s.units) {
       seen.add(u[0]);

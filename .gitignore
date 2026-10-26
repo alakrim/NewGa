@@ -6,3 +6,8 @@ assets-src/
 
 # scratch downloads from research runs
 /*.html
+
+# Tiny Swords Free Pack: free for commercial use but not redistributable, fetched by tools/fetch-tinyswords.mjs
+/godot/assets/tinyswords_free/
+/godot/.godot/
+/godot/build/

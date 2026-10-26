@@ -33,7 +33,7 @@ export type Command =
   | { c: 'stance'; stance: Stance; x?: number };
 
 // ---------- static info sent at game start ----------
-export interface VisualInfo { model: ModelId | 'tower' | 'fortress' | 'env'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind; env?: string; width?: number; color?: PlayerColor }
+export interface VisualInfo { model: ModelId | 'tower' | 'fortress' | 'env'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind; env?: string; width?: number; color?: PlayerColor; role?: string }
 export interface PlayerInfo { playerId: string; name: string; team: Team; heroId: string; bot: boolean; unitId: number }
 export interface GameInit { you: string; players: PlayerInfo[]; visuals: Record<string, VisualInfo>; seed: number; mode: GameMode }
 
@@ -108,6 +108,8 @@ export interface Snapshot {
   winner?: Team;
   /** Frontline mode state (absent in the Crossing mode). */
   fl?: FrontlineSnap;
+  /** Visual descriptions for unit/building types first created this tick (merge into GameInit.visuals). */
+  vis?: Record<string, VisualInfo>;
 }
 
 export interface FlPlayerSnap {

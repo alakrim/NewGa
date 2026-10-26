@@ -1,0 +1,3255 @@
+{
+  "assets/tinyswords/Factions/Goblins/Troops/Barrel/Blue/Barrel_Blue.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      1,
+      6,
+      1,
+      6,
+      3,
+      3
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Barrel/Purple/Barrel_Purple.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      1,
+      6,
+      1,
+      6,
+      3,
+      3
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Barrel/Red/Barrel_Red.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      1,
+      6,
+      1,
+      6,
+      3,
+      3
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Barrel/Yellow/Barrel_Yellow.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      1,
+      6,
+      1,
+      6,
+      3,
+      3
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/TNT/Blue/TNT_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 3,
+    "row_frames": [
+      6,
+      6,
+      7
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/TNT/Dynamite/Dynamite.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/TNT/Purple/TNT_Purple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 3,
+    "row_frames": [
+      6,
+      6,
+      7
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/TNT/Red/TNT_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 3,
+    "row_frames": [
+      6,
+      6,
+      7
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/TNT/Yellow/TNT_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 3,
+    "row_frames": [
+      6,
+      6,
+      7
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Torch/Blue/Torch_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 5,
+    "row_frames": [
+      7,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Torch/Purple/Torch_Purple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 5,
+    "row_frames": [
+      7,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Torch/Red/Torch_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 5,
+    "row_frames": [
+      7,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Goblins/Troops/Torch/Yellow/Torch_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 7,
+    "rows": 5,
+    "row_frames": [
+      7,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Blue_(NoArms).png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 2,
+    "row_frames": [
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Bow_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 2,
+    "row_frames": [
+      1,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Bow_Purple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 2,
+    "row_frames": [
+      1,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Bow_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 2,
+    "row_frames": [
+      1,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Bow_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 2,
+    "row_frames": [
+      1,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Purple_(NoArms).png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 2,
+    "row_frames": [
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Red_(NoArms).png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 2,
+    "row_frames": [
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Archer + Bow/Archer_Yellow_(NoArms).png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 2,
+    "row_frames": [
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Arrow/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 2,
+    "row_frames": [
+      1,
+      1
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Blue/Archer_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 7,
+    "row_frames": [
+      6,
+      6,
+      8,
+      8,
+      8,
+      8,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Purple/Archer_Purlple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 7,
+    "row_frames": [
+      6,
+      6,
+      8,
+      8,
+      8,
+      8,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Red/Archer_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 7,
+    "row_frames": [
+      6,
+      6,
+      8,
+      8,
+      8,
+      8,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Archer/Yellow/Archer_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 7,
+    "row_frames": [
+      6,
+      6,
+      8,
+      8,
+      8,
+      8,
+      8
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Dead/Dead.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 7,
+    "rows": 2,
+    "row_frames": [
+      7,
+      7
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Pawn/Blue/Pawn_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Pawn/Purple/Pawn_Purple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Pawn/Red/Pawn_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Pawn/Yellow/Pawn_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 6,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Warrior/Blue/Warrior_Blue.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 8,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Warrior/Purple/Warrior_Purple.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 8,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Warrior/Red/Warrior_Red.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 8,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Factions/Knights/Troops/Warrior/Yellow/Warrior_Yellow.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 8,
+    "row_frames": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "assets/tinyswords/Resources/Gold Mine/GoldMine_Active.png": {
+    "frame": [
+      192,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Gold Mine/GoldMine_Destroyed.png": {
+    "frame": [
+      192,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Gold Mine/GoldMine_Inactive.png": {
+    "frame": [
+      192,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/G_Idle.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/G_Idle_(NoShadow).png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/G_Spawn.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 7,
+    "rows": 1,
+    "row_frames": [
+      7
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/M_Idle.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/M_Idle_(NoShadow).png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/M_Spawn.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 7,
+    "rows": 1,
+    "row_frames": [
+      7
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/W_Idle.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/W_Idle_(NoShadow).png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords/Resources/Resources/W_Spawn.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 7,
+    "rows": 1,
+    "row_frames": [
+      7
+    ]
+  },
+  "assets/tinyswords/Resources/Sheep/HappySheep_All.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 8,
+    "rows": 2,
+    "row_frames": [
+      8,
+      6
+    ]
+  },
+  "assets/tinyswords/Resources/Sheep/HappySheep_Bouncing.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords/Resources/Sheep/HappySheep_Idle.png": {
+    "frame": [
+      128,
+      128
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords/Resources/Trees/Tree.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 3,
+    "row_frames": [
+      4,
+      2,
+      1
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Dust_01.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Dust_02.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 10,
+    "rows": 1,
+    "row_frames": [
+      10
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Explosion_01.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Explosion_02.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 10,
+    "rows": 1,
+    "row_frames": [
+      10
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Fire_01.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Fire_02.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 10,
+    "rows": 1,
+    "row_frames": [
+      10
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Fire_03.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Particle FX/Water Splash.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 9,
+    "rows": 1,
+    "row_frames": [
+      9
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Archer/Archer_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Archer/Archer_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Archer/Archer_Shoot.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Archer/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_DownRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_DownRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Down_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Down_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Idle.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Right_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Right_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Run.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_UpRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_UpRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Up_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Lancer/Lancer_Up_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Monk/Heal.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Monk/Heal_Effect.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Monk/Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Monk/Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Interact Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Interact Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Interact Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Interact Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Pawn/Pawn_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Warrior/Warrior_Attack1.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Warrior/Warrior_Attack2.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Warrior/Warrior_Guard.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Warrior/Warrior_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Black Units/Warrior/Warrior_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Archer/Archer_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Archer/Archer_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Archer/Archer_Shoot.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Archer/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_DownRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_DownRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Down_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Down_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Idle.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Right_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Right_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Run.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_UpRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_UpRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Up_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Lancer/Lancer_Up_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Monk/Heal.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Monk/Heal_Effect.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Monk/Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Monk/Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Interact Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Interact Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Interact Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Interact Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Pawn/Pawn_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Warrior/Warrior_Attack1.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Warrior/Warrior_Attack2.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Warrior/Warrior_Guard.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Warrior/Warrior_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Blue Units/Warrior/Warrior_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Archer/Archer_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Archer/Archer_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Archer/Archer_Shoot.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Archer/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_DownRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_DownRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Down_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Down_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Idle.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Right_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Right_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Run.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_UpRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_UpRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Up_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Lancer/Lancer_Up_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Monk/Heal.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Monk/Heal_Effect.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Monk/Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Monk/Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Interact Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Interact Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Interact Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Interact Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Pawn/Pawn_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Warrior/Warrior_Attack1.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Warrior/Warrior_Attack2.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Warrior/Warrior_Guard.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Warrior/Warrior_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Purple Units/Warrior/Warrior_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Archer/Archer_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Archer/Archer_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Archer/Archer_Shoot.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Archer/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_DownRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_DownRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Down_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Down_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Idle.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Right_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Right_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Run.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_UpRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_UpRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Up_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Lancer/Lancer_Up_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Monk/Heal.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Monk/Heal_Effect.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Monk/Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Monk/Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Interact Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Interact Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Interact Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Interact Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Pawn/Pawn_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Warrior/Warrior_Attack1.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Warrior/Warrior_Attack2.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Warrior/Warrior_Guard.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Warrior/Warrior_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Red Units/Warrior/Warrior_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Archer/Archer_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Archer/Archer_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Archer/Archer_Shoot.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Archer/Arrow.png": {
+    "frame": [
+      64,
+      64
+    ],
+    "cols": 1,
+    "rows": 1,
+    "row_frames": [
+      1
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_DownRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_DownRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Down_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Down_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Idle.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 12,
+    "rows": 1,
+    "row_frames": [
+      12
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Right_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Right_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Run.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_UpRight_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_UpRight_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Up_Attack.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Lancer/Lancer_Up_Defence.png": {
+    "frame": [
+      320,
+      320
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Monk/Heal.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Monk/Heal_Effect.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 11,
+    "rows": 1,
+    "row_frames": [
+      11
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Monk/Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Monk/Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Interact Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Interact Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 3,
+    "rows": 1,
+    "row_frames": [
+      3
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Interact Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Interact Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Axe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Gold.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Hammer.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Knife.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Meat.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Pickaxe.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run Wood.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Pawn/Pawn_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Warrior/Warrior_Attack1.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Warrior/Warrior_Attack2.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 4,
+    "rows": 1,
+    "row_frames": [
+      4
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Warrior/Warrior_Guard.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Warrior/Warrior_Idle.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 8,
+    "rows": 1,
+    "row_frames": [
+      8
+    ]
+  },
+  "assets/tinyswords_free/Units/Yellow Units/Warrior/Warrior_Run.png": {
+    "frame": [
+      192,
+      192
+    ],
+    "cols": 6,
+    "rows": 1,
+    "row_frames": [
+      6
+    ]
+  }
+}

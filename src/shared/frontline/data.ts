@@ -5,7 +5,7 @@ import { mkStats } from '../units';
 import type { Vec2 } from '../math';
 
 export const FL = {
-  minX: -96, maxX: 96, minZ: -28, maxZ: 16,
+  minX: -96, maxX: 96, minZ: -30, maxZ: 16,
   laneMinZ: -8, laneMaxZ: 9,
   fortressX: 86, // |x| of each castle
   dropX: 78, // |x| where miners deliver gold and new units appear
@@ -26,10 +26,12 @@ export const FL = {
   bannerRadius: 4.5,
 };
 
-/** Four player colours from the KayKit hex pack: team 0 = blue + green, team 1 = red + yellow. */
-export const PLAYER_COLORS = [['blue', 'green'], ['red', 'yellow']] as const;
-export const PLAYER_HEX: Record<string, string> = { blue: '#3d8bfd', green: '#3fbf5a', red: '#e5484d', yellow: '#e8b923' };
-export type PlayerColor = 'blue' | 'green' | 'red' | 'yellow';
+/** Four player colours (the Tiny Swords faction palette): team 0 = blue + purple, team 1 = red + yellow. */
+export const PLAYER_COLORS = [['blue', 'purple'], ['red', 'yellow']] as const;
+export const PLAYER_HEX: Record<string, string> = { blue: '#3d8bfd', purple: '#9b5de5', red: '#e5484d', yellow: '#e8b923' };
+export type PlayerColor = 'blue' | 'purple' | 'red' | 'yellow';
+/** The 3D web prototype's KayKit buildings come in green instead of purple. */
+export const kaykitColor = (c: PlayerColor) => (c === 'purple' ? 'green' : c);
 
 const side = (team: Team, x: number) => (team === 0 ? -x : x);
 export const fortressPos = (team: Team): Vec2 => ({ x: side(team, FL.fortressX), z: -3 });
@@ -161,7 +163,7 @@ export const FL_PLOTS: FlPlot[] = (() => {
   const out: FlPlot[] = [];
   for (const team of [0, 1] as Team[]) for (const slot of [0, 1] as const) {
     const xs = [80, 74, 68, 62, 56, 50, 44];
-    const z = slot === 0 ? -14 : -21;
+    const z = slot === 0 ? -15 : -21;
     xs.forEach((x) => out.push({ index: out.length, team, slot, x: side(team, x), z }));
   }
   return out;
@@ -180,9 +182,9 @@ export const MINE = { trip: 15, richBonus: 0.6, mineTime: 2.6, carrySpeedMult: 0
 export type FlBannerKey = 'west' | 'heart' | 'east';
 export interface FlBannerSpot { key: FlBannerKey; name: string; x: number; z: number; startOwner: Team | -1 }
 export const FL_BANNERS: FlBannerSpot[] = [
-  { key: 'west', name: 'Dawn Outpost', x: -34, z: -10, startOwner: 0 },
-  { key: 'heart', name: 'Heart Banner', x: 0, z: -10, startOwner: -1 },
-  { key: 'east', name: 'Dusk Outpost', x: 34, z: -10, startOwner: 1 },
+  { key: 'west', name: 'Dawn Outpost', x: -34, z: -5, startOwner: 0 },
+  { key: 'heart', name: 'Heart Banner', x: 0, z: -5, startOwner: -1 },
+  { key: 'east', name: 'Dusk Outpost', x: 34, z: -5, startOwner: 1 },
 ];
 
 export type Stance = 'garrison' | 'defend' | 'hold' | 'attack';
