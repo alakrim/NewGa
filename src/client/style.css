@@ -208,3 +208,5 @@ input.field:focus { border-color: var(--gold); }
   .minimap canvas { width: 200px; height: 118px; }
   .feed { width: 240px; }
 }
+
+.replay-bar { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; padding: 8px 12px; }

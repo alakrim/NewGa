@@ -6,6 +6,10 @@ Runs in the browser. One small Node server hosts rooms for you and your friends.
 
 ![Bannerfall gameplay](docs/screenshots/gameplay.png)
 
+| Hero select | Fortress upgrades and towers |
+|---|---|
+| ![Hero select](docs/screenshots/hero-select.png) | ![Fortress panel](docs/screenshots/fortress.png) |
+
 ## Features
 
 - **20 heroes**, each with lore, a passive and four abilities (Q W E R). 6 roles, 3 difficulty levels. See [docs/HEROES.md](docs/HEROES.md).
@@ -16,6 +20,8 @@ Runs in the browser. One small Node server hosts rooms for you and your friends.
 - **Server-side fog of war.** You never receive what your team can't see.
 - **Last Stand.** A fortress below 30% rallies its defenders once.
 - **Bots** that lane, shop, defend banners, take objectives and fund upgrades.
+- **Forge directives** per lane (Balanced, Swarm, Phalanx, Siege) and **forward respawn** at enemy banners you hold.
+- **Replays**: the simulation is deterministic, so a match is just its seed plus inputs. Watch or save it from the end screen, or load one from the menu.
 - **Procedural sound effects** and **portraits rendered from the 3D models**.
 
 ## Quick start

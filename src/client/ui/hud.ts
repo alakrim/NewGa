@@ -13,6 +13,7 @@ import type { Session, ChatLine } from '../net';
 import type { World } from '../render/world';
 import { esc, h, overlay, ui } from './dom';
 import { portrait } from './portraits';
+import { downloadReplay, ReplaySession } from '../replay';
 
 const STAT_LABEL: Record<string, string> = {
   maxHp: 'Health', hpRegen: 'Health regen', maxMana: 'Mana', manaRegen: 'Mana regen', attackDamage: 'Attack damage', abilityPower: 'Ability power',
@@ -51,12 +52,16 @@ export class Hud {
   /** Online only: the host asks the server to bring everyone back to the room lobby. */
   onReplay: () => void = () => {};
   private isHost = false;
+  private spectator: boolean;
+  /** Watch the finished match again (local replay). */
+  onWatchReplay: (() => void) | null = null;
   aiming: AbilitySlot | null = null;
 
   constructor(private init: GameInit, private session: Session, private world: World) {
-    const me = init.players.find((p) => p.playerId === init.you)!;
-    this.myTeam = me.team;
-    this.heroId = me.heroId;
+    const me = init.players.find((p) => p.playerId === init.you);
+    this.spectator = !me;
+    this.myTeam = me?.team ?? 0;
+    this.heroId = me?.heroId ?? '';
     this.miniCanvas.width = 440; this.miniCanvas.height = 260;
     this.miniBg = this.drawMiniBg();
     this.mini.appendChild(this.miniCanvas);
@@ -71,7 +76,8 @@ export class Hud {
     actions.innerHTML = `<button class="btn small" data-a="shop">🛒 Shop (P)</button><button class="btn small" data-a="base">🏰 Fortress (U)</button>`;
     actions.querySelectorAll<HTMLButtonElement>('[data-a]').forEach((b) => b.onclick = () => this.toggle(b.dataset.a as 'shop'));
     actions.style.bottom = '200px';
-    this.root.appendChild(actions);
+    if (!this.spectator) this.root.appendChild(actions);
+    else help.classList.add('hidden');
     ui().appendChild(this.root);
     this.mini.onmousedown = (ev) => this.minimapClick(ev);
     this.mini.oncontextmenu = (ev) => ev.preventDefault();
@@ -81,8 +87,34 @@ export class Hud {
   destroy() { this.root.remove(); overlay().innerHTML = ''; }
 
   // ------------------------------------------------------------------ snapshot-driven UI
+  private replayBar: HTMLElement | null = null;
+  private renderReplayBar() {
+    const rs = this.session instanceof ReplaySession ? this.session : null;
+    if (!rs) return;
+    if (!this.replayBar) {
+      this.replayBar = h('div', { class: 'panel replay-bar' });
+      this.root.appendChild(this.replayBar);
+      this.bottom.classList.add('hidden');
+      this.replayBar.onclick = (ev) => {
+        const b = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-sp]');
+        if (!b) return;
+        if (b.dataset.sp === 'pause') rs.paused = !rs.paused; else rs.speed = Number(b.dataset.sp);
+        this.replayBar!.dataset.h = '';
+      };
+    }
+    const html = `<b class="gold">🎬 Replay</b><div class="bar" style="width:260px"><div class="fill" style="width:${Math.round(rs.progress * 100)}%;background:var(--gold)"></div></div>
+      <button class="btn small" data-sp="pause">${rs.paused ? '▶️' : '⏸️'}</button>${[1, 2, 4, 8].map((n) => `<button class="btn small ${rs.speed === n ? 'primary' : ''}" data-sp="${n}">${n}x</button>`).join('')}
+      <button class="btn small" id="rp-exit">Exit</button>`;
+    if (this.replayBar.dataset.h !== html) {
+      this.replayBar.dataset.h = html;
+      this.replayBar.innerHTML = html;
+      this.replayBar.querySelector<HTMLButtonElement>('#rp-exit')!.onclick = () => this.onLeave();
+    }
+  }
+
   update(s: Snapshot) {
     this.snap = s;
+    this.renderReplayBar();
     this.renderTop(s);
     this.renderBottom(s);
     for (const e of s.events) this.event(e);
@@ -384,6 +416,7 @@ export class Hud {
   // ------------------------------------------------------------------ modals
   get modalOpen() { return this.modalKind !== ''; }
   toggle(kind: 'shop' | 'base' | 'board' | 'help') {
+    if (this.spectator && kind !== 'board') return;
     if (this.modalKind === kind) { this.closeModal(); return; }
     this.closeModal();
     this.modalKind = kind;
@@ -506,11 +539,23 @@ export class Hud {
   private showEnd(s: Snapshot) {
     const won = s.winner === this.myTeam;
     this.closeModal();
-    this.endScreen = h('div', { class: 'end-screen' }, `<div class="card panel"><h1 class="serif ${won ? 'gold' : 'team1'}">${won ? 'Victory' : 'Defeat'}</h1>
+    const title = this.spectator ? `${TEAM_NAMES[s.winner!]} win` : won ? 'Victory' : 'Defeat';
+    this.endScreen = h('div', { class: 'end-screen' }, `<div class="card panel"><h1 class="serif ${won || this.spectator ? 'gold' : 'team1'}">${title}</h1>
       <p class="muted">The ${TEAM_NAMES[s.winner!]} razed the enemy fortress in ${fmtTime(s.time)}.</p><div class="board">${this.boardTable(s.board)}</div>
-      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" id="end-leave">Back to menu</button><span id="end-again"></span></div></div>`);
+      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" id="end-leave">Back to menu</button><span id="end-again"></span>
+      <button class="btn" id="end-watch" style="margin-left:10px">🎬 Watch replay</button><button class="btn" id="end-dl" style="margin-left:10px">💾 Save replay</button></div></div>`);
     this.root.appendChild(this.endScreen);
     this.endScreen.querySelector<HTMLButtonElement>('#end-leave')!.onclick = () => this.onLeave();
+    const watch = this.endScreen.querySelector<HTMLButtonElement>('#end-watch')!;
+    const dl = this.endScreen.querySelector<HTMLButtonElement>('#end-dl')!;
+    const refreshReplay = () => {
+      const r = this.session.getReplay?.() ?? null;
+      watch.disabled = dl.disabled = !r || !this.onWatchReplay;
+      if (!r) setTimeout(refreshReplay, 500); // online: the server sends it right after the match ends
+    };
+    refreshReplay();
+    watch.onclick = () => this.onWatchReplay?.();
+    dl.onclick = () => { const r = this.session.getReplay?.(); if (r) downloadReplay(r); };
     this.refreshEndActions();
   }
 

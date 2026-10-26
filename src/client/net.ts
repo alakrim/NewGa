@@ -1,7 +1,7 @@
 import type { ClientMsg, Command, GameInit, RoomInfo, ServerMsg, Snapshot } from '../shared/protocol';
 import type { Team } from '../shared/types';
 import { TICK_RATE } from '../shared/constants';
-import { Game, type PlayerSetup } from '../shared/sim/game';
+import { Game, type PlayerSetup, type Replay } from '../shared/sim/game';
 
 export interface ChatLine { from: string; text: string; team: boolean; teamId: Team }
 
@@ -15,6 +15,8 @@ export interface Session {
   chat(text: string, team: boolean): void;
   close(): void;
   rtt: number;
+  /** The finished match's replay, when available. */
+  getReplay?(): Replay | null;
 }
 
 export class LocalSession implements Session {
@@ -49,12 +51,15 @@ export class LocalSession implements Session {
     }, 1000 / TICK_RATE / 2);
   }
   send(cmd: Command) { this.game.command(this.me.pid, cmd); }
+  getReplay() { return this.game.replay(); }
   chat(text: string, team: boolean) { this.onChat({ from: this.me.name, text, team, teamId: this.me.team }); }
   close() { clearInterval(this.timer); }
 }
 
 /** WebSocket connection to the Bannerfall server. Handles both lobby and in-game traffic, and transparently reconnects. */
 export class NetClient implements Session {
+  lastReplay: Replay | null = null;
+  getReplay() { return this.lastReplay; }
   readonly online = true;
   onInit: (init: GameInit) => void = () => {};
   onSnap: (s: Snapshot) => void = () => {};
@@ -160,6 +165,7 @@ export class NetClient implements Session {
       case 'snap': this.onSnap(m.s); break;
       case 'chat': this.onChat(m); break;
       case 'pong': this.rtt = performance.now() - m.ts; break;
+      case 'replay': this.lastReplay = m.replay; break;
     }
   }
   raw(m: ClientMsg) {

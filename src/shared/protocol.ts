@@ -1,4 +1,5 @@
 import type { AbilitySlot, ModelId, Team } from './types';
+import type { Replay } from './sim/game';
 import type { UpgradeId } from './upgrades';
 import type { TowerKind } from './units';
 import type { BannerKey, LaneId } from './map';
@@ -125,4 +126,5 @@ export type ServerMsg =
   | { t: 'init'; init: GameInit }
   | { t: 'snap'; s: Snapshot }
   | { t: 'chat'; from: string; text: string; team: boolean; teamId: Team }
-  | { t: 'pong'; ts: number };
+  | { t: 'pong'; ts: number }
+  | { t: 'replay'; replay: Replay };

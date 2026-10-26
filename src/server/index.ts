@@ -204,7 +204,11 @@ function startGame(r: Room) {
       console.error('game loop error', err);
     }
     if (game.winner !== null) {
-      if (!r.endedAt) r.endedAt = Date.now();
+      if (!r.endedAt) {
+        r.endedAt = Date.now();
+        const replay = game.replay();
+        for (const c of r.clients.values()) send(c, { t: 'replay', replay });
+      }
       else if (Date.now() - r.endedAt > 3000 && r.loop) { clearInterval(r.loop); r.loop = null; }
     }
   }, 1000 / TICK_RATE);

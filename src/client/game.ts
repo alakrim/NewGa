@@ -37,7 +37,8 @@ export class GameScreen {
       if (button === 2) { this.session.send({ c: 'move', x, z }); this.world.showMoveMarker(x, z, false); }
       else { this.camLocked = false; this.world.camTarget.set(x, 0, z); }
     };
-    this.heroId = init.players.find((p) => p.playerId === init.you)!.heroId;
+    this.heroId = init.players.find((p) => p.playerId === init.you)?.heroId ?? '';
+    if (!this.heroId) this.camLocked = false; // spectators fly the camera freely
     session.onSnap = (s) => this.onSnap(s);
     this.bindInput(canvas);
     const loop = () => { this.raf = requestAnimationFrame(loop); this.frame(); };
@@ -152,6 +153,7 @@ export class GameScreen {
       if (k === 'Tab') { e.preventDefault(); if (!e.repeat) this.hud.toggle('board'); return; }
       if (e.repeat) return;
       if (SLOT_KEYS[k]) {
+        if (!this.heroId) return;
         const slot = SLOT_KEYS[k];
         const def = HERO_BY_ID[this.heroId].abilities['QWER'.indexOf(slot)];
         if (def.targeting === 'self') this.cast(slot);
@@ -196,6 +198,9 @@ export class GameScreen {
   }
 
   setHost(isHost: boolean) { this.hud.setHost(isHost); }
+
+  /** Wires the end screen's "Watch replay" button. */
+  setWatchReplay(fn: () => void) { this.hud.onWatchReplay = fn; }
 
   /** Tear the game down but keep the (online) session alive, e.g. to return to the room lobby. */
   dispose(closeSession = true) {

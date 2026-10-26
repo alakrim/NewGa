@@ -5,6 +5,8 @@ import { TEAM_NAMES, MAX_PLAYERS_PER_TEAM } from '../shared/constants';
 import type { PlayerSetup } from '../shared/sim/game';
 import { assets } from './assets';
 import { GameScreen } from './game';
+import { ReplaySession } from './replay';
+import type { Replay } from '../shared/sim/game';
 import { LocalSession, NetClient, safeGet, safeSet, type Session } from './net';
 import { esc, h, toast, ui } from './ui/dom';
 import { HeroPicker } from './ui/heroes';
@@ -47,6 +49,7 @@ function menu() {
       <div class="join-row"><input class="field" id="code" maxlength="4" placeholder="CODE"><button class="btn" id="join">Join Room</button></div>
       <button class="btn" id="heroes">📜 Hero Codex</button>
       <button class="btn" id="how">❓ How to Play</button>
+      <label class="btn" style="display:block">🎬 Load replay<input type="file" id="replay-file" accept=".json,application/json" class="hidden"></label>
     </div>
     <p class="footer-note">Art: KayKit by Kay Lousberg (CC0). Built with Three.js.</p></div>`);
   show(el);
@@ -57,14 +60,19 @@ function menu() {
   el.querySelector<HTMLButtonElement>('#join')!.onclick = () => { const c = el.querySelector<HTMLInputElement>('#code')!.value.trim().toUpperCase(); if (c.length === 4) joinOnline(c); else toast('Enter a 4-letter room code'); };
   el.querySelector<HTMLButtonElement>('#heroes')!.onclick = () => codex();
   el.querySelector<HTMLButtonElement>('#how')!.onclick = () => howTo();
+  el.querySelector<HTMLInputElement>('#replay-file')!.onchange = async (ev) => {
+    const f = (ev.target as HTMLInputElement).files?.[0];
+    if (!f) return;
+    try { const r = JSON.parse(await f.text()) as Replay; if (r.v !== 1 || !r.setups) throw new Error(); watchReplay(r); } catch { toast('That is not a Bannerfall replay file', '#ff8a8d'); }
+  };
 }
 
 function howTo() {
   const el = h('div', { class: 'screen' }, `<div class="menu-card panel" style="width:min(760px,100%);text-align:left">
     <h2 class="serif gold">How to play</h2>
-    <p><b>Goal.</b> Destroy the enemy <b>Fortress Core</b>. It is shielded by its three <b>banners</b>: while all three still fly it takes no damage; with 2 it takes 50%, with 1 it takes 80%, and with none it takes 125%.</p>
-    <p><b>Banners.</b> Stand inside an enemy banner's circle with no defenders inside to capture it (6s, faster with friends). A lane banner unlocks once that lane's <b>outer tower</b> falls; the <b>Keep Banner</b> unlocks once a lane banner is taken. Each capture pays every teammate 🪙250 and every held enemy banner pays your team gold every second. Defenders can recapture.</p>
-    <p><b>Monster waves.</b> Your Bone Forge raises skeletons every 30s that march both lanes. Upgrade the Forge to make them bigger and add Wraiths, or hire Bone Brutes for a lane.</p>
+    <p><b>Goal.</b> Destroy the enemy <b>Fortress Core</b>. It is shielded by its three <b>banners</b>: while all three still fly it takes no damage; with 2 it takes 35%, with 1 it takes 60%, and with none it takes full damage.</p>
+    <p><b>Banners.</b> Stand inside an enemy banner's circle with no defenders inside to capture it (6s, faster with friends). A lane banner unlocks once that lane's <b>outer tower</b> falls; the <b>Keep Banner</b> unlocks once a lane banner is taken. Each capture pays every teammate 🪙250 and each banner grants its captors a perk: ⚔️ <b>War Banner</b> (north) +20% to your waves, 🪙 <b>Coin Banner</b> (south) +2 gold/s each, 👁️ <b>Keep Banner</b> reveals their fortress. You can also <b>respawn</b> at enemy banners you hold. Defenders can recapture.</p>
+    <p><b>Monster waves.</b> Your Bone Forge raises skeletons every 30s that march both lanes. In the Fortress panel set each lane's <b>directive</b> (Balanced, Swarm, Phalanx, Siege), upgrade the Forge, or hire Bone Brutes. The first time a fortress drops below 30% it triggers a <b>Last Stand</b>.</p>
     <p><b>Gold.</b> Earned passively, for last hits, kills, assists, towers, banners, jungle camps and the <b>Bone Colossus</b> at the centre (spawns at 5:00, empowers your whole team). Spend it at the War Smithy (at your fountain) on equipment, or in the Fortress panel on team upgrades and <b>defensive towers</b> on build pads: Arrow, Frost (slow), Cannon (splash) and Arcane (chains, anti-hero).</p>
     <p><b>Day and night.</b> Every 4 minutes night falls for 2: vision shrinks and monsters pay 50% more. Ambush time.</p>
     <p><b>Controls.</b> <kbd>Right-click</kbd> move / attack · <kbd>Q W E R</kbd> hold to aim, release to cast (R unlocks at level 4) · <kbd>1-6</kbd> items · <kbd>B</kbd> recall · <kbd>P</kbd> shop · <kbd>U</kbd> fortress · <kbd>Tab</kbd> score · <kbd>A</kbd> attack-move · <kbd>G</kbd> ping · <kbd>Space</kbd> center camera · <kbd>Y</kbd> unlock camera · mouse wheel zoom · arrow keys steer.</p>
@@ -227,10 +235,23 @@ function startGame(s: Session, after?: () => void, init?: GameInit) {
       menu();
     }, () => { if (s.online) (s as NetClient).raw({ t: 'lobbyReturn' }); });
     if (s.online) game.setHost(lastRoom?.host === (s as NetClient).pid);
+    game.setWatchReplay(() => {
+      const r = s.getReplay?.();
+      if (!r) return;
+      game?.dispose();
+      game = null;
+      if (s.online) { net = null; lastRoom = null; history.replaceState(null, '', location.pathname); }
+      watchReplay(r);
+    });
   };
   if (init) begin(init);
   else s.onInit = begin;
   after?.();
+}
+
+function watchReplay(r: Replay) {
+  const rs = new ReplaySession(r);
+  startGame(rs, () => rs.start());
 }
 
 boot();
