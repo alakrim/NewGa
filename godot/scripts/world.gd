@@ -70,7 +70,7 @@ func _draw_ground(ci: Node2D) -> void:
 	for tz in range(ROAD_Z[0], ROAD_Z[1] + 1):
 		for tx in range(rx0, rx1 + 1):
 			_tile(ci, _sand, tx, tz, 5 + _edge(tx, rx0, rx1), _edge(tz, ROAD_Z[0], ROAD_Z[1]), Color(0.86, 0.76, 0.62))
-	# plateaus: soft shadow, then cliff and raised grass
+	# plateaus: soft shadow, then cliff and raised grass (plot foundations are drawn after)
 	for r in PLATEAU:
 		for tx in range(r[0], r[1] + 1):
 			if _shadow:
@@ -88,6 +88,14 @@ func _draw_ground(ci: Node2D) -> void:
 				elif tz == PZ_EDGE + 2:
 					row = 5
 				_tile(ci, _grass, tx, tz, col, row)
+	# building plots: a small sand foundation each
+	for p in M.plots():
+		var c := V.to_px(p.x, p.z)
+		var tx0 := int(floor(c.x / T)) - 1
+		var tz0 := int(floor(c.y / T)) - 1
+		for dz in range(2):
+			for dx in range(3):
+				_tile(ci, _sand, tx0 + dx, tz0 + dz, 5 + dx, dz * 2, Color(0.95, 0.88, 0.78, 0.9))
 
 
 func _build_foam() -> void:

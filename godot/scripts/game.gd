@@ -36,6 +36,21 @@ func _ready() -> void:
 	add_child(camera)
 	camera.make_current()
 	_glow = _make_glow()
+	# HD-2D grade: warm light over the scene, and bloom so fire, spells and gold glow
+	var cm := CanvasModulate.new()
+	cm.color = Color(1.0, 0.97, 0.92)
+	add_child(cm)
+	var env := Environment.new()
+	env.background_mode = Environment.BG_CANVAS
+	env.glow_enabled = true
+	env.glow_intensity = 0.6
+	env.glow_strength = 1.0
+	env.glow_bloom = 0.05
+	env.glow_hdr_threshold = 0.9
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
+	var we := WorldEnvironment.new()
+	we.environment = env
+	add_child(we)
 	for b in M.BANNERS:
 		var o := Node2D.new()
 		o.position = V.to_px(b[2], b[3])

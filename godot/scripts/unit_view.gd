@@ -33,6 +33,7 @@ var _scale := 1.0
 var _feet := 30.0
 var _bar_w := 34.0
 var _hop := 0.0
+var _aura: Sprite2D
 
 
 func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: String, me: bool, name_text := "") -> void:
@@ -46,6 +47,25 @@ func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: Stri
 	var def: Dictionary = V.UNITS.get(body_id, V.UNITS["swordsman"])
 	_scale = def.get("scale", 1.0) * (V.HERO_SCALE if kind == "hero" else 1.0)
 	_feet = def.get("feet", 30.0)
+	if kind == "hero":
+		_aura = Sprite2D.new()
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 0.75))
+		g.set_color(1, Color(1, 1, 1, 0))
+		var gt := GradientTexture2D.new()
+		gt.gradient = g
+		gt.fill = GradientTexture2D.FILL_RADIAL
+		gt.fill_from = Vector2(0.5, 0.5)
+		gt.fill_to = Vector2(1, 0.5)
+		gt.width = 128
+		gt.height = 128
+		_aura.texture = gt
+		_aura.scale = Vector2(1.3, 0.55)
+		_aura.modulate = (Color("7cff8a") if me else V.PLAYER_COLORS.get(color, Color.WHITE)) * Color(1.4, 1.4, 1.4, 0.8)
+		var mat := CanvasItemMaterial.new()
+		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		_aura.material = mat
+		add_child(_aura)
 	_body = AnimatedSprite2D.new()
 	_body.sprite_frames = Sprites.frames(body_id, color)
 	_body.offset = Vector2(0, -_feet)
@@ -134,6 +154,8 @@ func _process(delta: float) -> void:
 			_play("carry_run" if moving else "carry_idle")
 		else:
 			_play("run" if moving else "idle")
+	if _aura:
+		_aura.modulate.a = 0.55 + 0.25 * sin(now * 4.0)
 	# airborne hop and stun wobble
 	var want_hop := 18.0 if (flags & F_AIRBORNE) != 0 else 0.0
 	_hop = lerpf(_hop, want_hop, 1.0 - exp(-delta * 12.0))

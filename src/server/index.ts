@@ -194,7 +194,7 @@ function startGame(r: Room) {
   broadcastRoom(r);
   r.loop = setInterval(() => {
     try {
-      game.step();
+      for (let i = 0; i < DEV_SPEED; i++) game.step();
       for (const c of r.clients.values()) {
         if (!c.ws || c.ws.bufferedAmount > 4_000_000) continue; // gone or hopelessly behind
         const p = game.players.find((x) => x.playerId === c.pid);
@@ -303,6 +303,8 @@ function handle(c: Client, m: ClientMsg) {
 }
 
 const teamCap = (r: Room) => (r.mode === 'frontline' ? 2 : MAX_PLAYERS_PER_TEAM);
+/** Development only: simulate several ticks per network tick (BF_SPEED=4 runs matches 4x faster). */
+const DEV_SPEED = Math.max(1, Math.min(8, Number(process.env.BF_SPEED ?? 1) || 1));
 const clean = (n: unknown) => (typeof n === 'string' ? n : 'Hero').replace(/[^\p{L}\p{N} _\-.]/gu, '').trim().slice(0, 16) || 'Hero';
 
 // ------------------------------------------------------------------ boot
