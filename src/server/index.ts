@@ -239,7 +239,7 @@ function handle(c: Client, m: ClientMsg) {
   const slot = r.slots.find((s) => s.pid === c.pid);
   switch (m.t) {
     case 'team':
-      if (r.game || !slot || slot.team === m.team || (m.team !== 0 && m.team !== 1) || teamCount(r, m.team) >= MAX_PLAYERS_PER_TEAM) return;
+      if (r.game || !slot || slot.team === m.team || (m.team !== 0 && m.team !== 1) || teamCount(r, m.team) >= teamCap(r)) return;
       slot.team = m.team;
       // the hero may already belong to a new teammate
       if (slot.heroId && r.slots.some((s) => s !== slot && s.team === slot.team && s.heroId === slot.heroId)) slot.heroId = null;
@@ -251,7 +251,7 @@ function handle(c: Client, m: ClientMsg) {
       break;
     case 'ready': if (slot) slot.ready = !!m.ready; break;
     case 'addBot':
-      if (r.game || c.pid !== r.host || (m.team !== 0 && m.team !== 1) || teamCount(r, m.team) >= MAX_PLAYERS_PER_TEAM) return;
+      if (r.game || c.pid !== r.host || (m.team !== 0 && m.team !== 1) || teamCount(r, m.team) >= teamCap(r)) return;
       r.slots.push({ pid: `bot-${newId()}`, name: `Bot ${r.slots.filter((s) => s.bot).length + 1}`, team: m.team, heroId: null, bot: true, ready: true });
       break;
     case 'removeBot':
@@ -261,7 +261,7 @@ function handle(c: Client, m: ClientMsg) {
     case 'fillBots':
       if (r.game || c.pid !== r.host) return;
       r.fillBots = !!m.on;
-      if (m.teamSize) r.teamSize = Math.max(1, Math.min(MAX_PLAYERS_PER_TEAM, Math.floor(Number(m.teamSize)) || 3));
+      if (m.teamSize) r.teamSize = Math.max(1, Math.min(teamCap(r), Math.floor(Number(m.teamSize)) || 3));
       break;
     case 'mode':
       if (r.game || c.pid !== r.host || (m.mode !== 'frontline' && m.mode !== 'crossing')) return;
@@ -302,6 +302,7 @@ function handle(c: Client, m: ClientMsg) {
   broadcastRoom(r);
 }
 
+const teamCap = (r: Room) => (r.mode === 'frontline' ? 2 : MAX_PLAYERS_PER_TEAM);
 const clean = (n: unknown) => (typeof n === 'string' ? n : 'Hero').replace(/[^\p{L}\p{N} _\-.]/gu, '').trim().slice(0, 16) || 'Hero';
 
 // ------------------------------------------------------------------ boot

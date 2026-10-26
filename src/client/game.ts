@@ -3,18 +3,29 @@ import type { GameInit, Snapshot } from '../shared/protocol';
 import type { AbilitySlot } from '../shared/types';
 import { HERO_BY_ID } from '../shared/data/heroes';
 import { MAP } from '../shared/map';
+import { FL } from '../shared/frontline/data';
 import { World, type UnitView } from './render/world';
 import { sfx } from './sfx';
 import { toast } from './ui/dom';
 import { Hud } from './ui/hud';
+import { FrontHud } from './ui/fl-hud';
+import type { GameHud } from './ui/hud-api';
 import type { Session } from './net';
 
 const SLOT_KEYS: Record<string, AbilitySlot> = { KeyQ: 'Q', KeyW: 'W', KeyE: 'E', KeyR: 'R' };
+/** Frontline puts the four abilities on Q E R F (W is for walking). */
+const FL_SLOT_KEYS: Record<string, AbilitySlot> = { KeyQ: 'Q', KeyE: 'W', KeyR: 'E', KeyF: 'R' };
+const FL_STANCE_KEYS = { KeyZ: 'garrison', KeyX: 'defend', KeyC: 'hold', KeyV: 'attack' } as const;
+const FL_CAM_Z = -2;
 
 /** One running match on screen: owns the World renderer, the HUD and the input mapping. */
 export class GameScreen {
   private world: World;
-  private hud: Hud;
+  private hud: GameHud;
+  private fh: FrontHud | null = null;
+  private frontline: boolean;
+  private overCanvas = false;
+  private lastDir = '0,0';
   private mouse = { x: 0, y: 0, ndcX: 0, ndcY: 0 };
   private raf = 0;
   private last = performance.now();
@@ -32,15 +43,23 @@ export class GameScreen {
 
   constructor(canvas: HTMLCanvasElement, private init: GameInit, private session: Session, onLeave: () => void, onReplay: () => void = () => {}) {
     this.world = new World(canvas, init);
-    this.hud = new Hud(init, session, this.world);
+    this.frontline = init.mode === 'frontline';
+    if (this.frontline) { this.fh = new FrontHud(init, session, this.world); this.hud = this.fh; } else this.hud = new Hud(init, session, this.world);
     this.hud.onLeave = () => { this.dispose(); onLeave(); };
     this.hud.onReplay = () => onReplay();
     this.hud.onMinimap = (x, z, button) => {
-      if (button === 2) { this.session.send({ c: 'move', x, z }); this.world.showMoveMarker(x, z, false); }
+      if (this.frontline) {
+        if (button === 2) { this.session.send({ c: 'move', x, z }); this.world.showMoveMarker(x, z, false); }
+        else { this.camLocked = false; this.world.camTarget.x = x; }
+      } else if (button === 2) { this.session.send({ c: 'move', x, z }); this.world.showMoveMarker(x, z, false); }
       else { this.camLocked = false; this.world.camTarget.set(x, 0, z); }
     };
     this.heroId = init.players.find((p) => p.playerId === init.you)?.heroId ?? '';
     if (!this.heroId) this.camLocked = false; // spectators fly the camera freely
+    if (this.frontline) {
+      this.world.camTarget.z = FL_CAM_Z;
+      if (!this.heroId) this.world.camTarget.x = 0;
+    }
     session.onSnap = (s) => this.onSnap(s);
     this.bindInput(canvas);
     const loop = () => { this.raf = requestAnimationFrame(loop); this.frame(); };
@@ -62,16 +81,22 @@ export class GameScreen {
     this.last = now;
     const me = this.myView();
     // camera
-    if (this.camLocked && me) this.world.camTarget.lerp(new THREE.Vector3(me.pos.x, 0, me.pos.z), 1 - Math.exp(-dt * 8));
+    const fl = this.frontline;
+    if (this.camLocked && me) this.world.camTarget.lerp(new THREE.Vector3(me.pos.x, 0, fl ? FL_CAM_Z : me.pos.z), 1 - Math.exp(-dt * 8));
     else if (!this.dragging && document.hasFocus()) {
       const edge = 18, speed = this.world.camDist * 1.2 * dt;
       if (this.mouse.x < edge) this.world.camTarget.x -= speed;
       if (this.mouse.x > window.innerWidth - edge) this.world.camTarget.x += speed;
-      if (this.mouse.y < edge) this.world.camTarget.z -= speed;
-      if (this.mouse.y > window.innerHeight - edge) this.world.camTarget.z += speed;
+      if (!fl && this.mouse.y < edge) this.world.camTarget.z -= speed;
+      if (!fl && this.mouse.y > window.innerHeight - edge) this.world.camTarget.z += speed;
     }
-    this.world.camTarget.x = THREE.MathUtils.clamp(this.world.camTarget.x, MAP.minX, MAP.maxX);
-    this.world.camTarget.z = THREE.MathUtils.clamp(this.world.camTarget.z, MAP.minZ + 10, MAP.maxZ);
+    if (fl) {
+      this.world.camTarget.x = THREE.MathUtils.clamp(this.world.camTarget.x, FL.minX, FL.maxX);
+      this.world.camTarget.z = FL_CAM_Z;
+    } else {
+      this.world.camTarget.x = THREE.MathUtils.clamp(this.world.camTarget.x, MAP.minX, MAP.maxX);
+      this.world.camTarget.z = THREE.MathUtils.clamp(this.world.camTarget.z, MAP.minZ + 10, MAP.maxZ);
+    }
     // holding right mouse keeps steering toward the cursor
     if (this.rightHeld && now - this.lastRightMove > 120) {
       this.lastRightMove = now;
@@ -120,20 +145,28 @@ export class GameScreen {
     on('resize', () => this.world.resize());
     on('mousemove', (e) => {
       this.mouse.x = e.clientX; this.mouse.y = e.clientY;
+      this.overCanvas = e.target === canvas;
       this.mouse.ndcX = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
       if (this.dragging) {
         const k = this.world.camDist / 600;
-        this.world.camTarget.set(this.dragging.cam.x - (e.clientX - this.dragging.x) * k, 0, this.dragging.cam.z - (e.clientY - this.dragging.y) * k);
+        this.world.camTarget.set(this.dragging.cam.x - (e.clientX - this.dragging.x) * k, 0, this.frontline ? FL_CAM_Z : this.dragging.cam.z - (e.clientY - this.dragging.y) * k);
       }
-      canvas.style.cursor = this.attackMove || this.pingMode ? 'crosshair' : this.cursorTarget((v) => v.team !== this.world.myTeam) ? 'pointer' : 'default';
+      canvas.style.cursor = this.attackMove || this.pingMode || this.fh?.pickingRally ? 'crosshair' : this.cursorTarget((v) => v.team !== this.world.myTeam) ? 'pointer' : 'default';
     });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     on('mousedown', (e) => {
       const me = this.snap?.me;
       if (e.button === 1) { this.camLocked = false; this.dragging = { x: e.clientX, y: e.clientY, cam: this.world.camTarget.clone() }; e.preventDefault(); return; }
       const p = this.world.pick(this.mouse.ndcX, this.mouse.ndcY);
+      if (this.fh && e.button === 0 && this.fh.pickingRally) { if (p) this.fh.setRally(p.x); return; }
       if (!p || !me) return;
+      if (e.button === 0 && this.frontline) {
+        if (this.aiming) { this.cast(this.aiming); this.aiming = null; return; }
+        const t = this.cursorTarget((v) => v.team !== this.world.myTeam);
+        if (t) this.session.send({ c: 'attack', id: t.id }); // plain ground clicks do nothing: right-click moves
+        return;
+      }
       if (e.button === 0) {
         if (this.aiming) { this.cast(this.aiming); this.aiming = null; return; }
         if (this.pingMode) { this.session.send({ c: 'ping', x: p.x, z: p.z, kind: e.shiftKey ? 'danger' : 'go' }); this.pingMode = false; return; }
@@ -141,6 +174,7 @@ export class GameScreen {
       }
       if (e.button === 2) {
         this.aiming = null;
+        this.fh?.cancelRally();
         this.attackMove = false;
         const t = this.cursorTarget((v) => v.team !== this.world.myTeam);
         if (t) this.session.send({ c: 'attack', id: t.id });
@@ -154,6 +188,7 @@ export class GameScreen {
       const k = e.code;
       if (k === 'Tab') { e.preventDefault(); if (!e.repeat) this.hud.toggle('board'); return; }
       if (e.repeat) return;
+      if (this.frontline) { this.flKeyDown(e); return; }
       if (SLOT_KEYS[k]) {
         if (!this.heroId) return;
         const slot = SLOT_KEYS[k];
@@ -167,8 +202,8 @@ export class GameScreen {
       switch (k) {
         case 'Enter': e.preventDefault(); this.hud.openChat(); break;
         case 'KeyB': this.session.send({ c: 'recall' }); break;
-        case 'KeyP': this.hud.toggle('shop'); break;
-        case 'KeyU': this.hud.toggle('base'); break;
+        case 'KeyP': (this.hud as Hud).toggle('shop'); break;
+        case 'KeyU': (this.hud as Hud).toggle('base'); break;
         case 'KeyA': this.attackMove = true; break;
         case 'KeyS': this.session.send({ c: 'stop' }); break;
         case 'KeyG': this.pingMode = true; break;
@@ -186,6 +221,7 @@ export class GameScreen {
     on('keyup', (e) => {
       const k = e.code;
       if (k === 'Tab') { e.preventDefault(); this.hud.closeModal(); return; }
+      if (this.frontline) { this.flKeyUp(e); return; }
       if (SLOT_KEYS[k] && this.aiming === SLOT_KEYS[k]) { this.cast(this.aiming); this.aiming = null; return; }
       if (k === 'ArrowUp') { this.steer.up = false; this.sendSteer(); }
       if (k === 'ArrowDown') { this.steer.down = false; this.sendSteer(); }
@@ -195,8 +231,61 @@ export class GameScreen {
     on('blur', () => { this.rightHeld = false; this.steer = { up: false, down: false, left: false, right: false }; this.sendSteer(); });
   }
 
+  // ---------------------------------------------------------------- Frontline keyboard
+  private flSteerKey(k: string): keyof GameScreen['steer'] | null {
+    switch (k) {
+      case 'KeyW': case 'ArrowUp': return 'up';
+      case 'KeyS': case 'ArrowDown': return 'down';
+      case 'KeyA': case 'ArrowLeft': return 'left';
+      case 'KeyD': case 'ArrowRight': return 'right';
+    }
+    return null;
+  }
+
+  private flKeyDown(e: KeyboardEvent) {
+    const k = e.code, fh = this.fh;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const dir = this.flSteerKey(k);
+    if (dir) { e.preventDefault(); this.steer[dir] = true; this.sendSteer(); return; }
+    const slot = FL_SLOT_KEYS[k];
+    if (slot) {
+      if (!this.heroId) return;
+      const def = HERO_BY_ID[this.heroId].abilities['QWER'.indexOf(slot)];
+      if (def.targeting === 'self') this.cast(slot);
+      else this.aiming = slot; // released -> cast
+      return;
+    }
+    const digit = /^Digit([1-8])$/.exec(k);
+    if (digit) { fh?.trainByIndex(Number(digit[1]) - 1, e.shiftKey ? 5 : 1); return; }
+    const stance = FL_STANCE_KEYS[k as keyof typeof FL_STANCE_KEYS];
+    if (stance && fh) {
+      if (stance !== 'hold') { fh.setStance(stance); return; }
+      const p = this.overCanvas ? this.world.pick(this.mouse.ndcX, this.mouse.ndcY) : null;
+      if (p) fh.setRally(p.x); else fh.beginRally(); // cursor is over the HUD: pick the spot with the next click
+      return;
+    }
+    switch (k) {
+      case 'Enter': e.preventDefault(); this.hud.openChat(); break;
+      case 'KeyB': fh?.toggle('build'); break;
+      case 'KeyY': this.camLocked = !this.camLocked; toast(this.camLocked ? 'Camera locked to your hero (Y)' : 'Camera free: move the mouse to the screen edge (Y)'); break;
+      case 'KeyM': toast(sfx.toggleMute() ? 'Sound off (M)' : 'Sound on (M)'); break;
+      case 'Space': e.preventDefault(); { const me = this.myView(); if (me) this.world.camTarget.x = me.pos.x; } break;
+      case 'Escape': this.aiming = null; fh?.cancelRally(); this.hud.closeModal(); break;
+      case 'F1': e.preventDefault(); document.getElementById('helpbox')?.classList.toggle('hidden'); break;
+    }
+  }
+
+  private flKeyUp(e: KeyboardEvent) {
+    const k = e.code;
+    const dir = this.flSteerKey(k);
+    if (dir) { this.steer[dir] = false; this.sendSteer(); return; }
+    if (FL_SLOT_KEYS[k] && this.aiming === FL_SLOT_KEYS[k]) { this.cast(this.aiming); this.aiming = null; }
+  }
+
   private sendSteer() {
     const s = this.steer;
+    const key = `${(s.right ? 1 : 0) - (s.left ? 1 : 0)},${(s.down ? 1 : 0) - (s.up ? 1 : 0)}`;
+    if (this.frontline) { if (key === this.lastDir) return; this.lastDir = key; }
     this.session.send({ c: 'dir', x: (s.right ? 1 : 0) - (s.left ? 1 : 0), z: (s.down ? 1 : 0) - (s.up ? 1 : 0) });
   }
 

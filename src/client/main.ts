@@ -1,5 +1,5 @@
 import { HEROES } from '../shared/data/heroes';
-import type { RoomInfo, GameInit } from '../shared/protocol';
+import type { RoomInfo, GameInit, GameMode } from '../shared/protocol';
 import type { Team } from '../shared/types';
 import { TEAM_NAMES, MAX_PLAYERS_PER_TEAM } from '../shared/constants';
 import type { PlayerSetup } from '../shared/sim/game';
@@ -41,7 +41,7 @@ async function boot() {
 function menu() {
   const el = h('div', { class: 'screen' }, `<div class="menu-card panel">
     <h1 class="logo">Bannerfall</h1>
-    <p class="tagline">20 heroes · monster waves · capture the banners · raze the fortress</p>
+    <p class="tagline">Mine gold · raise an army · command your hero · destroy the enemy keep</p>
     <div class="col" style="margin-bottom:14px"><input class="field" id="name" maxlength="16" placeholder="Your name" value="${esc(playerName())}"></div>
     <div class="menu-buttons">
       <button class="btn primary" id="practice">⚔️ Practice vs Bots</button>
@@ -68,15 +68,23 @@ function menu() {
 }
 
 function howTo() {
-  const el = h('div', { class: 'screen' }, `<div class="menu-card panel" style="width:min(760px,100%);text-align:left">
+  const el = h('div', { class: 'screen' }, `<div class="menu-card panel howto" style="width:min(780px,100%);text-align:left">
     <h2 class="serif gold">How to play</h2>
+    <h3 class="serif" style="margin:6px 0">⚔️ Frontline <span class="tag">main mode</span></h3>
+    <p><b>Goal.</b> Destroy the enemy <b>keep</b> at the far end of the lane (2v2: you and a teammate share one). Yours falls, you lose.</p>
+    <p><b>Economy.</b> You start with two <b>miners</b> (🪙150 each). They dig gold from veins near your base and carry it home; more miners, more gold. The two rich veins in the middle pay 60% more but are dangerous. A <b>Mine Shaft</b> makes every trip pay +40%, <b>Markets</b> add +2 gold/s. Everyone has their own purse, army and buildings.</p>
+    <p><b>Army.</b> Train units with <kbd>1</kbd>-<kbd>8</kbd> (<kbd>Shift</kbd> = 5). Miners and Swordsmen come straight from your keep; everything else needs a building, which you place on your 7 <b>plots</b> in the <b>Build panel</b> (<kbd>B</kbd>): Barracks (Shieldbearer, Assassin), Archery Range (Archer), Arcane Sanctum (Battlemage, Healer; needs an Archery Range), Giant Pit (Giant; needs a Barracks). <b>Houses</b> raise your population cap, the <b>Forge</b> researches damage and armour, <b>Watchtowers</b> guard your gate.</p>
+    <p><b>Stances.</b> <kbd>Z</kbd> <b>Garrison</b>: everyone hides in the keep and makes it shoot faster. <kbd>X</kbd> <b>Defend</b>: the army forms up in front of your base. <kbd>C</kbd> <b>Hold</b>: hold the line at a rally point you place with your cursor. <kbd>V</kbd> <b>Attack</b>: march on the enemy keep.</p>
+    <p><b>Heroes.</b> You directly control one hero: <kbd>W A S D</kbd> to walk, <kbd>Right-click</kbd> to move or attack, <kbd>Q E R F</kbd> for abilities (hold to aim, release to cast; F unlocks at level 4). Your hero levels up in battle and respawns after dying. Their abilities hit armies a bit softer, so lead your troops rather than fight alone.</p>
+    <p><b>Banners.</b> Three banners stand along the lane. Park soldiers or your hero beside one with no enemies near to capture it. Each banner you hold pays every teammate gold every second (the central Heart Banner pays double).</p>
+    <p><b>Also.</b> <kbd>Space</kbd> centre on hero · <kbd>Y</kbd> camera lock · <kbd>Tab</kbd> scores · <kbd>Enter</kbd> chat · <kbd>M</kbd> mute · <kbd>F1</kbd> controls. Click the minimap to move the camera, right-click it to send your hero.</p>
+    <details style="margin-top:10px"><summary class="gold serif" style="cursor:pointer;font-size:16px">🏰 Crossing (classic mode)</summary>
     <p><b>Goal.</b> Destroy the enemy <b>Fortress Core</b>. It is shielded by its three <b>banners</b>: while all three still fly it takes no damage; with 2 it takes 35%, with 1 it takes 60%, and with none it takes full damage.</p>
-    <p><b>Banners.</b> Stand inside an enemy banner's circle with no defenders inside to capture it (6s, faster with friends). A lane banner unlocks once that lane's <b>outer tower</b> falls; the <b>Keep Banner</b> unlocks once a lane banner is taken. Each capture pays every teammate 🪙250 and each banner grants its captors a perk: ⚔️ <b>War Banner</b> (north) +20% to your waves, 🪙 <b>Coin Banner</b> (south) +2 gold/s each, 👁️ <b>Keep Banner</b> reveals their fortress. You can also <b>respawn</b> at enemy banners you hold. Defenders can recapture.</p>
-    <p><b>Monster waves.</b> Your Bone Forge raises skeletons every 30s that march both lanes. In the Fortress panel set each lane's <b>directive</b> (Balanced, Swarm, Phalanx, Siege), upgrade the Forge, or hire Bone Brutes. The first time a fortress drops below 30% it triggers a <b>Last Stand</b>.</p>
-    <p><b>Gold.</b> Earned passively, for last hits, kills, assists, towers, banners, jungle camps and the <b>Bone Colossus</b> at the centre (spawns at 5:00, empowers your whole team). Spend it at the War Smithy (at your fountain) on equipment, or in the Fortress panel on team upgrades and <b>defensive towers</b> on build pads: Arrow, Frost (slow), Cannon (splash) and Arcane (chains, anti-hero).</p>
-    <p><b>Day and night.</b> Every 4 minutes night falls for 2: vision shrinks and monsters pay 50% more. Ambush time.</p>
-    <p><b>Controls.</b> <kbd>Right-click</kbd> move / attack · <kbd>Q W E R</kbd> hold to aim, release to cast (R unlocks at level 4) · <kbd>1-6</kbd> items · <kbd>B</kbd> recall · <kbd>P</kbd> shop · <kbd>U</kbd> fortress · <kbd>Tab</kbd> score · <kbd>A</kbd> attack-move · <kbd>G</kbd> ping · <kbd>Space</kbd> center camera · <kbd>Y</kbd> unlock camera · mouse wheel zoom · arrow keys steer.</p>
-    <div class="row"><span class="spacer"></span><button class="btn primary" id="back">Back</button></div></div>`);
+    <p><b>Banners.</b> Stand inside an enemy banner's circle with no defenders inside to capture it (6s, faster with friends). A lane banner unlocks once that lane's <b>outer tower</b> falls; the <b>Keep Banner</b> unlocks once a lane banner is taken. Each capture pays every teammate 🪙250 and each banner grants its captors a perk. You can also <b>respawn</b> at enemy banners you hold.</p>
+    <p><b>Monster waves.</b> Your Bone Forge raises skeletons every 30s that march both lanes. In the Fortress panel set each lane's <b>directive</b>, upgrade the Forge, or hire Bone Brutes.</p>
+    <p><b>Gold.</b> Earned passively, for last hits, kills, towers, banners and jungle camps. Spend it at the War Smithy (at your fountain) on equipment, or in the Fortress panel on team upgrades and <b>defensive towers</b>.</p>
+    <p><b>Controls.</b> <kbd>Right-click</kbd> move / attack · <kbd>Q W E R</kbd> hold to aim, release to cast · <kbd>1-6</kbd> items · <kbd>B</kbd> recall · <kbd>P</kbd> shop · <kbd>U</kbd> fortress · <kbd>Tab</kbd> score · <kbd>A</kbd> attack-move · <kbd>G</kbd> ping · <kbd>Space</kbd> center camera · <kbd>Y</kbd> unlock camera · arrow keys steer.</p></details>
+    <div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn primary" id="back">Back</button></div></div>`);
   show(el);
   el.querySelector<HTMLButtonElement>('#back')!.onclick = () => menu();
 }
@@ -89,13 +97,22 @@ function codex() {
   el.querySelector<HTMLButtonElement>('#back')!.onclick = () => menu();
 }
 
+const MODE_INFO: Record<GameMode, { name: string; icon: string; text: string }> = {
+  frontline: { name: 'Frontline', icon: '⚔️', text: 'One lane. Mine gold, raise an army, lead your hero and destroy the enemy keep. Up to 2v2.' },
+  crossing: { name: 'Crossing', icon: '🏰', text: 'The classic: two lanes, monster waves, banners and shops. Up to 5v5.' },
+};
+/** Frontline has plots for two players per team; Crossing takes up to five. */
+const teamSizes = (mode: GameMode) => (mode === 'frontline' ? [1, 2] : [1, 2, 3, 4, 5]);
+
 // ------------------------------------------------------------------ practice (local, offline)
 function practiceLobby() {
   let team: Team = 0;
-  let size = 3;
+  let mode: GameMode = 'frontline';
+  const sizes: Record<GameMode, number> = { frontline: 2, crossing: 3 };
   let hero = safeGet('bf.hero') ?? HEROES[0].id;
   const el = h('div', { class: 'screen' }, `<div class="lobby">
     <div class="panel col"><h2>Practice vs Bots</h2><p class="muted">Runs entirely in your browser. Bots fill both teams.</p>
+      <div><div class="muted">Mode</div><div class="row" id="modes"></div><p class="muted" id="modetext" style="font-size:12px;margin:6px 0 0"></p></div>
       <div><div class="muted">Your team</div><div class="row" id="teams"></div></div>
       <div><div class="muted">Team size</div><div class="row" id="sizes"></div></div>
       <span class="spacer"></span><button class="btn primary" id="go">Start match</button><button class="btn" id="back">Back</button></div>
@@ -103,9 +120,12 @@ function practiceLobby() {
   show(el);
   const draw = () => {
     el.querySelector('#teams')!.innerHTML = ([0, 1] as Team[]).map((t) => `<button class="btn ${t === team ? `bg-team${t}` : ''}" data-t="${t}">${TEAM_NAMES[t]}</button>`).join('');
-    el.querySelector('#sizes')!.innerHTML = [1, 2, 3, 4, 5].map((n) => `<button class="btn small ${n === size ? 'primary' : ''}" data-s="${n}">${n}v${n}</button>`).join('');
+    el.querySelector('#modes')!.innerHTML = (['frontline', 'crossing'] as GameMode[]).map((m) => `<button class="btn ${m === mode ? 'primary' : ''}" data-mode="${m}">${MODE_INFO[m].icon} ${MODE_INFO[m].name}</button>`).join('');
+    el.querySelector('#modetext')!.textContent = MODE_INFO[mode].text;
+    el.querySelector('#sizes')!.innerHTML = teamSizes(mode).map((n) => `<button class="btn small ${n === sizes[mode] ? 'primary' : ''}" data-s="${n}">${n}v${n}</button>`).join('');
+    el.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.onclick = () => { mode = b.dataset.mode as GameMode; draw(); });
     el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.onclick = () => { team = Number(b.dataset.t) as Team; draw(); });
-    el.querySelectorAll<HTMLButtonElement>('[data-s]').forEach((b) => b.onclick = () => { size = Number(b.dataset.s); draw(); });
+    el.querySelectorAll<HTMLButtonElement>('[data-s]').forEach((b) => b.onclick = () => { sizes[mode] = Number(b.dataset.s); draw(); });
   };
   draw();
   const picker = new HeroPicker(el.querySelector('#grid')!, el.querySelector('#detail')!, (id) => { hero = id; safeSet('bf.hero', id); }, hero);
@@ -115,12 +135,13 @@ function practiceLobby() {
     const name = playerName();
     const used = new Set([hero]);
     const pick = () => { const free = HEROES.filter((x) => !used.has(x.id)); const x = free[Math.floor(Math.random() * free.length)]; used.add(x.id); return x.id; };
+    const size = sizes[mode];
     const setups: PlayerSetup[] = [{ pid: 'you', name, team, heroId: hero, bot: false }];
     for (const t of [0, 1] as Team[]) {
       const need = size - (t === team ? 1 : 0);
       for (let i = 0; i < need; i++) setups.push({ pid: `bot${t}${i}`, name: `${t === 0 ? 'Dawn' : 'Dusk'} Bot ${i + 1}`, team: t, heroId: pick(), bot: true });
     }
-    const s = new LocalSession(setups, 'you');
+    const s = new LocalSession(setups, 'you', mode);
     startGame(s, () => s.start());
   };
 }
@@ -196,21 +217,30 @@ function onlineLobby(c: NetClient, r: RoomInfo) {
   if (lobbyPicker) { lobbyPicker.selected = mine?.heroId ?? lobbyPicker.selected; lobbyPicker.render(taken); }
   const side = lobbyEl.querySelector<HTMLElement>('#side')!;
   const invite = `${location.origin}${location.pathname}?room=${r.code}`;
+  const cap = r.mode === 'frontline' ? 2 : MAX_PLAYERS_PER_TEAM;
+  const count = (t: Team) => r.slots.filter((x) => x.team === t).length;
   const team = (t: Team) => `<div><div class="row"><h2 class="team${t}" style="margin:0">${TEAM_NAMES[t]}</h2><span class="spacer"></span>
-      ${mine && mine.team !== t ? `<button class="btn small" data-team="${t}">Join</button>` : ''}${isHost ? `<button class="btn small" data-bot="${t}">+ Bot</button>` : ''}</div>
+      ${mine && mine.team !== t && count(t) < cap ? `<button class="btn small" data-team="${t}">Join</button>` : ''}${isHost && count(t) < cap ? `<button class="btn small" data-bot="${t}">+ Bot</button>` : ''}</div>
       ${r.slots.filter((s) => s.team === t).map((s) => `<div class="slot bg-team${t}">${s.heroId ? `<img src="${portrait(s.heroId)}">` : '<img>'}<span class="name">${esc(s.name)}${s.pid === r.host ? ' 👑' : ''}${s.pid === c.pid ? ' (you)' : ''}</span>
         <span class="muted">${s.heroId ? esc(HEROES.find((x) => x.id === s.heroId)?.name ?? '') : 'picking…'}</span>${s.bot && isHost ? `<button class="close" data-rm="${s.pid}">✕</button>` : ''}</div>`).join('') || '<p class="muted">Empty</p>'}</div>`;
+  const over = r.mode === 'frontline' && (count(0) > 2 || count(1) > 2);
   side.innerHTML = `<div class="code-box" id="code" title="Click to copy the invite link">${r.code}</div>
     <button class="btn small" id="copy">🔗 Copy invite link</button>
+    <div><div class="muted">Mode</div>${isHost
+      ? `<div class="row">${(['frontline', 'crossing'] as GameMode[]).map((m) => `<button class="btn small ${m === r.mode ? 'primary' : ''}" data-mode="${m}">${MODE_INFO[m].icon} ${MODE_INFO[m].name}</button>`).join('')}</div>`
+      : `<div class="gold"><b>${MODE_INFO[r.mode].icon} ${MODE_INFO[r.mode].name}</b></div>`}
+      <div class="muted" style="font-size:12px;margin-top:4px">${MODE_INFO[r.mode].text}</div>
+      ${over ? '<div style="color:#ffb36b;font-size:12px;margin-top:4px">Frontline holds two players per team: move someone over before starting.</div>' : ''}</div>
     ${team(0)}${team(1)}
     <div class="muted" style="font-size:12px">${isHost ? 'Empty seats are filled with bots when you start.' : 'Waiting for the host to start…'}</div>
-    ${isHost ? `<label class="row"><input type="checkbox" id="fill" ${r.fillBots ? 'checked' : ''}> Fill with bots up to <select id="ts">${[1, 2, 3, 4, 5].map((n) => `<option ${n === r.teamSize ? 'selected' : ''}>${n}</option>`).join('')}</select> per team</label>` : ''}
+    ${isHost ? `<label class="row"><input type="checkbox" id="fill" ${r.fillBots ? 'checked' : ''}> Fill with bots up to <select id="ts">${teamSizes(r.mode).map((n) => `<option ${n === r.teamSize ? 'selected' : ''}>${n}</option>`).join('')}</select> per team</label>` : ''}
     <span class="spacer"></span>
     ${isHost ? '<button class="btn primary" id="start">Start match</button>' : ''}
     <button class="btn" id="leave">Leave</button>`;
   const copy = () => { navigator.clipboard?.writeText(invite).then(() => toast('Invite link copied!')).catch(() => toast(invite)); };
   side.querySelector<HTMLElement>('#code')!.onclick = copy;
   side.querySelector<HTMLButtonElement>('#copy')!.onclick = copy;
+  side.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.onclick = () => c.raw({ t: 'mode', mode: b.dataset.mode as GameMode }));
   side.querySelectorAll<HTMLButtonElement>('[data-team]').forEach((b) => b.onclick = () => c.raw({ t: 'team', team: Number(b.dataset.team) as Team }));
   side.querySelectorAll<HTMLButtonElement>('[data-bot]').forEach((b) => b.onclick = () => c.raw({ t: 'addBot', team: Number(b.dataset.bot) as Team }));
   side.querySelectorAll<HTMLButtonElement>('[data-rm]').forEach((b) => b.onclick = () => c.raw({ t: 'removeBot', pid: b.dataset.rm! }));
