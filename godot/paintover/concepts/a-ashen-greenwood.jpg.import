@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xgffhe0i8rkt"
-path="res://.godot/imported/compare-4-close.jpg-bd0458c5ec46c3869e7f2650fc9dfe9d.ctex"
+uid="uid://dn78hhdxajmp8"
+path="res://.godot/imported/a-ashen-greenwood.jpg-a13f14ae2ed24c7a2b8a8108182267f5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://paintover/shots/compare-4-close.jpg"
-dest_files=["res://.godot/imported/compare-4-close.jpg-bd0458c5ec46c3869e7f2650fc9dfe9d.ctex"]
+source_file="res://paintover/concepts/a-ashen-greenwood.jpg"
+dest_files=["res://.godot/imported/a-ashen-greenwood.jpg-a13f14ae2ed24c7a2b8a8108182267f5.ctex"]
 
 [params]
 

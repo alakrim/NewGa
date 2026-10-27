@@ -10,7 +10,9 @@ import base64, io, json, os, sys, time, urllib.request
 from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "godot", "paintover")
-CONCEPT = f"{ROOT}/concepts/b-autumn-siege.jpg"
+# Swatches cut from the chosen concept (concepts/b-autumn-siege.jpg): the whole concept has its own layout,
+# which the models copy; separate crops carry only the look.
+CONCEPT = f"{ROOT}/concepts/b-swatches.jpg"
 COLS = 3
 TILE_W, STEP = 87.0, 72.0  # tiles.gd: tile width and column spacing in units
 OVERLAP_PX = round((TILE_W - STEP) / TILE_W * 1920)
@@ -36,12 +38,12 @@ layout must match IMAGE 1 exactly: every road edge, plot, wall, trench, crater, 
 the same position and size. Do not move, add, remove, resize or merge layout elements. Do not zoom, crop, pan, \
 rotate or change the perspective. Fill the whole frame edge to edge with no border.
 
-IMAGE 2 is the art direction, "The Autumn Siege": match its look exactly: its blazing autumn forest of red, \
-orange and gold maples with dark pines, its cracked ancient paving, its trenches with sharpened stakes, its \
-striped canvas tents and timber watchtowers, its rocky gold veins, its warm golden-hour palette, rich detail, \
-painterly rendering, real volume, form shading and cast shadows. Take ONLY the look and the kind of props from \
-IMAGE 2. Take the layout ONLY from IMAGE 1: IMAGE 2 has a different number of plots and a different road; ignore \
-its layout completely.
+IMAGE 2 is the art direction, "The Autumn Siege": a sheet of six separate sample crops on a dark background \
+(autumn forest canopy, army tents and watchtowers, a trench with sharpened stakes, the paved road, rock \
+outcrops with gold veins, pines). It has NO layout: never copy its arrangement, its dark background or its \
+crops into the picture. Use it only for how each kind of thing looks: blazing red, orange and gold maples with \
+dark pines, cracked ancient paving, earthen trenches with stakes, striped canvas tents, timber watchtowers, \
+rocky gold veins, a warm golden-hour palette, rich detail, painterly rendering, real volume and cast shadows.
 
 What each blockout colour in IMAGE 1 is:
 - grey wide horizontal band: the war road, an ancient paved military road of large worn flagstones
@@ -75,6 +77,24 @@ other tiles.
 
 No characters, soldiers, people, animals, bodies, castles, houses, flags, banners, user interface, text, \
 numbers, icons or minimap. Plots, courtyard floor and stone circles stay empty: the game adds those."""
+
+# Second pass: Muse refines the aligned first pass (Seedream) without changing where anything is.
+REFINE = """Refine IMAGE 1 into finished, beautiful, highly polished game art. IMAGE 1 is a painted video game \
+battlefield whose layout is already exactly right: it is projected onto 3D geometry, so every object, edge and \
+shadow must stay at exactly the same position, size and shape. Do not move, add or remove anything: no new \
+tents, carts, rocks, trees or props, no new walls. Do not zoom, crop, pan or change the perspective.
+
+Improve only the rendering: turn any flat or smooth colour areas into rich, natural texture (flat orange \
+patches become drifts of fallen leaves blended into the ground; flat dark strips become dug earthen trenches \
+with depth and the stakes beside them; flat ground gets grass, mud, pebbles and leaves), give every tree a \
+detailed painterly canopy with volume, and match the look of IMAGE 2 (sample crops from the art direction, \
+"The Autumn Siege"; it has no layout, never copy its arrangement): blazing red, orange and gold maples, dark \
+pines, cracked ancient paving, warm golden-hour palette, real volume and cast shadows.
+
+The paved road must stay calm and readable for small brightly coloured soldiers: even, medium-dark, slightly \
+desaturated warm grey stone with fine low-contrast texture, no props or leaf piles on it. Even lighting across \
+the whole image: no vignette, no light gradient, no blur, no fog, no smoke. No characters, people, animals, \
+castles, flags, text or user interface."""
 
 NEIGHBOUR = """
 
@@ -133,6 +153,20 @@ def seeded_guide(i, n):
     return path
 
 
+def refine(i, key):
+    """Second pass on paint/tile_<i>_seed.jpg with Muse; writes paint/tile_<i><tag>.jpg."""
+    refs = [data_url(f"{ROOT}/paint/tile_{i}_seed.jpg"), data_url(CONCEPT)]
+    body = {"model": "meta/muse-image", "prompt": REFINE + "\n\n" + NOTES[i], "aspect_ratio": "3:2",
+            "input_references": [{"type": "image_url", "image_url": {"url": u}} for u in refs]}
+    t = time.time()
+    req = urllib.request.Request("https://openrouter.ai/api/v1/images", data=json.dumps(body).encode(),
+                                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+    d = json.load(urllib.request.urlopen(req, timeout=600))
+    im = Image.open(io.BytesIO(base64.b64decode(d["data"][0]["b64_json"]))).convert("RGB")
+    im.resize((1920, 1280), Image.LANCZOS).save(f"{ROOT}/paint/tile_{i}{OUT_TAG}.jpg", quality=93)
+    print(f"refine {i}: {im.size} in {time.time() - t:.0f}s")
+
+
 def paint(i, key):
     guide = f"{ROOT}/guides/tile_{i}.png"
     n = neighbour(i)
@@ -163,4 +197,4 @@ def paint(i, key):
 if __name__ == "__main__":
     key = os.environ["OPENROUTER_API_KEY"]
     for a in sys.argv[1:]:
-        paint(int(a), key)
+        refine(int(a), key) if os.environ.get("PO_REFINE") else paint(int(a), key)

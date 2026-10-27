@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8647us1dhwwt"
-path="res://.godot/imported/po-3-wide.jpg-5af293a60d595f875450d77017fb9585.ctex"
+uid="uid://cicn4lcm1pg5p"
+path="res://.godot/imported/b-autumn-siege.jpg-dcee64736ed462088880d6a2b2791728.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://paintover/shots/po-3-wide.jpg"
-dest_files=["res://.godot/imported/po-3-wide.jpg-5af293a60d595f875450d77017fb9585.ctex"]
+source_file="res://paintover/concepts/b-autumn-siege.jpg"
+dest_files=["res://.godot/imported/b-autumn-siege.jpg-dcee64736ed462088880d6a2b2791728.ctex"]
 
 [params]
 

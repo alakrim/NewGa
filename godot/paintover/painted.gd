@@ -4,6 +4,7 @@ extends "res://tests/hd2d.gd"
 ## Screenshots go to $VT_SHOTS as po-*.png.
 
 const Blockout = preload("res://paintover/blockout.gd")
+const Tiles = preload("res://paintover/tiles.gd")
 
 
 func _ready() -> void:
@@ -12,6 +13,7 @@ func _ready() -> void:
 	add_child(game)
 	world = game.world
 	_paint_world()
+	_soften_atmosphere()
 	_stage()
 	_run()
 
@@ -29,6 +31,8 @@ func _paint_world() -> void:
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://paintover/projection.gdshader")
 	mat.set_shader_parameter("pano", ImageTexture.create_from_image(img))
+	mat.set_shader_parameter("rect", Vector4(Tiles.PANO.position.x, Tiles.PANO.end.y, Tiles.PANO.size.x, Tiles.PANO.size.y))
+	mat.set_shader_parameter("fallback", Color(0.36, 0.2, 0.09))  # autumn canopy beyond the painting
 	var env: Environment = world.environment
 	mat.set_shader_parameter("ambient", Vector3(env.ambient_light_color.r, env.ambient_light_color.g, env.ambient_light_color.b) * env.ambient_light_energy)
 	var blocks := Node3D.new()
@@ -37,6 +41,22 @@ func _paint_world() -> void:
 	Blockout.new().build(blocks, func(_k): return mat)
 	for b in blocks.get_children():
 		b.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF  # the painting has their shadows
+
+
+## The painting already has its light and mood, so the game's own haze would wash it out: no light
+## shafts, no fog, no blur on the near edge, a gentler grade. The far tilt-shift blur and vignette stay.
+func _soften_atmosphere() -> void:
+	for layer in game.get_children():
+		if layer is CanvasLayer:
+			for c in layer.get_children():
+				if c is ColorRect and c.material is ShaderMaterial and c.material.shader.resource_path.ends_with("sunbeams.gdshader"):
+					c.visible = false
+	var env: Environment = world.environment
+	env.fog_enabled = false
+	env.adjustment_saturation = 1.04
+	env.adjustment_contrast = 1.06
+	env.glow_intensity = 0.2
+	game.cam3d.attributes.dof_blur_near_enabled = false
 
 
 func _shot(name: String) -> void:

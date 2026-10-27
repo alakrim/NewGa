@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f3kp11nmytlm"
-path="res://.godot/imported/tile_0.png-353cb24ebadb46dd39deae384be9fec6.ctex"
+uid="uid://bu2m426de32c8"
+path="res://.godot/imported/b-swatches.jpg-aecf3b344e5506c9e4b902e3ca7a700e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://paintover/guides/tile_0.png"
-dest_files=["res://.godot/imported/tile_0.png-353cb24ebadb46dd39deae384be9fec6.ctex"]
+source_file="res://paintover/concepts/b-swatches.jpg"
+dest_files=["res://.godot/imported/b-swatches.jpg-aecf3b344e5506c9e4b902e3ca7a700e.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkn8nbvi38ejv"
-path="res://.godot/imported/tile_2.png-323e4a2a8eeabb316c6dab4c6ef099d7.ctex"
+uid="uid://wsia53jk64t8"
+path="res://.godot/imported/c-moonlit-pines.jpg-50cc039e5429387fad7f8be21709d668.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://paintover/guides/tile_2.png"
-dest_files=["res://.godot/imported/tile_2.png-323e4a2a8eeabb316c6dab4c6ef099d7.ctex"]
+source_file="res://paintover/concepts/c-moonlit-pines.jpg"
+dest_files=["res://.godot/imported/c-moonlit-pines.jpg-50cc039e5429387fad7f8be21709d668.ctex"]
 
 [params]
 
