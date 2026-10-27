@@ -39,3 +39,28 @@ VT_SHOTS=$PWD/godot/paintover/shots godot --path godot --resolution 1280x720 res
 Known gaps: the painting is about 22 px per unit, so it softens at the closest zoom; the trenches came out
 flatter than in the concept; `pano.jpg` is loaded from disk at runtime, which only works when running from
 the project, not in an exported build.
+
+## Depth paint-over (`depth/`): the art first, the 3D from the art
+
+Painting over a block map limits the model to texturing my layout. This flips it: the model composes the
+scene freely and the geometry comes from the painting. Tried on the west end only (tile 0's framing).
+
+1. `sketch.py`: a zone sketch on the view plane (forest, camp, plots, cliff, road, courtyard, gold strip).
+2. `paint.py`: one Muse Image painting from the sketch and a text description of concept B
+   (`paint_text.jpg`). With the swatch sheet as a second reference it copied concept B's layout instead.
+3. `fit.py`: warps the painting onto the gameplay positions (landmark rows and columns), takes local relief
+   from Depth Anything V2 Small (ONNX, CPU) on top of zone heights, and flattens the lane, courtyard and plots
+   (`painting.jpg`, `height.bin`).
+4. `painted_depth.tscn`: a height-field mesh whose vertices sit on the camera's rays, with the painting
+   projected onto it, and the staged battle moved to this end (`shots/`).
+
+```bash
+python3 godot/paintover/depth/sketch.py
+OPENROUTER_API_KEY=... python3 godot/paintover/depth/paint.py text
+python3 -I godot/paintover/depth/fit.py text <depth-anything-v2-small model.onnx>
+VT_SHOTS=... godot --path godot --resolution 1280x720 res://paintover/depth/painted_depth.tscn
+```
+
+The model is `onnx/model.onnx` from huggingface.co/onnx-community/depth-anything-v2-small (not in git).
+Known gaps: the leftmost gold outcrop sits about 7 units from its vein; the meadow east of the camp is
+painted at plateau height; the rest of the map is not painted yet.

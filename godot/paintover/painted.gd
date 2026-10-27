@@ -18,14 +18,9 @@ func _ready() -> void:
 	_run()
 
 
-## Drops the game's own terrain, water, ground cover, trees and props, keeps light, fireflies, braziers and
-## actors, and builds the painted blocks in their place.
+## Replaces the game's terrain and dressing with the painted blocks.
 func _paint_world() -> void:
-	for c in world.get_children():
-		var keep: bool = c == world.actors or c is WorldEnvironment or c is DirectionalLight3D or c is OmniLight3D \
-			or c is GPUParticles3D or (c is AnimatedSprite3D and not c.shaded)
-		if not keep:
-			c.queue_free()
+	_strip_world()
 	var img := Image.load_from_file(ProjectSettings.globalize_path("res://paintover/pano.jpg"))
 	img.generate_mipmaps()
 	var mat := ShaderMaterial.new()
@@ -41,6 +36,16 @@ func _paint_world() -> void:
 	Blockout.new().build(blocks, func(_k): return mat)
 	for b in blocks.get_children():
 		b.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF  # the painting has their shadows
+
+
+## Drops the game's own terrain, water, ground cover, trees and props; keeps light, fireflies, braziers and
+## actors.
+func _strip_world() -> void:
+	for c in world.get_children():
+		var keep: bool = c == world.actors or c is WorldEnvironment or c is DirectionalLight3D or c is OmniLight3D \
+			or c is GPUParticles3D or (c is AnimatedSprite3D and not c.shaded)
+		if not keep:
+			c.queue_free()
 
 
 ## The painting already has its light and mood, so the game's own haze would wash it out: no light
