@@ -12,8 +12,8 @@ func _ready() -> void:
 	game.ortho = true
 	add_child(game)
 	world = game.world
-	_paint_world()
 	_soften_atmosphere()
+	_paint_world()
 	_stage()
 	_run()
 
@@ -48,20 +48,42 @@ func _strip_world() -> void:
 			c.queue_free()
 
 
-## The painting already has its light and mood, so the game's own haze would wash it out: no light
-## shafts, no fog, no blur on the near edge, a gentler grade. The far tilt-shift blur and vignette stay.
+## The painting already has its light and mood, so the game's own grading and haze would wash it out, and
+## its sun must agree with the painted one:
+## - no tone mapping curve, colour grade, contrast or saturation change, fog, light shafts, vignette or depth of
+##   field: the ground shows exactly as painted (projection.gdshader keeps lit areas at the painted colour);
+## - the sun comes from the left like the painted light (the painted tents' shadows fall to the right), turned
+##   a little toward the front: units are flat sprites facing the camera and leaning back, so a sun straight
+##   from the side hits them edge-on and one from behind hides their shadow under them and leaves them dark;
+## - single-map sun shadows: the two-split mode the game uses gives no shadows with an orthographic camera.
+const SUN_ROT := Vector3(-38.0, -60.0, 0.0)
+
+
 func _soften_atmosphere() -> void:
 	for layer in game.get_children():
 		if layer is CanvasLayer:
 			for c in layer.get_children():
 				if c is ColorRect and c.material is ShaderMaterial and c.material.shader.resource_path.ends_with("sunbeams.gdshader"):
 					c.visible = false
+				elif c is TextureRect:
+					c.visible = false  # vignette
 	var env: Environment = world.environment
 	env.fog_enabled = false
-	env.adjustment_saturation = 1.04
-	env.adjustment_contrast = 1.06
-	env.glow_intensity = 0.2
-	game.cam3d.attributes.dof_blur_near_enabled = false
+	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	env.tonemap_exposure = 1.0
+	env.adjustment_enabled = false
+	env.glow_intensity = 0.25  # fire and spells still bloom; the painting stays below the threshold
+	env.ambient_light_color = Color(0.86, 0.84, 0.86)
+	env.ambient_light_energy = 0.62
+	var sun: DirectionalLight3D = world.sun
+	sun.rotation_degrees = SUN_ROT
+	sun.light_color = Color(1.0, 0.86, 0.66)
+	sun.light_energy = 0.75
+	sun.shadow_opacity = 1.0
+	sun.shadow_blur = 0.7
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.directional_shadow_max_distance = 160.0
+	game.cam3d.attributes = null
 
 
 func _shot(name: String) -> void:
