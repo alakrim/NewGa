@@ -36,6 +36,8 @@ var my_unit := 0
 var my_team := 0
 var my_color := "blue"
 var cam_locked := true
+## Orthographic camera at the same pitch and framing (paint-over experiment, see paintover/).
+var ortho := false
 var units := {}  # id -> UnitView
 var buildings := {}  # id -> BuildingView
 var projs := {}  # id -> Node3D
@@ -605,6 +607,9 @@ func _apply_camera(delta: float) -> void:
 	var r := deg_to_rad(PITCH)
 	cam3d.position = target + Vector3(0, sin(r) * dist, cos(r) * dist)
 	cam3d.rotation = Vector3(-r, 0, 0)
+	if ortho:
+		cam3d.projection = Camera3D.PROJECTION_ORTHOGONAL
+		cam3d.size = half_h * 2.0
 	cam3d.h_offset = camera.offset.x / V.PX
 	cam3d.v_offset = camera.offset.y / V.PX
 	# tilt-shift: the band around the focus stays sharp, far hills and the near edge soften
