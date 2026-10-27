@@ -24,6 +24,7 @@ var _state := WebSocketPeer.STATE_CLOSED
 var _ping_timer := 0.0
 var _retry_at := -1.0
 var _want_open := false
+var _saved_url := ""  # the url to persist; a --server= override is for this run only
 
 
 func _ready() -> void:
@@ -32,14 +33,22 @@ func _ready() -> void:
 		url = cfg.get_value("net", "url", url)
 		pid = cfg.get_value("net", "pid", "")
 		player_name = cfg.get_value("net", "name", player_name)
+	_saved_url = url
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--server="):
 			url = arg.substr(9)
 
 
+## Sets the server address chosen by the player and remembers it.
+func set_url(u: String) -> void:
+	url = u
+	_saved_url = u
+	save()
+
+
 func save() -> void:
 	var cfg := ConfigFile.new()
-	cfg.set_value("net", "url", url)
+	cfg.set_value("net", "url", _saved_url)
 	cfg.set_value("net", "pid", pid)
 	cfg.set_value("net", "name", player_name)
 	cfg.save(SAVE_PATH)

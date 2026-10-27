@@ -392,8 +392,7 @@ func _apply_url() -> void:
 	if not (u.begins_with("ws://") or u.begins_with("wss://")):
 		toast("The address must start with ws:// or wss://")
 		return
-	Net.url = u
-	Net.save()
+	Net.set_url(u)
 	Net.close()
 	Net.connect_to_server()
 	toast("Connecting...")
