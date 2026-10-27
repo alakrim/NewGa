@@ -16,14 +16,12 @@ func _ready() -> void:
 	_run()
 
 
-## Drops the game's own terrain, ground cover, trees and props, keeps light, water, fireflies, braziers and
+## Drops the game's own terrain, water, ground cover, trees and props, keeps light, fireflies, braziers and
 ## actors, and builds the painted blocks in their place.
 func _paint_world() -> void:
 	for c in world.get_children():
 		var keep: bool = c == world.actors or c is WorldEnvironment or c is DirectionalLight3D or c is OmniLight3D \
 			or c is GPUParticles3D or (c is AnimatedSprite3D and not c.shaded)
-		if c is MeshInstance3D and c.material_override is ShaderMaterial and c.material_override.shader.resource_path.ends_with("water.gdshader"):
-			keep = true
 		if not keep:
 			c.queue_free()
 	var img := Image.load_from_file(ProjectSettings.globalize_path("res://paintover/pano.jpg"))
@@ -36,7 +34,7 @@ func _paint_world() -> void:
 	var blocks := Node3D.new()
 	blocks.name = "PaintedBlocks"
 	world.add_child(blocks)
-	Blockout.new().build(blocks, func(k): return null if k == "water" else mat)
+	Blockout.new().build(blocks, func(_k): return mat)
 	for b in blocks.get_children():
 		b.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF  # the painting has their shadows
 

@@ -5,12 +5,12 @@ extends RefCounted
 ## panorama over that plane; it is generated in overlapping tiles and stitched.
 
 const PITCH := 52.0
-const TILE := Vector2(76.5, 51.0)  # units on the view plane, 3:2 like the image model's output
+const TILE := Vector2(87.0, 58.0)  # units on the view plane, 3:2 like the image model's output
 const TILE_PX := Vector2i(1920, 1280)
 ## Panorama extent on the view plane (u0, v0, u1, v1) and tile centres.
-const PANO := Rect2(-108.0, -18.0, 216.0, 51.0)
-const COLS := [-66.0, 0.0, 66.0]
-const ROWS := [7.5]
+const PANO := Rect2(-115.5, -25.0, 231.0, 58.0)
+const COLS := [-72.0, 0.0, 72.0]
+const ROWS := [4.0]
 
 
 static func view_v(p: Vector3) -> float:

@@ -8,12 +8,12 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TILE_W, STEP, N = 76.5, 66.0, 3  # tiles.gd
+TILE_W, STEP, N = 87.0, 72.0, 3  # tiles.gd
 TW, TH = 1920, 1280
 STEP_PX = round(STEP / TILE_W * TW)
 OV = TW - STEP_PX
 FEATHER = 12
-SEED_PX = 140  # tools/paintover.py: how much of the overlap was pasted into the outer tiles' guides
+SEED_PX = 180  # tools/paintover.py: how much of the overlap was pasted into the outer tiles' guides
 MARGIN = 16
 
 

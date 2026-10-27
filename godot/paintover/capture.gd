@@ -12,7 +12,7 @@ var cam := Camera3D.new()
 func _ready() -> void:
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
-	e.background_color = Blockout.COLORS.water
+	e.background_color = Blockout.COLORS.ground
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color(1, 1, 1)
 	e.ambient_light_energy = 0.55
