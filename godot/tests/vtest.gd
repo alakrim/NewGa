@@ -3,7 +3,7 @@ extends Node
 ## Run: godot --path godot res://tests/vtest.tscn -- --server=ws://127.0.0.1:8788/ws  (server with BF_SPEED=4)
 
 const Game = preload("res://scripts/game.gd")
-var game: Node2D
+var game: Node3D
 var started := false
 
 
@@ -61,11 +61,11 @@ func _look_at_fight() -> void:
 			continue
 		var n := 0
 		for v in game.units.values():
-			if not v.dead and v.position.distance_to(u.position) < 500:
+			if not v.dead and v.px.distance_to(u.px) < 500:
 				n += 1
 		if n > best_n:
 			best_n = n
-			best = u.position
+			best = u.px
 	game.cam_locked = false
 	game.camera.position.x = best.x
 

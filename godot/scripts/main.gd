@@ -11,11 +11,11 @@ const BuildingView = preload("res://scripts/building_view.gd")
 const V = preload("res://scripts/visuals.gd")
 const UiTest = preload("res://scripts/ui_test.gd")
 
-var game: Node2D
+var game: Node3D
 var hud: CanvasLayer
 var menu: Control
 var menu_layer: CanvasLayer
-var backdrop: Node2D
+var backdrop: Node3D
 var _decor: Array = []
 var _decor_t := 0.0
 var _autotest := false
@@ -59,14 +59,14 @@ func _make_backdrop() -> void:
 	backdrop = Game.new()
 	add_child(backdrop)
 	move_child(backdrop, 0)
-	backdrop.camera.zoom = Vector2.ONE * 0.7
+	backdrop.camera.zoom = Vector2.ONE * 0.9
 	backdrop.camera.position = Vector2(-1500, -200)
 	_decor.clear()
 	var id := 9000
 	for t in [0, 1]:
 		var castle := BuildingView.new()
 		castle.setup(id, t, "castle", "blue" if t == 0 else "red")
-		backdrop.world.ysort.add_child(castle)
+		backdrop.world.actors.add_child(castle)
 		castle.apply([id, "", t, -86.0 if t == 0 else 86.0, -3.0, 0.0, 1.0, 1.0, 0.0, 0, 0])
 		id += 1
 	var bodies := ["swordsman", "archer", "shieldbearer", "swordsman", "healer", "assassin", "swordsman", "battlemage", "archer", "swordsman"]
@@ -76,7 +76,7 @@ func _make_backdrop() -> void:
 		var body: String = bodies[i % bodies.size()]
 		var color := "blue" if team == 0 else "red"
 		v.setup(id, team, "minion", body, color, false, "")
-		backdrop.world.ysort.add_child(v)
+		backdrop.world.actors.add_child(v)
 		var lane_z := -4.0 + float((i * 7) % 11)
 		var x0 := (-70.0 + float((i / 2) * 14) + float(i % 3) * 3.0) if team == 0 else (70.0 - float((i / 2) * 14) - float(i % 3) * 3.0)
 		_decor.append({"v": v, "id": id, "team": team, "x": x0, "z": lane_z, "speed": 3.0 + float(i % 4) * 0.6})

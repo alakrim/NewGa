@@ -11,15 +11,15 @@ const V = preload("res://scripts/visuals.gd")
 signal leave_requested
 signal play_again_requested
 
-const ZOOM_MIN := 0.34
-const ZOOM_MAX := 1.0
+const ZOOM_MIN := 0.5
+const ZOOM_MAX := 1.6
 const SLOT_KEYS := ["Q", "W", "E", "R"]
 const ABILITY_KEYCAPS := ["Q", "E", "R", "F"]
 const DEFAULT_CAM_Y := -224.0
 const DIR_THROTTLE := 0.1
 const AIM_DRAG_RANGE := 130.0
 
-var game: Node2D
+var game: Node3D
 var init: Dictionary = {}
 var snap: Dictionary = {}
 var fl: Dictionary = {}
@@ -98,7 +98,7 @@ var _hold_start := {}
 
 
 # ------------------------------------------------------------------ setup
-func setup(p_game: Node2D, p_init: Dictionary) -> void:
+func setup(p_game: Node3D, p_init: Dictionary) -> void:
 	game = p_game
 	init = p_init
 	layer = 10
@@ -780,8 +780,8 @@ func _update_minimap() -> void:
 	minimap.picking = _picking
 	minimap.locked = game.cam_locked
 	center_btn.visible = not game.cam_locked
-	var cam: Camera2D = game.camera
-	var half := (root.size.x * 0.5 / cam.zoom.x) / V.PX
+	var cam = game.camera
+	var half: float = (root.size.x * 0.5 / cam.zoom.x) / V.PX
 	minimap.cam_x0 = cam.position.x / V.PX - half
 	minimap.cam_x1 = cam.position.x / V.PX + half
 	minimap.queue_redraw()
@@ -1042,8 +1042,8 @@ func _resolve(i: int, aim: Variant) -> Dictionary:
 
 func _aim_show(i: int, res: Dictionary) -> void:
 	var def := _ability_def(i)
-	var u: Node2D = game.units.get(my_unit)
-	overlay.hero = u.position if u else _hero_pos() * V.PX
+	var u: Node3D = game.units.get(my_unit)
+	overlay.hero = u.px if u else _hero_pos() * V.PX
 	overlay.kind = def.targeting
 	overlay.range_px = float(def.range) * V.PX
 	overlay.radius_px = float(def.radius) * V.PX
@@ -1135,11 +1135,11 @@ func _process(delta: float) -> void:
 		var mp: Vector2 = game.screen_to_world(get_viewport().get_mouse_position())
 		_aim_show(_aim_slot, _resolve(_aim_slot, mp))
 	if _aim_slot >= 0:
-		var u: Node2D = game.units.get(my_unit)
+		var u: Node3D = game.units.get(my_unit)
 		if u:
-			overlay.hero = u.position
+			overlay.hero = u.px
 	# camera: ease vertically back when following, clamp zoom/pan
-	var cam: Camera2D = game.camera
+	var cam = game.camera
 	if game.cam_locked:
 		cam.position.y = lerpf(cam.position.y, DEFAULT_CAM_Y, 1.0 - exp(-delta * 4.0))
 	else:

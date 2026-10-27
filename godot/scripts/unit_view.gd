@@ -1,7 +1,10 @@
-extends Node2D
-## One unit on the battlefield: animated Tiny Swords body, ground shadow, health bar, hero glow and name.
+extends Node3D
+## One unit on the HD-2D battlefield: an animated Tiny Swords sprite standing in the 3D world with a real
+## shadow, a soft contact shadow, and a pulsing aura under heroes. Health bars and names are drawn by the
+## game's screen overlay from `hp`, `max_hp`, `shield`, `level` and `head_height()`.
 
 const V = preload("res://scripts/visuals.gd")
+const W3 = preload("res://scripts/world3d.gd")
 
 const F_DEAD := 1
 const F_MOVING := 2
@@ -9,6 +12,7 @@ const F_STUNNED := 4
 const F_STEALTH := 8
 const F_AIRBORNE := 2048
 const F_CARRYING := 32768
+const UNIT_SCALE := 1.15
 
 var id := 0
 var team := 0
@@ -19,7 +23,7 @@ var is_me := false
 var hero_name := ""
 var level := 0
 
-var target := Vector2.ZERO
+var target := Vector3.ZERO
 var hp := 1.0
 var max_hp := 1.0
 var shield := 0.0
@@ -27,13 +31,38 @@ var flags := 0
 var dead := false
 var _attack_until := 0.0
 var _flash := 0.0
-var _body: AnimatedSprite2D
-var _label: Label
+var _body: AnimatedSprite3D
+var _aura: Sprite3D
 var _scale := 1.0
-var _feet := 30.0
-var _bar_w := 34.0
+var _frame_h := 192.0
 var _hop := 0.0
-var _aura: Sprite2D
+var _placed := false
+
+## Position in the 2D "px" space the HUD works in (32 px per sim unit, y = sim z).
+var px: Vector2:
+	get:
+		return Vector2(position.x, position.z) * V.PX
+
+
+static func flat_sprite(tex: Texture2D, size_units: float, col: Color, additive: bool) -> Sprite3D:
+	var s := Sprite3D.new()
+	s.texture = tex
+	s.axis = Vector3.Axis.AXIS_Y
+	s.pixel_size = size_units / maxf(1.0, tex.get_width())
+	s.modulate = col
+	s.shaded = false
+	s.transparent = true
+	s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	s.position.y = 0.03
+	if additive:
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		m.albedo_texture = tex
+		m.vertex_color_use_as_albedo = true
+		s.material_override = m
+	return s
 
 
 func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: String, me: bool, name_text := "") -> void:
@@ -45,46 +74,27 @@ func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: Stri
 	is_me = me
 	hero_name = name_text
 	var def: Dictionary = V.UNITS.get(body_id, V.UNITS["swordsman"])
-	_scale = def.get("scale", 1.0) * (V.HERO_SCALE if kind == "hero" else 1.0)
-	_feet = def.get("feet", 30.0)
+	_scale = def.get("scale", 1.0) * (V.HERO_SCALE if kind == "hero" else 1.0) * UNIT_SCALE
+	_frame_h = float(def.get("frame", Vector2i(192, 192)).y)
+	var glow: Texture2D = load(W3.HD + "glow.png")
+	# contact shadow keeps feet planted even when the sun shadow falls far behind
+	var w := (1.5 if body_id == "giant" else 0.95) * _scale
+	add_child(flat_sprite(glow, w * 1.6, Color(0, 0, 0, 0.42), false))
 	if kind == "hero":
-		_aura = Sprite2D.new()
-		var g := Gradient.new()
-		g.set_color(0, Color(1, 1, 1, 0.75))
-		g.set_color(1, Color(1, 1, 1, 0))
-		var gt := GradientTexture2D.new()
-		gt.gradient = g
-		gt.fill = GradientTexture2D.FILL_RADIAL
-		gt.fill_from = Vector2(0.5, 0.5)
-		gt.fill_to = Vector2(1, 0.5)
-		gt.width = 128
-		gt.height = 128
-		_aura.texture = gt
-		_aura.scale = Vector2(1.3, 0.55)
-		_aura.modulate = (Color("7cff8a") if me else V.PLAYER_COLORS.get(color, Color.WHITE)) * Color(1.4, 1.4, 1.4, 0.8)
-		var mat := CanvasItemMaterial.new()
-		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-		_aura.material = mat
+		var c: Color = Color("7cff8a") if me else V.PLAYER_COLORS.get(color, Color.WHITE)
+		_aura = flat_sprite(glow, 3.4 * _scale, c * Color(1.6, 1.6, 1.6, 0.8), true)
 		add_child(_aura)
-	_body = AnimatedSprite2D.new()
+	_body = AnimatedSprite3D.new()
 	_body.sprite_frames = Sprites.frames(body_id, color)
-	_body.offset = Vector2(0, -_feet)
-	_body.scale = Vector2.ONE * _scale
+	W3.standee(_body, _frame_h, _frame_h / 2.0 - def.get("feet", 30.0), _scale)
 	_body.animation_finished.connect(_on_anim_done)
 	add_child(_body)
 	_play("idle")
-	_bar_w = 60.0 if kind == "hero" else (70.0 if body_id == "giant" else 34.0)
-	if kind == "hero":
-		_label = Label.new()
-		_label.text = hero_name
-		_label.add_theme_font_size_override("font_size", 13)
-		_label.add_theme_color_override("font_color", V.PLAYER_COLORS.get(color, Color.WHITE).lightened(0.35))
-		_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		_label.add_theme_constant_override("outline_size", 5)
-		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_label.size = Vector2(160, 18)
-		_label.position = Vector2(-80, -_feet * _scale - 92 * _scale * 0.5 - 30)
-		add_child(_label)
+
+
+## Height above the feet where the health bar sits (world units).
+func head_height() -> float:
+	return _frame_h * 0.36 * W3.PIX * _scale * cos(W3.TILT) + 0.45
 
 
 func _play(anim: String) -> void:
@@ -120,9 +130,12 @@ func _on_anim_done() -> void:
 
 func apply(snap: Array) -> void:
 	# [id, vis, team, x, z, facing, hp, maxHp, shield, flags, level]
-	var p := V.to_px(snap[3], snap[4])
-	if target.distance_to(p) > 300 or target == Vector2.ZERO:
+	var x := float(snap[3])
+	var z := float(snap[4])
+	var p := Vector3(x, W3.ground_y(x, z), z)
+	if not _placed or target.distance_to(p) > 10.0:
 		position = p
+		_placed = true
 	target = p
 	hp = snap[6]
 	max_hp = maxf(1.0, snap[7])
@@ -133,13 +146,9 @@ func apply(snap: Array) -> void:
 	if absf(face) > 0.2 and Time.get_ticks_msec() / 1000.0 > _attack_until:
 		_body.flip_h = face < 0
 	var now_dead := (flags & F_DEAD) != 0
-	if now_dead and not dead:
-		dead = true
-		_body.visible = false
-	elif not now_dead and dead:
-		dead = false
-		_body.visible = true
-	queue_redraw()
+	if now_dead != dead:
+		dead = now_dead
+		visible = not dead
 
 
 func _process(delta: float) -> void:
@@ -155,43 +164,17 @@ func _process(delta: float) -> void:
 		else:
 			_play("run" if moving else "idle")
 	if _aura:
-		_aura.modulate.a = 0.55 + 0.25 * sin(now * 4.0)
-	# airborne hop and stun wobble
-	var want_hop := 18.0 if (flags & F_AIRBORNE) != 0 else 0.0
+		_aura.modulate.a = 0.5 + 0.25 * sin(now * 4.0)
+	var want_hop := 0.6 if (flags & F_AIRBORNE) != 0 else 0.0
 	_hop = lerpf(_hop, want_hop, 1.0 - exp(-delta * 12.0))
-	_body.position.y = -_hop
-	_body.modulate = Color(1, 1, 1, 0.4 if (flags & F_STEALTH) != 0 else 1.0)
+	_body.position.y = _hop
+	var stealth := (flags & F_STEALTH) != 0
+	var cut := SpriteBase3D.ALPHA_CUT_DISABLED if stealth else SpriteBase3D.ALPHA_CUT_DISCARD
+	if _body.alpha_cut != cut:
+		_body.alpha_cut = cut
+	var m := Color(1, 1, 1, 0.4 if stealth else 1.0)
 	if _flash > 0.0:
 		_flash -= delta
-		_body.modulate = Color(2.2, 2.2, 2.2, _body.modulate.a)
-	if (flags & F_STUNNED) != 0:
-		_body.rotation = sin(now * 18.0) * 0.08
-	else:
-		_body.rotation = 0.0
-
-
-func _draw() -> void:
-	if dead:
-		return
-	# soft ground shadow
-	var rx := 20.0 * _scale * (1.6 if body_id == "giant" else 1.0)
-	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.42))
-	draw_circle(Vector2.ZERO, rx, Color(0, 0, 0, 0.22))
-	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
-	if kind == "hero":
-		var ring_col: Color = Color("7cff8a") if is_me else V.PLAYER_COLORS.get(color, Color.WHITE)
-		draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.42))
-		draw_arc(Vector2.ZERO, rx + 8, 0, TAU, 40, ring_col, 3.0)
-		draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
-	# health bar when hurt (always for heroes)
-	if hp < max_hp or kind == "hero" or shield > 0:
-		var top := -_feet * _scale - 70.0 * _scale
-		var w := _bar_w
-		var total := maxf(max_hp, hp + shield)
-		draw_rect(Rect2(-w / 2 - 1, top - 1, w + 2, 7), Color(0, 0, 0, 0.75))
-		var col: Color = Color("4ade80") if is_me else (V.TEAM_COLORS[team] if team < 2 else Color("facc15"))
-		draw_rect(Rect2(-w / 2, top, w * hp / total, 5), col)
-		if shield > 0:
-			draw_rect(Rect2(-w / 2 + w * hp / total, top, w * shield / total, 5), Color(0.95, 0.95, 1.0))
-		if kind == "hero":
-			draw_string(ThemeDB.fallback_font, Vector2(-w / 2 - 18, top + 6), str(level), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("ffd166"))
+		m = Color(2.6, 2.4, 2.2, m.a)
+	_body.modulate = m
+	_body.rotation.z = sin(now * 18.0) * 0.08 if (flags & F_STUNNED) != 0 else 0.0
