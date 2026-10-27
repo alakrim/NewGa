@@ -51,7 +51,9 @@ func _ready() -> void:
 	_build_foliage()
 	_build_trees()
 	_build_props()
+	_road_edges()
 	_build_fireflies()
+	_build_braziers()
 
 
 # ------------------------------------------------------------------ light and atmosphere
@@ -61,9 +63,9 @@ func _build_env() -> void:
 	e.background_color = Color(0.2, 0.5, 0.54)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color(0.58, 0.68, 0.88)  # cool sky fill so shadows read blue against the warm sun
-	e.ambient_light_energy = 0.5
+	e.ambient_light_energy = 0.56
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	e.tonemap_exposure = 0.95
+	e.tonemap_exposure = 1.05
 	e.tonemap_white = 5.0
 	e.glow_enabled = true
 	e.glow_intensity = 0.35
@@ -80,8 +82,17 @@ func _build_env() -> void:
 	e.fog_aerial_perspective = 0.25
 	e.fog_sky_affect = 0.0
 	e.adjustment_enabled = true
-	e.adjustment_saturation = 1.22
+	e.adjustment_saturation = 1.12
 	e.adjustment_contrast = 1.14
+	# split tone: shadows lean cool blue, highlights warm gold
+	var g := Gradient.new()
+	g.set_color(0, Color(0.05, 0.06, 0.15))
+	g.add_point(0.5, Color(0.5, 0.49, 0.47))
+	g.set_color(g.get_point_count() - 1, Color(1.0, 0.95, 0.83))
+	var lut := GradientTexture1D.new()
+	lut.gradient = g
+	lut.width = 256
+	e.adjustment_color_correction = lut
 	if RenderingServer.get_current_rendering_method() == "forward_plus":
 		e.ssao_enabled = true
 		e.ssao_intensity = 1.4
@@ -155,6 +166,8 @@ func _build_terrain() -> void:
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/terrain.gdshader")
 	mat.set_shader_parameter("grass_tex", _crop(V.FREE + "Terrain/Tileset/Tilemap_color1.png", Rect2i(64, 64, 64, 64)))
+	mat.set_shader_parameter("grass2_tex", _crop(V.FREE + "Terrain/Tileset/Tilemap_color2.png", Rect2i(64, 64, 64, 64)))
+	mat.set_shader_parameter("grass3_tex", _crop(V.FREE + "Terrain/Tileset/Tilemap_color3.png", Rect2i(64, 64, 64, 64)))
 	mat.set_shader_parameter("cliff_tex", _crop(V.FREE + "Terrain/Tileset/Tilemap_color1.png", Rect2i(384, 256, 64, 128)))
 	mat.set_shader_parameter("road_tex", _crop(V.CC0 + "Terrain/Ground/Tilemap_Flat.png", Rect2i(384, 64, 64, 64)))
 	var mi := MeshInstance3D.new()
@@ -210,7 +223,12 @@ func _blocked(x: float, z: float, road_margin := 0.0) -> bool:
 	return false
 
 
-func _cover(tex_path: String, count: int, scale_min: float, scale_max: float, tint: Color, wind: float, road_margin := 0.0, area := ISLAND) -> void:
+var _clump := FastNoiseLite.new()
+
+
+## Scatters `count` camera-facing quads of one texture over `area`. With `clump` > 0 they gather in
+## patches (higher = tighter patches) instead of spreading evenly.
+func _cover(tex_path: String, count: int, scale_min: float, scale_max: float, tint: Color, wind: float, road_margin := 0.0, area := ISLAND, clump := 0.0) -> void:
 	var tex: Texture2D = Sprites.tex(tex_path)
 	if tex == null:
 		return
@@ -229,13 +247,18 @@ func _cover(tex_path: String, count: int, scale_min: float, scale_max: float, ti
 	mm.mesh = qm
 	var xs: Array[Transform3D] = []
 	var tries := 0
-	while xs.size() < count and tries < count * 6:
+	while xs.size() < count and tries < count * 12:
 		tries += 1
 		var x := _rng.randf_range(area.position.x, area.end.x)
 		var z := _rng.randf_range(area.position.y, area.end.y)
 		if _blocked(x, z, road_margin):
 			continue
-		var s := _rng.randf_range(scale_min, scale_max)
+		var k := 1.0
+		if clump > 0.0:
+			k = clampf((_clump.get_noise_2d(x * 3.0, z * 3.0) + 0.15) * 2.2, 0.0, 1.0)
+			if _rng.randf() > pow(k, clump):
+				continue
+		var s := _rng.randf_range(scale_min, scale_max) * (0.75 + 0.45 * k)
 		var b := Basis(Vector3.RIGHT, -TILT) * Basis.from_scale(Vector3(s * (1.0 if _rng.randf() < 0.5 else -1.0), s, s))
 		var t := Transform3D(b, Vector3(x, ground_y(x, z), z))
 		xs.append(t)
@@ -251,16 +274,36 @@ func _cover(tex_path: String, count: int, scale_min: float, scale_max: float, ti
 
 
 func _build_foliage() -> void:
+	_clump.seed = 5
+	_clump.frequency = 0.02
 	for i in range(4):
-		_cover(HD + "grass%d.png" % i, 2600, 0.8, 1.25, Color(1, 1, 1), 0.06)
+		_cover(HD + "grass%d.png" % i, 2000, 0.8, 1.2, Color(1.08, 1.08, 1.0), 0.06)
+		_cover(HD + "grass%d.png" % i, 1700, 1.0, 1.5, Color(1.12, 1.12, 1.0), 0.07, 0.6, ISLAND, 1.5)
 	for i in range(5):
-		_cover(HD + "flower%d.png" % i, 260, 0.8, 1.1, Color(1, 1, 1), 0.05, 1.5)
+		_cover(HD + "flower%d.png" % i, 520, 0.8, 1.1, Color(1, 1, 1), 0.05, 1.5, ISLAND, 3.0)
 	var deco := V.CC0 + "Deco/%02d.png"
 	for n in [7, 10, 11]:
 		_cover(deco % n, 70, 0.7, 1.0, Color(1, 1, 1), 0.04, 1.0)
-	_cover(deco % 8, 25, 0.7, 0.9, Color(1, 1, 1), 0.04, 1.0)
-	for n in [1, 2, 4, 5, 6]:
-		_cover(deco % n, 50, 0.7, 1.0, Color(1, 1, 1), 0.0, 1.0)
+	for n in [1, 2, 4, 5]:
+		_cover(deco % n, 30, 0.7, 1.0, Color(1, 1, 1), 0.0, 1.0)
+
+
+## Small stones and pebbles lining both edges of the road.
+func _road_edges() -> void:
+	var deco := V.CC0 + "Deco/%02d.png"
+	for edge_z in [-2.5, 4.5]:
+		var x := -96.0
+		while x < 96.0:
+			x += _rng.randf_range(0.8, 2.6)
+			var z: float = edge_z + _rng.randf_range(-0.35, 0.35)
+			if absf(x) > 79.0 or _rng.randf() < 0.25:
+				continue
+			var r := Sprite3D.new()
+			r.texture = Sprites.tex(deco % [4, 5, 4, 5, 6, 14][_rng.randi() % 6])
+			standee(r, 64, 22, _rng.randf_range(0.6, 0.9))
+			r.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			r.position = Vector3(x, 0, z)
+			add_child(r)
 
 
 # ------------------------------------------------------------------ trees, rocks, sheep, gold
@@ -339,7 +382,7 @@ func _build_props() -> void:
 		var z := _rng.randf_range(ISLAND.position.y + 1, ISLAND.end.y - 1)
 		if _blocked(x, z, 1.0):
 			continue
-		if _rng.randf() < 0.55:
+		if _rng.randf() < 0.75:
 			var b := AnimatedSprite3D.new()
 			b.sprite_frames = sprite_frames(V.FREE + "Terrain/Decorations/Bushes/Bushe%d.png" % _rng.randi_range(1, 4), Vector2i(128, 128), 8, 8)
 			standee(b, 128, 30, 0.8)
@@ -418,3 +461,25 @@ func _build_fireflies() -> void:
 	p.draw_pass_1 = q
 	p.position = Vector3(0, 1.8, -9)
 	add_child(p)
+
+
+# ------------------------------------------------------------------ fire light at each keep's gate
+func _build_braziers() -> void:
+	for sx in [-1.0, 1.0]:
+		for dz in [-4.2, 3.6]:
+			var p := Vector3(sx * 78.5, 0, -3.0 + dz)
+			var f := AnimatedSprite3D.new()
+			f.sprite_frames = Sprites.effect_frames("fire")
+			standee(f, 128, 30, 1.1)
+			f.shaded = false
+			f.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			f.modulate = Color(1.8, 1.5, 1.2)
+			f.position = p
+			f.play("play")
+			add_child(f)
+			var l := OmniLight3D.new()
+			l.light_color = Color(1.0, 0.62, 0.3)
+			l.light_energy = 2.2
+			l.omni_range = 7.5
+			l.position = p + Vector3(0, 1.4, 0.4)
+			add_child(l)

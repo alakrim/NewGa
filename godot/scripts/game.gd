@@ -70,10 +70,39 @@ func _ready() -> void:
 	child_entered_tree.connect(func(n: Node):
 		if n is Node2D and not n.has_meta("screen"):
 			n.reparent.call_deferred(_ground_layer, false))
+	# screen layer: light shafts and vignette under the bars and names
+	var screen := CanvasLayer.new()
+	screen.layer = 0
+	add_child(screen)
+	var beams := ColorRect.new()
+	beams.set_anchors_preset(Control.PRESET_FULL_RECT)
+	beams.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bm := ShaderMaterial.new()
+	bm.shader = load("res://shaders/sunbeams.gdshader")
+	beams.material = bm
+	screen.add_child(beams)
+	var vig := TextureRect.new()
+	vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vig.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	vig.stretch_mode = TextureRect.STRETCH_SCALE
+	var vg := Gradient.new()
+	vg.set_color(0, Color(0.1, 0.06, 0.03, 0.0))
+	vg.add_point(0.62, Color(0.1, 0.06, 0.03, 0.0))
+	vg.set_color(vg.get_point_count() - 1, Color(0.1, 0.05, 0.02, 0.36))
+	var vt := GradientTexture2D.new()
+	vt.gradient = vg
+	vt.fill = GradientTexture2D.FILL_RADIAL
+	vt.fill_from = Vector2(0.5, 0.5)
+	vt.fill_to = Vector2(1.05, 0.5)
+	vt.width = 256
+	vt.height = 256
+	vig.texture = vt
+	screen.add_child(vig)
 	_bars = Node2D.new()
 	_bars.set_meta("screen", true)
 	_bars.draw.connect(_draw_bars)
-	add_child(_bars)
+	screen.add_child(_bars)
 	for b in M.BANNERS:
 		var o := Node3D.new()
 		o.position = Vector3(b[2], 0, b[3])
@@ -469,7 +498,11 @@ func _spawn_effect(id: String, p: Vector3, s := 1.0, tint := Color.WHITE) -> voi
 	world.actors.add_child(a)
 	a.play("play")
 	a.animation_finished.connect(a.queue_free)
-	get_tree().create_timer(3.0).timeout.connect(func(): if is_instance_valid(a): a.queue_free())
+	var ref: WeakRef = weakref(a)
+	get_tree().create_timer(3.0).timeout.connect(func():
+		var n: Node = ref.get_ref()
+		if n:
+			n.queue_free())
 
 
 ## A short burst of real light, so explosions and spells light up the ground and units around them.
