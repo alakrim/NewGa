@@ -19,6 +19,8 @@ const SHORE_H := 1.2
 const WATER_Y := -0.75
 
 var actors: Node3D
+## Graphics preference: "high" or "low" (battery saver: sparser grass, no fireflies, cheaper shadows).
+var quality: String = Prefs.get_value("gfx", "high")
 var sun: DirectionalLight3D
 var environment: Environment
 var _rng := RandomNumberGenerator.new()
@@ -109,6 +111,9 @@ func _build_env() -> void:
 	sun.shadow_opacity = 0.85
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_max_distance = 130.0
+	if quality == "low":
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+		sun.shadow_blur = 0.6
 	add_child(sun)
 
 
@@ -262,6 +267,8 @@ func _cover(tex_path: String, count: int, scale_min: float, scale_max: float, ti
 		var b := Basis(Vector3.RIGHT, -TILT) * Basis.from_scale(Vector3(s * (1.0 if _rng.randf() < 0.5 else -1.0), s, s))
 		var t := Transform3D(b, Vector3(x, ground_y(x, z), z))
 		xs.append(t)
+	if quality == "low":
+		xs.resize(int(xs.size() * 0.35))
 	mm.instance_count = xs.size()
 	for i in range(xs.size()):
 		mm.set_instance_transform(i, xs[i])
@@ -421,7 +428,7 @@ func _build_props() -> void:
 # ------------------------------------------------------------------ fireflies and drifting motes
 func _build_fireflies() -> void:
 	var p := GPUParticles3D.new()
-	p.amount = 520
+	p.amount = 520 if quality != "low" else 140
 	p.lifetime = 9.0
 	p.preprocess = 9.0
 	p.visibility_aabb = AABB(Vector3(-110, -2, -45), Vector3(220, 14, 70))

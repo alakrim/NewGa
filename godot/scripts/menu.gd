@@ -113,33 +113,34 @@ func _btn(text: String, min_size: Vector2, cb: Callable, variation := "") -> But
 # ------------------------------------------------------------------ main screen
 func _build_main() -> void:
 	var s := _screen("main")
-	# logo ribbon
+	# logo, tagline and buttons stacked in the middle of the screen
+	var cc := CenterContainer.new()
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cc.mouse_filter = Control.MOUSE_FILTER_PASS
+	s.add_child(cc)
+	var stack := VBoxContainer.new()
+	stack.add_theme_constant_override("separation", 6)
+	cc.add_child(stack)
 	var rib := PanelContainer.new()
 	rib.add_theme_stylebox_override("panel", UiArt.sb(UiArt.ribbon(1), Vector4(110, 22, 110, 34)))
-	s.add_child(rib)
-	rib.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	rib.offset_top = 26
-	rib.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	rib.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	stack.add_child(rib)
 	var logo := UiArt.label("BANNERFALL", 96, UiArt.GOLD, 16, HORIZONTAL_ALIGNMENT_CENTER)
 	logo.add_theme_color_override("font_outline_color", Color("2a0d0b"))
 	logo.add_theme_constant_override("shadow_offset_y", 6)
 	logo.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.45))
 	rib.add_child(logo)
 	var tag := UiArt.label("Lane battles with friends", 26, UiArt.CREAM, 6, HORIZONTAL_ALIGNMENT_CENTER)
-	s.add_child(tag)
-	tag.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	tag.offset_top = 188
-	tag.offset_left = -300
-	tag.offset_right = 300
+	stack.add_child(tag)
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 10)
+	stack.add_child(gap)
 	# column
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
-	s.add_child(col)
-	col.set_anchors_preset(Control.PRESET_CENTER)
 	col.custom_minimum_size = Vector2(500, 0)
-	col.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	col.grow_vertical = Control.GROW_DIRECTION_BOTH
-	col.offset_top = 10
+	col.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	stack.add_child(col)
 	var nr := HBoxContainer.new()
 	nr.add_theme_constant_override("separation", 12)
 	col.add_child(nr)
@@ -378,7 +379,24 @@ func _build_settings() -> void:
 			if key == "music":
 				AudioServer.set_bus_volume_db(0, linear_to_db(maxf(0.001, val))))
 		row.add_child(sl)
-	var cr := UiArt.label("Art: Tiny Swords by Pixel Frog.  Font: Pixelify Sans (SIL OFL).\nIcons by Lorc and Delapouite, game-icons.net, CC BY 3.0.", 18, UiArt.INK_SOFT, 0)
+	var gr := HBoxContainer.new()
+	gr.add_theme_constant_override("separation", 16)
+	v.add_child(gr)
+	var gl := UiArt.label("Graphics", 24, UiArt.INK, 0)
+	gl.custom_minimum_size = Vector2(130, 0)
+	gr.add_child(gl)
+	var gfx := OptionButton.new()
+	gfx.add_item("High: shadows, depth of field, dense grass")
+	gfx.add_item("Battery saver: lighter effects, faster on older phones")
+	gfx.selected = 1 if Prefs.get_value("gfx", "high") == "low" else 0
+	gfx.custom_minimum_size = Vector2(0, 52)
+	gfx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gfx.add_theme_font_size_override("font_size", 20)
+	gfx.item_selected.connect(func(i):
+		Prefs.set_value("gfx", "low" if i == 1 else "high")
+		toast("Applies to the next match"))
+	gr.add_child(gfx)
+	var cr := UiArt.label("Art: Tiny Swords by Pixel Frog, KayKit by Kay Lousberg.  Font: Pixelify Sans (SIL OFL).\nIcons by Lorc and Delapouite, game-icons.net, CC BY 3.0.", 18, UiArt.INK_SOFT, 0)
 	cr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(cr)
 	var h := HBoxContainer.new()

@@ -61,7 +61,10 @@ func _ready() -> void:
 	_cam_attr.dof_blur_far_enabled = true
 	_cam_attr.dof_blur_near_enabled = true
 	_cam_attr.dof_blur_amount = 0.09
-	cam3d.attributes = _cam_attr
+	if Prefs.get_value("gfx", "high") != "low":
+		cam3d.attributes = _cam_attr
+	else:
+		get_viewport().scaling_3d_scale = 0.75
 	add_child(cam3d)
 	cam3d.make_current()
 	_ground_layer = CanvasLayer.new()
