@@ -64,3 +64,21 @@ VT_SHOTS=... godot --path godot --resolution 1280x720 res://paintover/depth/pain
 The model is `onnx/model.onnx` from huggingface.co/onnx-community/depth-anything-v2-small (not in git).
 Known gaps: the leftmost gold outcrop sits about 7 units from its vein; the meadow east of the camp is
 painted at plateau height; the rest of the map is not painted yet.
+
+### Light and shadows
+
+In painted mode the painting shows at its painted colour: `painted.gd` turns off the tone-mapping curve,
+colour grade, fog, vignette and depth of field, and `projection.gdshader` tops the ambient up to exactly
+the painted value where the sun reaches and pulls it to a cool shadow tone where a unit or building blocks
+it. The sun comes from the painted light's side (left), turned a little to the front: unit sprites face the
+camera, so a sun from straight left hits them edge-on and one from behind hides their shadows under them.
+The game's two-split sun shadows render nothing with an orthographic camera, so painted mode uses one
+orthogonal shadow map.
+
+### Painted buildings (`buildings/`)
+
+`paint.py` asks Muse Image for the keep and a sheet of eight plot buildings in the battlefield's style and
+camera angle on flat magenta (`raw_*.jpg`); `cut.py` keys them out (`<bid>.png`). `painted_buildings.gd`
+swaps a building's KayKit model for its painting on a quad facing the camera, its lower edge on the ground in
+front so the painted footprint lands on the plot; `building.gdshader` shows it unlit and swaps the blue
+trim for the owner's colour. Construction stages and rubble still use the KayKit models.

@@ -40,10 +40,10 @@ func _paint_world() -> void:
 
 ## Drops the game's own terrain, water, ground cover, trees and props; keeps light, fireflies, braziers and
 ## actors.
+## actors. The braziers at the keeps' gates go too: the painting has its own.
 func _strip_world() -> void:
 	for c in world.get_children():
-		var keep: bool = c == world.actors or c is WorldEnvironment or c is DirectionalLight3D or c is OmniLight3D \
-			or c is GPUParticles3D or (c is AnimatedSprite3D and not c.shaded)
+		var keep: bool = c == world.actors or c is WorldEnvironment or c is DirectionalLight3D or c is GPUParticles3D
 		if not keep:
 			c.queue_free()
 

@@ -7,6 +7,7 @@ extends "res://paintover/painted.gd"
 
 const RECT := Vector4(-115.5, 33.0, 87.0, 58.0)  # u0, v at the top, width, height (tiles.gd tile 0)
 const GRID := Vector2i(480, 320)
+const PaintedBuildings = preload("res://paintover/buildings/painted_buildings.gd")
 const SHIFT := -46.0  # moves the staged units from the middle of the lane to this end
 
 
@@ -74,6 +75,10 @@ func _stage() -> void:
 	for u in _units:
 		if u.position.z < 9.0:  # the miners already stand at this end's gold veins
 			u.position.x += SHIFT
+	if OS.get_environment("PD_KAYKIT") == "":
+		for b in world.actors.get_children():
+			if b.has_method("head_height") and "bid" in b:
+				PaintedBuildings.apply(b)
 
 
 func _shot(name: String) -> void:
