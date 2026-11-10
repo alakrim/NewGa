@@ -7,10 +7,16 @@ One dated line per decision, newest first. **Open** items wait for the project o
 - **Experiments** (a new look, a new mode) open with a README that states the hypothesis, what would make it
   merge, and a kill date. After two sessions they merge behind a setting or are deleted. Nothing stays on a side
   branch.
-- **One line of history:** every session ends with its work on the designated branch and a short note in
-  `docs/HANDOFF.md`. Open: create `main`, protect it, and merge each session through a pull request.
+- **One line of history:** `main` holds the game. Each session works on its own branch, ends with a short
+  note in `docs/HANDOFF.md`, and lands on `main` through a pull request. Still to do in GitHub's settings
+  (owner): make `main` the default branch and protect it.
 
 ## Log
+
+- 2026-11-10 `main` created at the head of `ccr-3e18521d-fh6r1c`, which already contained every other branch
+  (`claude/2.5d-hero-tower-defense-odusfc`, `ccr-b746cdda-o5bvbc`); those are kept but fully merged.
+- 2026-11-10 A personal NewGa cloud environment installs Godot 4.7, xvfb and lavapipe and fetches the Tiny
+  Swords pack at session start, so every session can run the Godot tests headless.
 
 - 2026-11-10 Characters are KayKit CC0 3D models baked to pixel sprites, free assets only for now. This is the
   default, with Classic (Tiny Swords) kept in Settings. All 20 heroes have their own sprites from the 9 free

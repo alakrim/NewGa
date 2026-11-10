@@ -1,13 +1,21 @@
 # Handoff: state of the project
 
-## Last session (2026-11-10, branch `ccr-3e18521d-fh6r1c`)
+## Last session (2026-11-10, branch `ccr-3e18521d-fh6r1c`, merged into the new `main`)
+- `main` now exists and holds everything; start new work from it. The NewGa cloud environment installs
+  Godot, so the headless Godot tests in `CLAUDE.md` work from the start of a session.
+- Characters: baked KayKit sprites are the default (Settings → Characters → Classic for Tiny Swords). All 20
+  heroes have their own sprite. Checked in the engine (`docs/art-tests/ingame-*.jpg`).
+- Paint-over: trimmed to the optional ground skin; kill date 2026-12-01.
+- Not done: the OpenRouter key was not saved (add it in the NewGa environment's network secrets for
+  openrouter.ai to generate splash art and icons); Hallen and Kraghul still look alike; the Free Pack is still
+  needed for buildings, terrain and UI.
 - Fast-forwarded onto the paint-over branch (`ccr-b746cdda-o5bvbc`), so this branch now holds all the work.
 - Frontline: matches always end (unreachable-target fix + Sudden Death), Follow stance, economy and comeback
   pass, `tools/frontline-balance.ts` (`docs/FRONTLINE-BALANCE.md`).
 - Art: `tools/bake-sprites.ts` bakes the KayKit characters into pixel sprite sheets (`docs/art-tests/`);
   `docs/STYLE.md`, `docs/DECISIONS.md`, `docs/REVIEW-ART.md`; asset manifest, lint and credits in CI.
-- Not verified in the engine (Godot could not be installed in the session): the Follow HUD button,
-  `follow.png`, the paint-over texture loading and split panorama.
+- Since verified in Godot 4.7: the Follow HUD button, `follow.png`, the paint-over texture loading and the
+  split panorama.
 - Open decisions: `docs/DECISIONS.md`.
 
 ## Earlier state (2026-10-27)
