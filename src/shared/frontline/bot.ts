@@ -8,7 +8,7 @@ import type { FlPlayer } from './sim';
 
 type Plan = { build: FlBuildingId[]; army: Partial<Record<FlUnitId, number>> };
 /** A few personalities so bot opponents don't all play the same. */
-const PLANS: Plan[] = [ // 7 plots per player
+export const PLANS: Plan[] = [ // 7 plots per player
   { build: ['house', 'archery', 'barracks', 'house', 'forge', 'sanctum', 'house'], army: { swordsman: 3, archer: 4, shieldbearer: 2, battlemage: 1, healer: 1 } },
   { build: ['house', 'barracks', 'house', 'mineshaft', 'giantpit', 'forge', 'house'], army: { swordsman: 4, shieldbearer: 3, assassin: 2, giant: 1 } },
   { build: ['house', 'archery', 'sanctum', 'house', 'mineshaft', 'watchtower', 'house'], army: { swordsman: 3, archer: 3, battlemage: 3, healer: 2 } },
@@ -18,11 +18,14 @@ export class FrontlineBot {
   private next = 0;
   private econAt = 0;
   private plan: Plan;
+  /** Which of PLANS this bot follows (read by the balance harness). */
+  readonly planIndex: number;
   private retreating = false;
   private lastMove = { x: 1e9, z: 1e9 };
 
   constructor(private g: Game, private unitId: number) {
-    this.plan = PLANS[(unitId + Math.floor(g.random() * 3)) % PLANS.length];
+    this.planIndex = (unitId + Math.floor(g.random() * 3)) % PLANS.length;
+    this.plan = PLANS[this.planIndex];
   }
 
   private get u(): Unit { return this.g.units.get(this.unitId)!; }
@@ -41,7 +44,7 @@ export class FrontlineBot {
     const f = this.g.front!, p = this.p!, gold = () => this.u.hero!.gold;
     const miners = (p.garrison.filter((u) => u.fl!.type === 'miner').length) + f.owned(p, (u) => u.fl!.type === 'miner').length
       + p.queues.castle.filter((q) => q.unit === 'miner').length;
-    const want = Math.min(9, 4 + Math.floor(this.g.time / 30));
+    const want = Math.min(8, 4 + Math.floor(this.g.time / 30)); // 8 each fills a team's 16 safe vein slots
     const room = f.popCap(p) - f.pop(p);
     if (miners < want && room >= 1 && p.queues.castle.length < 2) {
       if (gold() >= 150) this.cmd({ c: 'train', unit: 'miner' });
@@ -137,7 +140,7 @@ export class FrontlineBot {
       this.go(home.x, home.z);
       return;
     }
-    const foe = g.nearestEnemy(u, 11, (o) => !g.isStructure(o)) ?? g.nearestEnemy(u, 9);
+    const foe = g.nearestEnemy(u, 11, (o) => !g.isStructure(o)) ?? g.nearestEnemy(u, 9, (o) => g.inReach(u, o));
     if (foe) {
       this.castAt(foe);
       this.cmd({ c: 'attack', id: foe.id });

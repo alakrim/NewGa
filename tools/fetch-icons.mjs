@@ -35,6 +35,7 @@ const ICONS = {
   garrison: ['lorc', 'castle'],
   defend: ['lorc', 'bordered-shield'],
   hold: ['lorc', 'flying-flag'],
+  follow: ['lorc', 'footprint'],
   attack: ['lorc', 'crossed-swords'],
   // research
   weapons: ['lorc', 'pointy-sword'],

@@ -10,7 +10,7 @@ import { ITEM_BY_ID } from '../data/items';
 import { angleOf, clamp, dist, distToSegment, norm, rng, type Vec2 } from '../math';
 import { NavGrid } from './nav';
 import { Frontline } from '../frontline/sim';
-import { FL, PLAYER_HEX, dropPos, kaykitColor, type FlBuildingDef, type FlUnitDef, type PlayerColor } from '../frontline/data';
+import { FL, FL_UNITS, PLAYER_HEX, dropPos, kaykitColor, type FlBuildingDef, type FlUnitDef, type PlayerColor } from '../frontline/data';
 import type { GameMode } from '../protocol';
 import { priceFor } from '../shop';
 import { runEffects } from './effects';
@@ -415,6 +415,7 @@ export class Game {
     }
     if (src && src.team !== tgt.team) {
       if (this.front && tgt.fl && opts.ability && (src.hero || src.summon)) amt *= FL.heroAbilityVsArmy;
+      else if (this.front && src.fl && tgt.fl) { const b = FL_UNITS[src.fl.type].bonusVs; if (b && FL_UNITS[tgt.fl.type].role === b.role) amt *= b.mult; }
       else if (src.kind === 'minion' && tgt.kind === 'hero' && !this.front) amt *= 0.6;
       if ((tgt.kind === 'minion' || tgt.kind === 'monster') && src.kind === 'tower') amt *= tgt.kind === 'minion' ? 1.6 : 1;
     }
@@ -592,7 +593,7 @@ export class Game {
     const recent = [...u.damagedBy.entries()].filter(([id, t]) => this.time - t <= 10 && this.units.get(id)?.team === enemyTeam).sort((a, b) => b[1] - a[1]);
     if (!kh && recent.length) kh = this.units.get(recent[0][0]) ?? null;
     const assists = recent.map(([id]) => id).filter((id) => id !== kh?.id);
-    const bounty = (this.front ? FL.heroKillGold : ECON.heroKill) + Math.min(Math.max(0, h.streak - 1), ECON.streakCap) * ECON.streakBonus;
+    const bounty = (this.front && kh?.hero ? this.front.heroBounty(u, kh) : ECON.heroKill) + Math.min(Math.max(0, h.streak - 1), ECON.streakCap) * ECON.streakBonus;
     if (kh?.hero) {
       kh.hero.kills++;
       kh.hero.streak++;
@@ -1416,6 +1417,13 @@ export class Game {
   /** Moves with sliding against blocked cells. */
   /** Where heroes heal and shop: the fountain (Crossing) or in front of the keep (Frontline). */
   homeSpot(team: number): Vec2 { return this.front ? dropPos(team as Team) : FOUNTAIN[team as Team]; }
+
+  /** Frontline keeps walkers inside the lane band, so a structure outside it (a build plot) can only be hit from range. */
+  inReach(u: Unit, o: Unit) {
+    if (!this.front) return true;
+    const z = clamp(o.z, FL.laneMinZ - 3, FL.laneMaxZ + 4);
+    return Math.abs(o.z - z) - o.radius <= u.stats.attackRange + 0.3;
+  }
 
   moveBy(u: Unit, dx: number, dz: number) {
     const b = this.bounds;

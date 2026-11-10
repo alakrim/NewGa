@@ -259,8 +259,9 @@ func _build_stances() -> void:
 		var s: String = st
 		b.on_tap = func(_b): _set_stance(s)
 		root.add_child(b)
-		_place(b, Vector2(0, 0), Vector2(0, 0), Vector2(8, y), Vector2(150, 56))
-		y += 62.0
+		# five 48 px pills (the centre button's size) end at y = 466, above the joystick ring (top at 720 - 155 - 92 = 473)
+		_place(b, Vector2(0, 0), Vector2(0, 0), Vector2(8, y), Vector2(150, 48))
+		y += 50.0
 		stance_btns[st] = b
 		_touchables.append(b)
 
@@ -1412,6 +1413,8 @@ func _key(ev: InputEventKey) -> void:
 		_set_stance("garrison")
 	elif k == KEY_X:
 		_set_stance("defend")
+	elif k == KEY_T:
+		_set_stance("follow")
 	elif k == KEY_V:
 		_set_stance("attack")
 	elif k == KEY_C:

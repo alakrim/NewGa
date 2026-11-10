@@ -5,7 +5,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FL, FL_BUILDING_ORDER, FL_BUILDINGS, FL_PLOTS, FL_RESEARCH, FL_UNIT_ORDER, FL_UNITS, STANCES, CASTLE, WATCHTOWER } from '../src/shared/frontline/data';
+import { FL, FL_BUILDING_ORDER, FL_BUILDINGS, FL_PLOTS, FL_RESEARCH, FL_UNIT_ORDER, FL_UNITS, STANCES, STANCE_ORDER, CASTLE, WATCHTOWER } from '../src/shared/frontline/data';
 import { HEROES } from '../src/shared/data/heroes';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'godot', 'scripts');
@@ -64,7 +64,7 @@ const BUILDINGS := ${gd(buildings)}
 
 const RESEARCH := ${gd(research)}
 
-const STANCE_ORDER := ["garrison", "defend", "hold", "attack"]
+const STANCE_ORDER := ${gd(STANCE_ORDER)}
 const STANCES := ${gd(stances)}
 
 ## Building plots in index order: [team, slot, x, z]; each player owns 7 (team 0 slot 0, team 0 slot 1, team 1 slot 0, team 1 slot 1).

@@ -5,8 +5,8 @@ class_name FlData
 
 const CONST := {
 	"max_pop": 40,
-	"base_pop": 12,
-	"house_pop": 8,
+	"base_pop": 16,
+	"house_pop": 10,
 	"start_gold": 500,
 	"passive_gold": 3,
 	"min_x": -96,
@@ -56,8 +56,8 @@ const UNITS := {
 	"archer": {
 		"id": "archer",
 		"name": "Archer",
-		"description": "Fragile crossbow archer. Shoots from behind the front line.",
-		"cost": 300,
+		"description": "Fragile crossbow archer. Shoots from behind the front line; +50% damage against Giants.",
+		"cost": 225,
 		"pop": 1,
 		"train_time": 4,
 		"trainer": "archery",
@@ -162,11 +162,11 @@ const BUILDINGS := {
 	"house": {
 		"id": "house",
 		"name": "House",
-		"description": "+8 population cap.",
+		"description": "+10 population cap.",
 		"cost": 150,
 		"build_time": 8,
 		"hp": 800,
-		"max": 4,
+		"max": 3,
 		"requires": "",
 	},
 	"barracks": {
@@ -243,7 +243,7 @@ const BUILDINGS := {
 		"id": "market",
 		"name": "Market",
 		"description": "+2 gold per second.",
-		"cost": 500,
+		"cost": 400,
 		"build_time": 14,
 		"hp": 1000,
 		"max": 2,
@@ -254,7 +254,7 @@ const BUILDINGS := {
 const RESEARCH := {
 	"weapons": {
 		"name": "Sharpened Steel",
-		"text": "+15% army damage per level",
+		"text": "+15% army damage and +10% healing per level",
 		"costs": [300, 550, 900],
 	},
 	"armor": {
@@ -264,7 +264,7 @@ const RESEARCH := {
 	},
 }
 
-const STANCE_ORDER := ["garrison", "defend", "hold", "attack"]
+const STANCE_ORDER := ["garrison", "defend", "hold", "follow", "attack"]
 const STANCES := {
 	"garrison": {
 		"name": "Garrison",
@@ -280,6 +280,11 @@ const STANCES := {
 		"name": "Hold line",
 		"key": "C",
 		"text": "The army holds the line at your rally point (set it by pressing C over the battlefield).",
+	},
+	"follow": {
+		"name": "Follow",
+		"key": "T",
+		"text": "The army forms up behind your hero and fights wherever you lead it. Falls back to Defend while your hero is dead.",
 	},
 	"attack": {
 		"name": "Attack",

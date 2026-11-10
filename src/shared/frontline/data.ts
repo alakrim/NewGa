@@ -11,15 +11,23 @@ export const FL = {
   dropX: 78, // |x| where miners deliver gold and new units appear
   startGold: 500,
   passiveGold: 3, // per second per player
-  basePop: 12,
-  housePop: 8,
+  basePop: 16,
+  housePop: 10, // Houses are capped at 3, so 40 pop costs 3 of 7 plots
   maxPop: 40,
   heroAbilityVsArmy: 0.6, // hero ability damage multiplier against army units (armies are the main force)
   killBounty: 0.2, // share of a unit's cost paid to the killer's owner
-  heroKillGold: 200,
+  heroKillGold: 200, // scaled by victim level / killer level, clamped to 0.5-1.5
+  underdogBounty: 1.5, // kill gold multiplier while your army is worth less than underdogBelow × the enemy's
+  underdogBelow: 0.7,
   heroRespawnBase: 8,
   heroRespawnPerLevel: 1.6,
   garrisonArrowsPerUnit: 0.12, // extra castle attack speed per garrisoned unit
+  garrisonArrowsCap: 12, // garrisoned units beyond this add no more firepower
+  suddenDeathAt: 720, // seconds; after this keeps stop regenerating and lose armour, and income ramps
+  suddenDeathArmorLoss: 5, // keep armour lost every 30 s of Sudden Death
+  suddenDeathGoldPerMin: 1, // extra passive gold per second per player for each minute of Sudden Death
+  suddenDeathCrumble: 15, // true damage per second to both keeps during Sudden Death: no match outlasts ~20 min
+  followOffset: 3, // Follow stance: the army forms up this far behind the hero
   bannerGold: 1.5, // per second per member for each lane banner held
   heartGold: 3, // per second per member for the central banner
   captureTime: 5,
@@ -65,6 +73,8 @@ export interface FlUnitDef {
   attackAnims: AnimName[];
   /** Preferred targets (assassins dive the backline). */
   prefers?: FlRole[];
+  /** Extra damage against army units of one role (archers shred Giants). */
+  bonusVs?: { role: FlRole; mult: number };
 }
 
 export const FL_UNITS: Record<FlUnitId, FlUnitDef> = {
@@ -79,7 +89,7 @@ export const FL_UNITS: Record<FlUnitId, FlUnitDef> = {
     stats: mkStats({ maxHp: 340, attackDamage: 18, armor: 10, magicResist: 5, attackSpeed: 1.0, attackRange: 1.9, moveSpeed: 5.2 }), attackAnims: ['1H_Melee_Attack_Chop', '1H_Melee_Attack_Slice_Diagonal'],
   },
   archer: {
-    id: 'archer', name: 'Archer', icon: '🏹', description: 'Fragile crossbow archer. Shoots from behind the front line.', cost: 300, pop: 1, trainTime: 4, trainer: 'archery', role: 'ranged',
+    id: 'archer', name: 'Archer', icon: '🏹', description: 'Fragile crossbow archer. Shoots from behind the front line; +50% damage against Giants.', cost: 225, pop: 1, trainTime: 4, trainer: 'archery', role: 'ranged', bonusVs: { role: 'heavy', mult: 1.5 },
     model: 'Rogue', weapons: ['2H_Crossbow'], scale: 0.8, radius: 0.55,
     stats: mkStats({ maxHp: 230, attackDamage: 24, armor: 0, magicResist: 0, attackSpeed: 0.8, attackRange: 10, moveSpeed: 4.8 }),
     ranged: { style: 'arrow', color: '#f5deb3', size: 0.7 }, attackAnims: ['2H_Ranged_Shoot'],
@@ -138,17 +148,17 @@ export const FL_BUILDINGS: Record<FlBuildingId, FlBuildingDef> = {
   archery: { id: 'archery', name: 'Archery Range', icon: '🎯', description: 'Trains Archers.', cost: 250, buildTime: 10, model: 'building_archeryrange_{color}', hp: 1200, max: 1 },
   sanctum: { id: 'sanctum', name: 'Arcane Sanctum', icon: '🔮', description: 'Trains Battlemages and Healers.', cost: 450, buildTime: 15, model: 'building_church_{color}', hp: 1300, max: 1, requires: 'archery' },
   giantpit: { id: 'giantpit', name: 'Giant Pit', icon: '🗿', description: 'Trains Giants.', cost: 900, buildTime: 20, model: 'building_tavern_{color}', hp: 2000, max: 1, requires: 'barracks' },
-  house: { id: 'house', name: 'House', icon: '🏠', description: '+8 population cap.', cost: 150, buildTime: 8, model: 'building_home_A_{color}', hp: 800, max: 4 },
+  house: { id: 'house', name: 'House', icon: '🏠', description: '+10 population cap.', cost: 150, buildTime: 8, model: 'building_home_A_{color}', hp: 800, max: 3 },
   forge: { id: 'forge', name: 'Forge', icon: '⚒️', description: 'Researches weapon and armour upgrades for your army.', cost: 400, buildTime: 12, model: 'building_blacksmith_{color}', hp: 1300, max: 1 },
   mineshaft: { id: 'mineshaft', name: 'Mine Shaft', icon: '⛏️', description: 'Miners carry +40% gold per trip.', cost: 350, buildTime: 10, model: 'building_mine_{color}', hp: 1100, max: 1 },
   watchtower: { id: 'watchtower', name: 'Watchtower', icon: '🗼', description: 'Shoots enemies that reach your base. Stack them for a deadly gate.', cost: 400, buildTime: 12, model: 'building_tower_A_{color}', hp: 1600, max: 3 },
-  market: { id: 'market', name: 'Market', icon: '💰', description: '+2 gold per second.', cost: 500, buildTime: 14, model: 'building_market_{color}', hp: 1000, max: 2 },
+  market: { id: 'market', name: 'Market', icon: '💰', description: '+2 gold per second.', cost: 400, buildTime: 14, model: 'building_market_{color}', hp: 1000, max: 2 },
 };
 export const FL_BUILDING_ORDER: FlBuildingId[] = ['house', 'barracks', 'archery', 'sanctum', 'giantpit', 'forge', 'mineshaft', 'watchtower', 'market'];
 
 /** Forge research, per player. Levels apply to all of that player's army (not miners). */
 export const FL_RESEARCH = {
-  weapons: { name: 'Sharpened Steel', icon: '⚔️', costs: [300, 550, 900], perLevel: 0.15, text: '+15% army damage per level' },
+  weapons: { name: 'Sharpened Steel', icon: '⚔️', costs: [300, 550, 900], perLevel: 0.15, text: '+15% army damage and +10% healing per level' },
   armor: { name: 'Tempered Plate', icon: '🛡️', costs: [300, 550, 900], perLevel: 8, text: '+8 armor and magic resist per level' },
 } as const;
 export type FlResearch = keyof typeof FL_RESEARCH;
@@ -177,7 +187,8 @@ export const FL_NODES: FlNode[] = (() => {
   out.push({ index: out.length, x: -14, z: 11, capacity: 4, rich: true, team: -1 }, { index: out.length + 1, x: 14, z: 11, capacity: 4, rich: true, team: -1 });
   return out;
 })();
-export const MINE = { trip: 15, richBonus: 0.6, mineTime: 2.6, carrySpeedMult: 0.85 };
+/** Rich veins pay +60% and their miners may unload at any banner their team holds (a forward depot). */
+export const MINE = { trip: 15, richBonus: 0.6, mineTime: 2.6, carrySpeedMult: 0.85, richRisk: 10 };
 
 export type FlBannerKey = 'west' | 'heart' | 'east';
 export interface FlBannerSpot { key: FlBannerKey; name: string; x: number; z: number; startOwner: Team | -1 }
@@ -187,10 +198,12 @@ export const FL_BANNERS: FlBannerSpot[] = [
   { key: 'east', name: 'Dusk Outpost', x: 34, z: -5, startOwner: 1 },
 ];
 
-export type Stance = 'garrison' | 'defend' | 'hold' | 'attack';
+export type Stance = 'garrison' | 'defend' | 'hold' | 'follow' | 'attack';
+export const STANCE_ORDER: Stance[] = ['garrison', 'defend', 'hold', 'follow', 'attack'];
 export const STANCES: Record<Stance, { name: string; icon: string; key: string; text: string }> = {
   garrison: { name: 'Garrison', icon: '🏰', key: 'Z', text: 'Everyone (miners too) hides inside the fortress. Each garrisoned unit makes the castle shoot faster.' },
   defend: { name: 'Defend', icon: '🛡️', key: 'X', text: 'The army forms a line in front of your base. Miners keep mining.' },
   hold: { name: 'Hold line', icon: '🚩', key: 'C', text: 'The army holds the line at your rally point (set it by pressing C over the battlefield).' },
+  follow: { name: 'Follow', icon: '👣', key: 'T', text: 'The army forms up behind your hero and fights wherever you lead it. Falls back to Defend while your hero is dead.' },
   attack: { name: 'Attack', icon: '⚔️', key: 'V', text: 'The army marches on the enemy fortress and fights everything on the way.' },
 };

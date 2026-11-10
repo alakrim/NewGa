@@ -28,6 +28,7 @@ Icons made by Delapouite, Lorc, from game-icons.net, CC BY 3.0, https://creative
 | `garrison` | [castle](https://game-icons.net/1x1/lorc/castle.html) | Lorc |
 | `defend` | [bordered-shield](https://game-icons.net/1x1/lorc/bordered-shield.html) | Lorc |
 | `hold` | [flying-flag](https://game-icons.net/1x1/lorc/flying-flag.html) | Lorc |
+| `follow` | [footprint](https://game-icons.net/1x1/lorc/footprint.html) | Lorc |
 | `attack` | [crossed-swords](https://game-icons.net/1x1/lorc/crossed-swords.html) | Lorc |
 | `weapons` | [pointy-sword](https://game-icons.net/1x1/lorc/pointy-sword.html) | Lorc |
 | `armor` | [breastplate](https://game-icons.net/1x1/lorc/breastplate.html) | Lorc |

@@ -5,7 +5,7 @@ import type { Team } from '../../shared/types';
 import { HERO_BY_ID } from '../../shared/data/heroes';
 import { TEAM_COLORS, TEAM_NAMES } from '../../shared/constants';
 import {
-  CASTLE, FL, FL_BANNERS, FL_BUILDINGS, FL_BUILDING_ORDER, FL_NODES, FL_PLOTS, FL_RESEARCH, FL_UNIT_ORDER, FL_UNITS, PLAYER_HEX, STANCES,
+  CASTLE, FL, FL_BANNERS, FL_BUILDINGS, FL_BUILDING_ORDER, FL_NODES, FL_PLOTS, FL_RESEARCH, FL_UNIT_ORDER, FL_UNITS, PLAYER_HEX, STANCES, STANCE_ORDER,
   type FlBuildingId, type FlResearch, type FlUnitId, type Stance,
 } from '../../shared/frontline/data';
 import type { Session, ChatLine } from '../net';
@@ -18,7 +18,6 @@ import { downloadReplay, ReplaySession } from '../replay';
 const fmtTime = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 /** Frontline ability keys, in ability-slot order (slots Q W E R). */
 export const FL_ABILITY_KEYS = ['Q', 'E', 'R', 'F'] as const;
-const STANCE_ORDER: Stance[] = ['garrison', 'defend', 'hold', 'attack'];
 const BANNER_NAMES: Record<string, string> = { west: 'Dawn Outpost', heart: 'Heart Banner', east: 'Dusk Outpost' };
 const MINI_Z0 = -12.5, MINI_Z1 = 14;
 const q5 = (f: number) => Math.round(f * 20) * 5; // progress in 5% steps, so panels re-render rarely

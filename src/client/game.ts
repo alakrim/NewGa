@@ -15,7 +15,7 @@ import type { Session } from './net';
 const SLOT_KEYS: Record<string, AbilitySlot> = { KeyQ: 'Q', KeyW: 'W', KeyE: 'E', KeyR: 'R' };
 /** Frontline puts the four abilities on Q E R F (W is for walking). */
 const FL_SLOT_KEYS: Record<string, AbilitySlot> = { KeyQ: 'Q', KeyE: 'W', KeyR: 'E', KeyF: 'R' };
-const FL_STANCE_KEYS = { KeyZ: 'garrison', KeyX: 'defend', KeyC: 'hold', KeyV: 'attack' } as const;
+const FL_STANCE_KEYS = { KeyZ: 'garrison', KeyX: 'defend', KeyC: 'hold', KeyT: 'follow', KeyV: 'attack' } as const;
 const FL_CAM_Z = -2;
 
 /** One running match on screen: owns the World renderer, the HUD and the input mapping. */

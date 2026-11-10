@@ -17,12 +17,14 @@ Stick War's loop (mine gold → train an army → push the lane → smash the st
 |---|---|
 | Passive | 3 gold/s per player |
 | Miner trip | 15 gold (+40% with a Mine Shaft); rich middle veins +60% |
-| Market | +2 gold/s each (max 2) |
+| Market | 400 gold, +2 gold/s each (max 2) |
 | Banners held | +1.5 gold/s per outpost, +3 gold/s for the Heart, per player |
 | Banner capture | 150 to every player on the capturing team |
-| Kills | 20% of a unit's cost to its killer's owner; 200 for a hero |
+| Kills | 20% of a unit's cost to its killer's owner; 200 for a hero, scaled by victim level ÷ killer level (0.5× to 1.5×) |
+| Underdog bounty | ×1.5 on all kill gold while your team's army is worth less than 70% of the enemy's |
+| Sudden Death | from 12:00, +1 gold/s per player, and +1 more every minute |
 
-Each side has 4 safe veins near its keep (4 miners each, shared by teammates) and 2 rich contested veins near the middle. When soldiers or heroes come close, miners flee to the keep and return once it's safe.
+Each side has 4 safe veins near its keep (4 miners each, shared by teammates) and 2 rich contested veins near the middle. **Rich veins unload at the nearest banner your team holds** (a forward depot), so holding the Dawn/Dusk Outpost or the Heart makes the middle worth mining. Miners pick the free vein with the best gold per second for the round trip, with a risk detour counted for rich veins. When soldiers or heroes come close, miners flee to the keep and return once it's safe.
 
 ## Units
 
@@ -30,23 +32,30 @@ Each side has 4 safe veins near its keep (4 miners each, shared by teammates) an
 |---|---|---|---|---|
 | Miner | 150 | 1 | Keep | Economy |
 | Swordsman | 125 | 1 | Keep | Cheap melee |
-| Archer | 300 | 1 | Archery Range | Ranged DPS |
+| Archer | 225 | 1 | Archery Range | Ranged DPS, +50% damage against Giants |
 | Shieldbearer | 450 | 2 | Barracks | Tank |
 | Assassin | 275 | 1 | Barracks | Dives archers and mages |
 | Battlemage | 500 | 2 | Arcane Sanctum | Splash fireballs |
 | Healer | 350 | 1 | Arcane Sanctum | Heals units and heroes |
 | Giant | 1500 | 4 | Giant Pit | Huge splash bruiser |
 
-Population starts at 12; each House adds 8 (max 40). The Forge researches weapons (+15% damage per level) and armor (+8 per level), 3 levels each.
+Population starts at 16; each House adds 10 (max 3 Houses, cap 40), so a full army costs 3 of your 7 plots. The Forge researches weapons (+15% damage and +10% healing per level) and armor (+8 per level), 3 levels each.
+
+Units ignore enemy buildings they can't hit from the lane (melee can't climb to the build plots), and a destroyed trainer refunds its training queue.
 
 ## Stances (per player, for their own army)
 
 - **Garrison:** everyone, miners included, hides inside the keep. Each garrisoned unit makes the keep shoot 12% faster, and garrisoned units heal.
 - **Defend:** a formation line in front of your base.
 - **Hold line:** a formation at your rally point (set with C over the battlefield).
+- **Follow:** the army forms up 3 units behind your hero and fights wherever you lead it. Falls back to Defend while your hero is dead.
 - **Attack:** march on the enemy keep and fight everything on the way.
 
 Formations put heavies and melee in front, then archers, then mages, then healers, spread across the lane.
+
+## Sudden Death
+
+At 12:00 both keeps start to crumble (15 true damage per second, no regeneration) and lose 5 armour every 30 s, and income ramps (see Economy). The keep that took more siege damage falls first, and no match outlasts about 20 minutes. Garrisoned units add keep firepower only up to 12 units (+144%).
 
 ## How it maps to the code
 
@@ -54,6 +63,10 @@ Formations put heavies and melee in front, then archers, then mages, then healer
 - Systems: `src/shared/frontline/sim.ts` (economy, training queues, construction, stances and formations, miners, healers, banners, garrison). It plugs into the shared `Game`, so heroes, abilities, effects, projectiles, replays and the server all work unchanged.
 - Bots: `src/shared/frontline/bot.ts` (three build personalities; stances follow relative army value).
 - Rendering: `src/client/render/frontline.ts` (side-view lane, veins, plots, banners) plus `World`'s side camera, construction scaffolding, carried gold sacks and bloom.
+
+## Measuring balance
+
+`npx tsx tools/frontline-balance.ts [seeds] [capMinutes] [--md]` plays seeded 2v2 bot matches and prints match length, unfinished matches, win rate per bot build plan and gold by source. Results are in `docs/FRONTLINE-BALANCE.md`.
 
 ## Next ideas
 

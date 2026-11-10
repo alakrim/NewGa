@@ -6,7 +6,7 @@ import type { Game, PlayerSetup } from '../sim/game';
 import type { Unit } from '../sim/world';
 import {
   CASTLE, FL, FL_BANNERS, FL_BUILDINGS, FL_NODES, FL_PLOTS, FL_RESEARCH, FL_UNITS, MINE, PLAYER_COLORS, PLAYER_HEX, WATCHTOWER,
-  defendX, dropPos, fortressPos, type FlBannerKey, type FlBuildingId, type FlResearch, type FlUnitId, type PlayerColor, type Stance, type Trainer,
+  defendX, dropPos, fortressPos, type FlBannerKey, type FlNode, type FlBuildingId, type FlResearch, type FlUnitId, type PlayerColor, type Stance, type Trainer,
 } from './data';
 
 export interface FlPlayer {
@@ -46,7 +46,12 @@ export class Frontline {
   readonly nodeMiners: Set<number>[] = FL_NODES.map(() => new Set());
   readonly banners: BannerState[] = FL_BANNERS.map((b) => ({ key: b.key, name: b.name, x: b.x, z: b.z, owner: b.startOwner, progress: 0, capTeam: -1 }));
   readonly castles: [number, number] = [0, 0];
+  /** Each team's army value (cost × health, miners excluded), refreshed once a second. */
+  readonly armyValue: [number, number] = [0, 0];
   private goldAcc = 0;
+  private suddenDeath = false;
+  /** Index of each army unit among its owner's units of the same role, rebuilt every step (formation slots). */
+  private roleSlot = new Map<number, number>();
 
   constructor(private g: Game) {}
 
@@ -111,7 +116,21 @@ export class Frontline {
   trainerReady(p: FlPlayer, t: Trainer) { return t === 'castle' || this.completed(p, t) > 0; }
   income(p: FlPlayer) {
     const held = this.banners.filter((b) => b.owner === p.team);
-    return FL.passiveGold + 2 * this.completed(p, 'market') + held.reduce((a, b) => a + (b.key === 'heart' ? FL.heartGold : FL.bannerGold), 0);
+    return FL.passiveGold + this.suddenDeathGold() + 2 * this.completed(p, 'market') + held.reduce((a, b) => a + (b.key === 'heart' ? FL.heartGold : FL.bannerGold), 0);
+  }
+  /** Extra passive gold per second once Sudden Death starts: +1 at once, +1 more each minute. */
+  suddenDeathGold() {
+    const t = this.g.time - FL.suddenDeathAt;
+    return t < 0 ? 0 : FL.suddenDeathGoldPerMin * (Math.floor(t / 60) + 1);
+  }
+  /** True while `team`'s army is worth clearly less than the enemy's: its kills pay the underdog bounty. */
+  isUnderdog(team: number) {
+    return this.armyValue[team as Team] < FL.underdogBelow * this.armyValue[(1 - team) as Team];
+  }
+  /** Gold for killing a hero: more for killing someone above your level, and more for the underdog. */
+  heroBounty(victim: Unit, killer: Unit) {
+    const ratio = clamp((victim.hero?.level ?? 1) / Math.max(1, killer.hero?.level ?? 1), 0.5, 1.5);
+    return Math.round(FL.heroKillGold * ratio * (this.isUnderdog(killer.team) ? FL.underdogBounty : 1));
   }
 
   // ---------------------------------------------------------------- commands
@@ -188,6 +207,15 @@ export class Frontline {
     const st = this.plots[u.flPlot];
     const owner = this.player(st.owner);
     this.g.emit({ e: 'msg', text: `${owner?.name ?? 'A player'} lost a ${FL_BUILDINGS[st.building as FlBuildingId]?.name ?? 'building'}`, color: '#ff8a8d' });
+    // units queued at a trainer that is gone would wait forever: refund them
+    const t = st.building as Trainer;
+    if (owner && TRAINERS.includes(t) && owner.queues[t].length && this.completed(owner, st.building as FlBuildingId) <= (st.progress >= 1 ? 1 : 0)) {
+      const purse = this.purse(owner);
+      const refund = owner.queues[t].reduce((a, q) => a + FL_UNITS[q.unit].cost, 0);
+      owner.queues[t] = [];
+      if (purse) purse.gold += refund;
+      this.g.emit({ e: 'msg', text: `Training queue refunded (${refund} gold)`, color: '#ffd166' }, { pid: owner.pid });
+    }
     st.owner = ''; st.building = ''; st.progress = 0; st.unitId = 0;
     return true;
   }
@@ -222,7 +250,8 @@ export class Frontline {
     if (u.fl) {
       if (u.fl.node >= 0) this.nodeMiners[u.fl.node]?.delete(u.id);
       const bountyTo = this.ownerHero(src);
-      if (bountyTo && bountyTo.team !== u.team) this.g.giveGold(bountyTo, Math.round(FL_UNITS[u.fl.type].cost * FL.killBounty));
+      const mult = bountyTo && this.isUnderdog(bountyTo.team) ? FL.underdogBounty : 1;
+      if (bountyTo && bountyTo.team !== u.team) this.g.giveGold(bountyTo, Math.round(FL_UNITS[u.fl.type].cost * FL.killBounty * mult));
     }
   }
   /** The hero whose purse gets rewards for `src`'s kills. */
@@ -281,6 +310,10 @@ export class Frontline {
     const dir = p.team === 0 ? 1 : -1;
     if (p.stance === 'hold') return p.rallyX || defendX(p.team);
     if (p.stance === 'attack') return fortressPos((1 - p.team) as Team).x - dir * 8;
+    if (p.stance === 'follow') {
+      const h = this.g.units.get(p.heroUnit);
+      if (h && !h.dead) return clamp(h.x - dir * FL.followOffset, FL.minX + 6, FL.maxX - 6);
+    }
     return defendX(p.team) + dir * (p.slot === 0 ? 2 : -2);
   }
 
@@ -288,8 +321,7 @@ export class Frontline {
     const def = FL_UNITS[u.fl!.type];
     const dir = p.team === 0 ? 1 : -1;
     const anchor = this.anchorX(p);
-    const mates = this.owned(p, (o) => FL_UNITS[o.fl!.type].role === def.role);
-    const i = Math.max(0, mates.indexOf(u));
+    const i = this.roleSlot.get(u.id) ?? 0;
     const perRow = 7;
     const row = Math.floor(i / perRow), col = i % perRow;
     const z = FL.laneMinZ + 1.5 + ((col + (p.slot === 0 ? 0 : 0.5)) / perRow) * (FL.laneMaxZ - FL.laneMinZ - 3);
@@ -307,6 +339,7 @@ export class Frontline {
       const d = Math.hypot(o.x - u.x, o.z - u.z) - o.radius;
       const structure = this.g.isStructure(o);
       if (d > (structure ? range + 4 : range)) continue;
+      if (structure && !this.g.inReach(u, o)) continue; // melee can't climb to the build plots
       if (Math.abs(o.x - anchor) > leash && !(d <= def.stats.attackRange + 1)) continue;
       if (!this.g.visibleTo(u.team, o)) continue;
       let score = d;
@@ -356,7 +389,8 @@ export class Frontline {
     }
     if (f.carry > 0) {
       f.state = 'toDrop';
-      if (this.g.moveToward(u, home, dt, 1.2) || Math.hypot(u.x - home.x, u.z - home.z) < 1.8) {
+      const depot = f.node >= 0 ? this.depot(p.team, FL_NODES[f.node]) : home;
+      if (this.g.moveToward(u, depot, dt, 1.2) || Math.hypot(u.x - depot.x, u.z - depot.z) < 1.8) {
         const purse = this.g.units.get(p.heroUnit);
         const amount = f.carry * (this.completed(p, 'mineshaft') ? 1.4 : 1);
         f.carry = 0;
@@ -389,15 +423,30 @@ export class Frontline {
     }
   }
 
+  /** Where a miner from vein `n` unloads: the keep, or for a rich vein the nearest banner its team holds. */
+  depot(team: Team, n: FlNode): Vec2 {
+    const home = dropPos(team);
+    if (!n.rich) return home;
+    let best = home, bd = Math.hypot(n.x - home.x, n.z - home.z);
+    for (const b of this.banners) {
+      if (b.owner !== team) continue;
+      const d = Math.hypot(n.x - b.x, n.z - b.z);
+      if (d < bd) { bd = d; best = { x: b.x, z: b.z }; }
+    }
+    return best;
+  }
+
+  /** The free vein with the best gold per second of a round trip (rich veins count a risk detour). */
   private pickNode(p: FlPlayer, u: Unit): number {
-    const home = dropPos(p.team);
-    let best = -1, bd = Infinity;
+    let best = -1, bs = Infinity;
+    const speed = FL_UNITS.miner.stats.moveSpeed * (1 + MINE.carrySpeedMult) / 2;
     for (const n of FL_NODES) {
       if (n.team !== -1 && n.team !== p.team) continue;
       if (this.nodeMiners[n.index].size >= n.capacity) continue;
-      // contested veins are only worth it when the middle is ours or our army is out there
-      const d = Math.hypot(n.x - home.x, n.z - home.z) + (n.team === -1 ? 25 : 0);
-      if (d < bd) { bd = d; best = n.index; }
+      const dep = this.depot(p.team, n);
+      const leg = Math.hypot(n.x - dep.x, n.z - dep.z) + (n.rich ? MINE.richRisk : 0);
+      const score = (2 * leg / speed + MINE.mineTime) / (MINE.trip * (n.rich ? 1 + MINE.richBonus : 1));
+      if (score < bs) { bs = score; best = n.index; }
     }
     void u;
     return best;
@@ -405,6 +454,16 @@ export class Frontline {
 
   // ---------------------------------------------------------------- tick
   step(dt: number) {
+    // formation slots: each army unit's index among its owner's units of the same role
+    this.roleSlot.clear();
+    const counts = new Map<string, number>();
+    for (const u of this.g.units.values()) {
+      if (!u.fl || u.dead) continue;
+      const key = u.fl.owner + '|' + FL_UNITS[u.fl.type].role;
+      const i = counts.get(key) ?? 0;
+      counts.set(key, i + 1);
+      this.roleSlot.set(u.id, i);
+    }
     // training
     for (const p of this.players) for (const t of TRAINERS) {
       const q = p.queues[t];
@@ -430,12 +489,27 @@ export class Frontline {
     if (this.goldAcc >= 1) {
       this.goldAcc -= 1;
       for (const p of this.players) { const h = this.purse(p); if (h) h.gold += this.income(p); }
+      this.armyValue[0] = this.armyValue[1] = 0;
+      for (const u of this.g.units.values()) if (!u.dead && u.fl && u.fl.type !== 'miner' && u.team !== 2) this.armyValue[u.team as Team] += FL_UNITS[u.fl.type].cost * (u.hp / u.stats.maxHp);
+      for (const p of this.players) for (const u of p.garrison) if (u.fl!.type !== 'miner') this.armyValue[p.team] += FL_UNITS[u.fl!.type].cost;
+      const sd = this.g.time >= FL.suddenDeathAt;
+      if (sd && !this.suddenDeath) {
+        this.suddenDeath = true;
+        this.g.emit({ e: 'msg', text: 'Sudden Death! Both keeps crumble, their walls weaken and gold flows faster.', color: '#ff9f43' });
+      }
       for (const team of [0, 1] as Team[]) {
         const c = this.g.units.get(this.castles[team]);
         if (!c || c.dead) continue;
         const inside = this.players.filter((p) => p.team === team).reduce((a, p) => a + p.garrison.length, 0);
-        const want = CASTLE.attackSpeed * (1 + FL.garrisonArrowsPerUnit * inside);
-        if (Math.abs(c.baseStats.attackSpeed - want) > 1e-3) { c.baseStats.attackSpeed = want; this.g.recompute(c); }
+        const want = CASTLE.attackSpeed * (1 + FL.garrisonArrowsPerUnit * Math.min(inside, FL.garrisonArrowsCap));
+        let dirty = false;
+        if (Math.abs(c.baseStats.attackSpeed - want) > 1e-3) { c.baseStats.attackSpeed = want; dirty = true; }
+        if (sd) {
+          const armor = Math.max(0, CASTLE.armor - FL.suddenDeathArmorLoss * Math.floor((this.g.time - FL.suddenDeathAt) / 30 + 1));
+          if (c.baseStats.armor !== armor || c.baseStats.hpRegen !== 0) { c.baseStats = { ...c.baseStats, armor, magicResist: armor, hpRegen: 0 }; dirty = true; }
+        }
+        if (dirty) this.g.recompute(c);
+        if (sd) this.g.dealDamage(null, c, FL.suddenDeathCrumble, 'true');
         // garrisoned units slowly heal
         for (const p of this.players) if (p.team === team) for (const u of p.garrison) u.hp = Math.min(u.stats.maxHp, u.hp + u.stats.maxHp * 0.05);
       }
@@ -468,7 +542,7 @@ export class Frontline {
       if (b.progress >= 1) {
         b.owner = team; b.progress = 0; b.capTeam = -1;
         this.g.emit({ e: 'msg', text: `${team === 0 ? 'Dawnguard' : 'Duskborn'} captured the ${b.name}!`, color: team === 0 ? '#7cb8ff' : '#ff8a8d' });
-        this.g.emit({ e: 'banner', team: team as Team, key: 'keep', by: near[0].id });
+        this.g.emit({ e: 'banner', team: team as Team, key: b.key, by: near[0].id });
         for (const p of this.players) if (p.team === team) { const h = this.g.units.get(p.heroUnit); if (h) this.g.giveGold(h, 150); }
       }
     }

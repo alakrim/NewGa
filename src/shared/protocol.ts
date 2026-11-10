@@ -80,7 +80,7 @@ export type GameEvent =
   | { e: 'kill'; killer: number; victim: number; assists: number[] }
   | { e: 'death'; id: number }
   | { e: 'gold'; id: number; a: number }
-  | { e: 'banner'; team: Team; key: BannerKey; by: number }
+  | { e: 'banner'; team: Team; key: BannerKey | FlBannerKey; by: number }
   | { e: 'struct'; id: number; team: Team; name: string }
   | { e: 'msg'; text: string; color?: string }
   | { e: 'level'; id: number; lvl: number }

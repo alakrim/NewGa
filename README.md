@@ -105,6 +105,7 @@ tests/               headless bot matches, ability smoke tests, server tests
 | `npm test` | Headless 10-bot match, ability smoke tests, server tests |
 | `npm run validate` | Content validator for heroes and items |
 | `npx tsx tools/balance.ts` | Balance harness (writes `docs/BALANCE-REPORT.md`) |
+| `npx tsx tools/frontline-balance.ts` | Frontline bot-match harness: length, stalemates, win rate per bot plan, gold sources (`docs/FRONTLINE-BALANCE.md`) |
 | `npm run assets:fetch` / `assets:build` | Re-download the KayKit packs and rebuild `public/assets` |
 
 ## Docs

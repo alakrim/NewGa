@@ -119,6 +119,12 @@
     "sourceName": "flying-flag",
     "url": "https://game-icons.net/1x1/lorc/flying-flag.html"
   },
+  "follow": {
+    "file": "icons/follow.svg",
+    "author": "Lorc",
+    "sourceName": "footprint",
+    "url": "https://game-icons.net/1x1/lorc/footprint.html"
+  },
   "attack": {
     "file": "icons/attack.svg",
     "author": "Lorc",
