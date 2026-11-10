@@ -4,7 +4,7 @@
 
 ## Style and rules
 
-- **Our look:** stylized low-poly 3D, KayKit-like (chunky proportions, simple atlas or flat textures). Anything 2D pixel is out of style. Photoreal scans need restyling.
+- **Our look:** see `docs/STYLE.md`. *(This table was vetted for the first, fully 3D web client. The game has since moved to HD-2D: pixel sprites in a lit 3D world, so the "Poor" fit given to 2D pixel packs below no longer holds. The current shopping list is in `docs/REVIEW-ART.md`, and every committed asset is listed in `assets-manifest.json`.)* Photoreal scans need restyling.
 - **License rules:**
   - CC0 preferred.
   - CC BY is fine when attribution goes in the README "Credits and licenses" section.

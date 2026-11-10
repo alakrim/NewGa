@@ -16,3 +16,9 @@ jobs:
       - run: npm run validate
       - run: npm test
       - run: npm run build
+      - name: Godot data mirrors match the TypeScript game data
+        run: npx tsx tools/gen-godot-data.ts && git diff --exit-code godot/scripts/fl_data.gd godot/scripts/heroes_data.gd
+      - name: Every asset has a source and an allowed licence
+        run: python3 -I tools/assets.py lint
+      - name: CREDITS.md is up to date
+        run: python3 -I tools/assets.py credits && git diff --exit-code CREDITS.md

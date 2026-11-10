@@ -1,4 +1,16 @@
-# Handoff: state of the project (2026-10-27)
+# Handoff: state of the project
+
+## Last session (2026-11-10, branch `ccr-3e18521d-fh6r1c`)
+- Fast-forwarded onto the paint-over branch (`ccr-b746cdda-o5bvbc`), so this branch now holds all the work.
+- Frontline: matches always end (unreachable-target fix + Sudden Death), Follow stance, economy and comeback
+  pass, `tools/frontline-balance.ts` (`docs/FRONTLINE-BALANCE.md`).
+- Art: `tools/bake-sprites.ts` bakes the KayKit characters into pixel sprite sheets (`docs/art-tests/`);
+  `docs/STYLE.md`, `docs/DECISIONS.md`, `docs/REVIEW-ART.md`; asset manifest, lint and credits in CI.
+- Not verified in the engine (Godot could not be installed in the session): the Follow HUD button,
+  `follow.png`, the paint-over texture loading and split panorama.
+- Open decisions: `docs/DECISIONS.md`.
+
+## Earlier state (2026-10-27)
 
 Branch `claude/2.5d-hero-tower-defense-odusfc` (both `alakrim/NewGa` and `alakrim/Brainstorm`).
 

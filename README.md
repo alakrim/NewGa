@@ -107,6 +107,8 @@ tests/               headless bot matches, ability smoke tests, server tests
 | `npx tsx tools/balance.ts` | Balance harness (writes `docs/BALANCE-REPORT.md`) |
 | `npx tsx tools/frontline-balance.ts` | Frontline bot-match harness: length, stalemates, win rate per bot plan, gold sources (`docs/FRONTLINE-BALANCE.md`) |
 | `npm run assets:fetch` / `assets:build` | Re-download the KayKit packs and rebuild `public/assets` |
+| `npx tsx tools/bake-sprites.ts [--heroes]` | Bake the KayKit 3D characters into pixel sprite sheets (headless Chromium, no Godot) |
+| `python3 tools/assets.py lint` / `credits` | Check every asset's source and licence against `assets-manifest.json` / write `CREDITS.md` |
 
 ## Docs
 
@@ -114,8 +116,12 @@ tests/               headless bot matches, ability smoke tests, server tests
 - [docs/HEROES.md](docs/HEROES.md): the roster, lore and kits
 - [docs/BALANCE.md](docs/BALANCE.md), [docs/BALANCE-REPORT.md](docs/BALANCE-REPORT.md): number ranges and measured balance
 - [docs/MODELS.md](docs/MODELS.md): character models and weapon meshes
+- [docs/STYLE.md](docs/STYLE.md): the art style guide and how new art gets in; [docs/DECISIONS.md](docs/DECISIONS.md): decision log
+- [docs/REVIEW.md](docs/REVIEW.md), [docs/REVIEW-ART.md](docs/REVIEW-ART.md): external reviews of design, code, art and workflow
 
 ## Credits and licenses
+
+Full list, generated from `assets-manifest.json`: [CREDITS.md](CREDITS.md).
 
 - Code: MIT.
 - 3D models and animations: **KayKit** Adventurers, Skeletons and Medieval Hexagon packs by [Kay Lousberg](https://www.kaylousberg.com), **CC0 1.0** (license files in `public/assets/`; provenance in `public/assets/manifest.json`).
