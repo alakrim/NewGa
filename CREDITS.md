@@ -12,7 +12,7 @@ Code: MIT. Game design and code: the Bannerfall project.
 | KayKit Character Pack: Adventurers | Kay Lousberg | CC0 1.0 (public domain) | https://kaylousberg.itch.io/kaykit-adventurers |
 | game-icons.net icons (rendered to PNG) | Lorc, Delapouite | CC BY 3.0 | https://game-icons.net |
 | Pixelify Sans | The Pixelify Sans Project Authors | SIL Open Font License 1.1 | https://github.com/eifetx/Pixelify-Sans |
-| Paint-over paintings, concepts and buildings | Bannerfall project | AI-generated for this project | Muse Image, Seedream 5.0 Flash (OpenRouter) |
+| Paint-over paintings and concepts | Bannerfall project | AI-generated for this project | Muse Image, Seedream 5.0 Flash (OpenRouter) |
 | Art-direction concepts | Bannerfall project | AI-generated for this project | Gemini 3 Pro Image (OpenRouter); see docs/concepts/README.md |
 
 ## Required attributions

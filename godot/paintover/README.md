@@ -1,9 +1,17 @@
-# Paint-over experiment
+# Paint-over: an optional painted map skin
 
-Block out the map, have image models paint over it in a chosen art direction, project the painting back
+**Status (2026-11-10, `docs/DECISIONS.md`):** kept as an optional map skin, not the main look. The photoreal
+painted buildings and the depth variant were deleted, because they clashed with the chibi units.
+- **Hypothesis:** a painted ground, restyled to the style block in `docs/STYLE.md`, can be a second map look
+  beside HD-2D.
+- **Merge criterion:** an in-engine screenshot, repainted with the style block, that the owner prefers to
+  HD-2D for that map, reachable from a setting.
+- **Kill date:** 2026-12-01. If it hasn't merged by then, delete this folder, `tools/paintover*.py` and the
+  `ortho` lines in `scripts/game.gd`.
+
+Block out the map, have image models paint over it in a chosen art direction, and project the painting back
 onto the blocks. Everything lives in this folder plus `tools/paintover*.py` and the `ortho` switch in
-`scripts/game.gd`, so removing it is: delete this folder and `tools/paintover*.py`, and revert the `ortho`
-lines.
+`scripts/game.gd`.
 
 How it works: the game camera never changes pitch (52°). With an orthographic camera at that pitch, every
 surface lands on the same spot of one flat "view plane" (u = x, v = y·cos52° − z·sin52°) wherever the camera
@@ -40,35 +48,9 @@ VT_SHOTS=$PWD/godot/paintover/shots godot --path godot --resolution 1280x720 res
 
 Known gaps: the painting is about 22 px per unit, so it softens at the closest zoom; the trenches came out
 flatter than in the concept. The paintings are loaded as imported textures (mipmaps on, no VRAM compression),
-so they work in an exported build; `depth/height.bin` is read with `FileAccess` and needs `*.bin` in the
-export preset's non-resource include filter.
+so they work in an exported build.
 
-## Depth paint-over (`depth/`): the art first, the 3D from the art
-
-Painting over a block map limits the model to texturing my layout. This flips it: the model composes the
-scene freely and the geometry comes from the painting. Tried on the west end only (tile 0's framing).
-
-1. `sketch.py`: a zone sketch on the view plane (forest, camp, plots, cliff, road, courtyard, gold strip).
-2. `paint.py`: one Muse Image painting from the sketch and a text description of concept B
-   (`paint_text.jpg`). With the swatch sheet as a second reference it copied concept B's layout instead.
-3. `fit.py`: warps the painting onto the gameplay positions (landmark rows and columns), takes local relief
-   from Depth Anything V2 Small (ONNX, CPU) on top of zone heights, and flattens the lane, courtyard and plots
-   (`painting.jpg`, `height.bin`).
-4. `painted_depth.tscn`: a height-field mesh whose vertices sit on the camera's rays, with the painting
-   projected onto it, and the staged battle moved to this end (`shots/`).
-
-```bash
-python3 godot/paintover/depth/sketch.py
-OPENROUTER_API_KEY=... python3 godot/paintover/depth/paint.py text
-python3 -I godot/paintover/depth/fit.py text <depth-anything-v2-small model.onnx>
-VT_SHOTS=... godot --path godot --resolution 1280x720 res://paintover/depth/painted_depth.tscn
-```
-
-The model is `onnx/model.onnx` from huggingface.co/onnx-community/depth-anything-v2-small (not in git).
-Known gaps: the leftmost gold outcrop sits about 7 units from its vein; the meadow east of the camp is
-painted at plateau height; the rest of the map is not painted yet.
-
-### Light and shadows
+## Light and shadows
 
 In painted mode the painting shows at its painted colour: `painted.gd` turns off the tone-mapping curve,
 colour grade, fog, vignette and depth of field, and `projection.gdshader` tops the ambient up to exactly
@@ -77,11 +59,3 @@ it. The sun comes from the painted light's side (left), turned a little to the f
 camera, so a sun from straight left hits them edge-on and one from behind hides their shadows under them.
 The game's two-split sun shadows render nothing with an orthographic camera, so painted mode uses one
 orthogonal shadow map.
-
-### Painted buildings (`buildings/`)
-
-`paint.py` asks Muse Image for the keep and a sheet of eight plot buildings in the battlefield's style and
-camera angle on flat magenta (`raw_*.jpg`); `cut.py` keys them out (`<bid>.png`). `painted_buildings.gd`
-swaps a building's KayKit model for its painting on a quad facing the camera, its lower edge on the ground in
-front so the painted footprint lands on the plot; `building.gdshader` shows it unlit and swaps the blue
-trim for the owner's colour. Construction stages and rubble still use the KayKit models.

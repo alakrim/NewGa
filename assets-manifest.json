@@ -117,20 +117,6 @@
       "notes": "Rendered by godot/paintover/capture.tscn."
     },
     {
-      "glob": "godot/paintover/depth/sketch.png",
-      "name": "Paint-over zone sketch",
-      "author": "Bannerfall project",
-      "licence": "project",
-      "notes": "godot/paintover/depth/sketch.py."
-    },
-    {
-      "glob": "godot/paintover/depth/height_preview.png",
-      "name": "Paint-over height preview",
-      "author": "Bannerfall project",
-      "licence": "project",
-      "notes": "godot/paintover/depth/fit.py (Depth Anything V2 Small, Apache-2.0 model, output not covered by it)."
-    },
-    {
       "glob": "godot/paintover/**/shots/**",
       "name": "Paint-over screenshots",
       "author": "Bannerfall project",
@@ -138,11 +124,11 @@
     },
     {
       "glob": "godot/paintover/**",
-      "name": "Paint-over paintings, concepts and buildings",
+      "name": "Paint-over paintings and concepts",
       "author": "Bannerfall project",
       "licence": "ai-generated",
       "generator": "Muse Image, Seedream 5.0 Flash (OpenRouter)",
-      "prompts": "tools/paintover.py, tools/paintover_concepts.py, godot/paintover/depth/paint.py, godot/paintover/buildings/paint.py"
+      "prompts": "tools/paintover.py, tools/paintover_concepts.py"
     },
     {
       "glob": "docs/concepts/**",

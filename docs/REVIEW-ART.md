@@ -59,7 +59,7 @@ reaches about 14-16 silhouettes. About $16 for the two KayKit Extra tiers adds 5
 - **Animation, honest odds:** AI sprite sheets 10-20% per animation (attacks worst); AI pose + Skeleton2D
   cutout 50-60% per character and 2-4 h of rigging each; 3D model + bake about 95% (verified above).
 - **Team colour:** bake once with team-coloured texels in a reserved key hue, then hue-swap in the sprite
-  shader keeping luminance (`paintover/buildings/building.gdshader` already does this). One sheet per body,
+  shader keeping luminance (the deleted paint-over building shader did this; see `godot/shaders/team_sprite.gdshader`). One sheet per body,
   and purple works.
 - **VFX:** Godot particles with Kenney textures tinted by the `color` the sim already sends; AI only for a few
   ultimates, as stills animated by shader.

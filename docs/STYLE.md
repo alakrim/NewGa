@@ -64,7 +64,7 @@ invents. Every prompt starts with the style block, unchanged.
 > [STYLE]. IMAGE 1 is a flat-colour layout guide; keep every shape's position. Repaint as hand-painted low-poly
 > terrain seen from 52° above, autumn palette from IMAGE 2, large clean shapes, no small noisy detail.
 
-Post-process every AI image the same way as bakes: key out magenta (`godot/paintover/buildings/cut.py`),
+Post-process every AI image the same way as bakes: key out magenta (`tools/magenta_key.py`),
 quantise, outline and nearest-neighbour downscale.
 
 ## How art gets in
@@ -90,5 +90,5 @@ quantise, outline and nearest-neighbour downscale.
 
 - Do compare new art against `docs/screenshots/godot/battle.jpg` at game scale.
 - Do keep silhouettes distinct at 46 px tall: weapon, headgear and colour, in that order.
-- Don't mix photoreal or painterly detail with chibi sprites (see `godot/paintover/depth/shots/buildings-2-keep.jpg`).
+- Don't mix photoreal or painterly detail with chibi sprites. The deleted paint-over buildings are the example (git history, 2026-10-27).
 - Don't add a style experiment without a hypothesis, merge criteria and a kill date (`docs/DECISIONS.md`).

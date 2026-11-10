@@ -16,9 +16,9 @@ One dated line per decision, newest first. **Open** items wait for the project o
   (`docs/REVIEW-ART.md`). Evidence: `docs/art-tests/`. All 8 units read well; heroes need more bodies (about
   $16 of CC0 KayKit Extra tiers, or Quaternius) and a recolour pass. Team colour needs the hue-swap shader.
   Merge criterion: an in-engine screenshot beside `battle.jpg` that the owner prefers.
-- 2026-11-10 **Open:** paint-over. The review recommends keeping the projected ground as an optional map skin,
-  restyled to the style block, and deleting `godot/paintover/buildings/` and `depth/` (photoreal beside chibi
-  units). Kill date proposed: 2026-12-01.
+- 2026-11-10 Paint-over: the projected ground stays as an optional map skin (kill date 2026-12-01, see
+  `godot/paintover/README.md`). The photoreal painted buildings and the depth variant were deleted. Their
+  magenta key-out moved to `tools/magenta_key.py`.
 - 2026-11-10 All art, audio and fonts are listed in `assets-manifest.json`; CI fails on unlisted files or the
   Tiny Swords Free Pack being committed.
 - 2026-11-10 Frontline matches always end: units ignore unreachable plot buildings, and Sudden Death from 12:00
