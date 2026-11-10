@@ -311,7 +311,7 @@ static func unit_icon(unit_id: String, color := "blue") -> Texture2D:
 	var key := "unit:%s:%s" % [unit_id, color]
 	if _crop.has(key):
 		return _crop[key]
-	var def: Dictionary = V.UNITS.get(unit_id, V.UNITS["swordsman"])
+	var def: Dictionary = V.unit_def(unit_id)
 	var a: Dictionary = def.anims.get("idle", {})
 	var path: String = Sprites.sheet_path(a.get("sheet", def.sheet), color)
 	var t := load_tex(path)
@@ -354,6 +354,13 @@ static func avatar(no: int) -> Texture2D:
 
 
 static func hero_portrait(hero_id: String, color := "black") -> Texture2D:
+	if V.chars_mode() == "baked":
+		var key := "heroport:" + hero_id
+		if not _crop.has(key):
+			var t := load_tex(V.BAKED + "heroes/" + hero_id + ".png")
+			# the hero's own first idle frame, cropped to the character
+			_crop[key] = _cropped(t, Rect2i(0, 0, V.BAKED_FRAME.x, V.BAKED_FRAME.y)) if t else avatar(avatar_no(hero_id, color))
+		return _crop[key]
 	return avatar(avatar_no(hero_id, color))
 
 
@@ -429,7 +436,7 @@ static func unit_icon_size(unit_id: String, box: float) -> Vector2:
 	var t := unit_icon(unit_id)
 	if t == null:
 		return Vector2(box, box)
-	var def: Dictionary = V.UNITS.get(unit_id, V.UNITS["swordsman"])
+	var def: Dictionary = V.unit_def(unit_id)
 	var native := Vector2(t.get_width(), t.get_height())
 	var s: float = 0.62 * float(def.get("scale", 1.0))
 	if def.get("frame", Vector2i(192, 192)).x > 200:

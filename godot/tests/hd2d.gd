@@ -28,7 +28,7 @@ func look(x: float, z: float, zoom := 0.85) -> void:
 
 
 func _unit(body: String, color: String, x: float, z: float, anim: String, face_left: bool, hero := false) -> void:
-	var def: Dictionary = V.UNITS[body]
+	var def: Dictionary = V.unit_def(body)
 	var a := AnimatedSprite3D.new()
 	a.sprite_frames = Sprites.frames(body, color)
 	var fh: float = def.frame.y
@@ -66,8 +66,9 @@ func _stage() -> void:
 		var b: String = bodies[i % bodies.size()]
 		_unit(b, "blue" if i % 3 else "purple", -2.0 - float(i % 7) * 1.6 - randf(), -6.0 + float(i % 6) * 2.4 + randf(), "attack" if i % 3 == 0 else "run", false)
 		_unit(b, "red" if i % 3 else "yellow", 2.0 + float(i % 7) * 1.6 + randf(), -6.0 + float((i + 2) % 6) * 2.4 + randf(), "attack" if i % 2 == 0 else "idle", true)
-	_unit("shieldbearer", "blue", -1.5, 0.5, "attack", false, true)
-	_unit("battlemage", "red", 1.5, -1.0, "attack", true, true)
+	var baked := V.chars_mode() == "baked"
+	_unit("hero:aldric" if baked else "shieldbearer", "blue", -1.5, 0.5, "attack", false, true)
+	_unit("hero:kaelen" if baked else "battlemage", "red", 1.5, -1.0, "attack", true, true)
 	for i in range(10):
 		_unit("miner", "blue", -52.0 + float(i) * 2.0, 10.0 + randf() * 2.0, "run", i % 2 == 0)
 	# a little fire for bloom

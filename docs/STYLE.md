@@ -12,9 +12,10 @@ art. Decisions behind it are in `docs/DECISIONS.md`; the free sources and AI pip
 
 The camera looks down at 52°, one world unit is one sim unit, and sprites use 32 texels per unit.
 
-**Characters (proposed, see DECISIONS):** KayKit CC0 3D characters baked to pixel sprite sheets by
-`tools/bake-sprites.ts`, replacing the Tiny Swords units over time. The CC0 Tiny Swords decoration, effects and
-UI stay.
+**Characters:** the KayKit CC0 3D characters, baked to pixel sprite sheets by `tools/bake-sprites.ts` into
+`godot/assets/baked/`. This is the default; Settings → Characters → Classic switches back to the Tiny Swords
+sprites. Every hero has its own sprite and every unit one sheet per player colour. The CC0 Tiny Swords
+decoration, effects and UI stay.
 
 ## Sprite spec
 
@@ -37,8 +38,12 @@ UI stay.
 | Dawnguard (team 0, left) | blue, purple | `#3d8bfd`, `#9b5de5` | Round ground marker |
 | Duskborn (team 1, right) | red, yellow | `#e5484d`, `#e8b923` | Diamond ground marker |
 
-Team colour is applied by a hue swap in the shader, never by baking four copies. Identity colours (a hero's
-`visual.tint`) are for cloth only and must stay readable next to every team colour.
+Team colour is baked: each unit has one sheet per player colour, with the colour painted into the cloth
+swatches of the model's texture atlas (cape, hood, tunic, robe; shields on their own). The `CLOTH` table in
+`tools/bake-sprites.ts` lists them per body, found with `--probe`. Swatches are shared between parts (the
+shield face swatch is also every blade), so a recolour can be limited to some meshes. Heroes get their
+identity colour (`visual.tint`) the same way, plus per-hero hair, armour and gear in `HERO_LOOK` so heroes on
+the same body read apart. The game shows a hero's team through its ring and name plate.
 
 ## AI prompts
 

@@ -396,6 +396,23 @@ func _build_settings() -> void:
 		Prefs.set_value("gfx", "low" if i == 1 else "high")
 		toast("Applies to the next match"))
 	gr.add_child(gfx)
+	var chr := HBoxContainer.new()
+	chr.add_theme_constant_override("separation", 16)
+	v.add_child(chr)
+	var cl := UiArt.label("Characters", 24, UiArt.INK, 0)
+	cl.custom_minimum_size = Vector2(130, 0)
+	chr.add_child(cl)
+	var chars := OptionButton.new()
+	chars.add_item("Baked: a sprite of its own for every hero")
+	chars.add_item("Classic: Tiny Swords sprites")
+	chars.selected = 1 if Prefs.get_value("chars", "baked") == "classic" else 0
+	chars.custom_minimum_size = Vector2(0, 52)
+	chars.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chars.add_theme_font_size_override("font_size", 20)
+	chars.item_selected.connect(func(i):
+		Prefs.set_value("chars", "classic" if i == 1 else "baked")
+		toast("Applies to the next match"))
+	chr.add_child(chars)
 	var cr := UiArt.label("Art: Tiny Swords by Pixel Frog, KayKit by Kay Lousberg.  Font: Pixelify Sans (SIL OFL).\nIcons by Lorc and Delapouite, game-icons.net, CC BY 3.0.", 18, UiArt.INK_SOFT, 0)
 	cr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(cr)

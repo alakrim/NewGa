@@ -14,14 +14,60 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 const OPTIONAL_MESH = /^(1H_|2H_|Badge_Shield|Rectangle_Shield|Round_Shield|Spike_Shield|Barbarian_Round_Shield|Mug|Spellbook|Knife|Throwable|Knight_Helmet|Knight_Cape|Barbarian_Hat|Barbarian_Cape|Mage_Hat|Mage_Cape|Rogue_Cape)/;
-const CLOTH = /(Cape|Hat|Helmet|Hood|Cloak|Body)/;
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const cache = new Map();
 const load = (url) => { if (!cache.has(url)) cache.set(url, loader.loadAsync(url)); return cache.get(url); };
 const findBone = (root, names) => { let f = null; root.traverse((o) => { if (!f && names.includes(o.name.toLowerCase())) f = o; }); return f; };
 
-window.bake = async (spec) => {
-  const { model, weapons, tint, tintAmount, clips, cell, cellW, worldHeight, pitch, yaw, lift } = spec;
+// The KayKit atlases are an 8 x 4 grid of gradient swatches (128 x 256 px each in the 1024 px texture).
+// recolor: [{ cell: "01", color: "#hex", meshes?: "regex" }] repaints swatch column 0, row 1 in that colour,
+// keeping its gradient, on every mesh or only on meshes whose name matches `meshes` (swatches are shared:
+// the shield face swatch is also the blade of every sword).
+function recolorAtlas(root, all) {
+  const done = new Map();
+  root.traverse((o) => {
+    if (!o.isMesh || !o.material.map) return;
+    const recolor = all.filter((r) => !r.meshes || new RegExp(r.meshes).test(o.name));
+    if (!recolor.length) return;
+    const src = o.material.map;
+    const key = src.uuid + JSON.stringify(recolor);
+    if (!done.has(key)) {
+      const img = src.image;
+      const cv = document.createElement('canvas');
+      cv.width = img.width; cv.height = img.height;
+      const g = cv.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const cw = img.width / 8, ch = img.height / 4;
+      for (const { cell, color } of recolor) {
+        const x0 = Number(cell[0]) * cw, y0 = Number(cell[1]) * ch;
+        const d = g.getImageData(x0, y0, cw, ch);
+        const t = new THREE.Color(color);
+        const target = { h: 0, s: 0, l: 0 };
+        t.getHSL(target);
+        let mean = 0;
+        for (let i = 0; i < d.data.length; i += 4) mean += Math.max(d.data[i], d.data[i + 1], d.data[i + 2]);
+        mean /= d.data.length / 4;
+        const c = new THREE.Color();
+        for (let i = 0; i < d.data.length; i += 4) {
+          // keep the swatch's light-to-dark gradient, centred on the target colour's lightness
+          const v = Math.max(d.data[i], d.data[i + 1], d.data[i + 2]) / Math.max(1, mean);
+          c.setHSL(target.h, target.s, Math.min(1, target.l * v));
+          d.data[i] = c.r * 255; d.data[i + 1] = c.g * 255; d.data[i + 2] = c.b * 255;
+        }
+        g.putImageData(d, x0, y0);
+      }
+      const tex = new THREE.CanvasTexture(cv);
+      tex.flipY = src.flipY; tex.colorSpace = src.colorSpace; tex.magFilter = src.magFilter; tex.minFilter = src.minFilter;
+      tex.wrapS = src.wrapS; tex.wrapT = src.wrapT;
+      done.set(key, tex);
+    }
+    o.material = o.material.clone();
+    o.material.map = done.get(key);
+  });
+}
+
+async function build(spec) {
+  const { model, weapons, recolor } = spec;
   const gltf = await load(`/public/assets/characters/${model}.glb`);
   const root = SkeletonUtils.clone(gltf.scene);
   const show = new Set(weapons);
@@ -29,8 +75,9 @@ window.bake = async (spec) => {
     if (!o.isMesh) return;
     o.frustumCulled = false;
     if (OPTIONAL_MESH.test(o.name) && !show.has(o.name)) o.visible = false;
-    if (tint && CLOTH.test(o.name)) { o.material = o.material.clone(); o.material.color = new THREE.Color('#ffffff').lerp(new THREE.Color(tint), tintAmount); }
+    if (spec.hide?.includes(o.name)) o.visible = false;
   });
+  if (recolor?.length) recolorAtlas(root, recolor);
   const hands = { r: findBone(root, ['handslotr', 'handslot.r', 'handslot_r']), l: findBone(root, ['handslotl', 'handslot.l', 'handslot_l']) };
   for (const w of weapons) {
     if (!w.startsWith('Skeleton_')) continue;
@@ -38,8 +85,13 @@ window.bake = async (spec) => {
     const bone = /Shield/.test(w) ? hands.l : hands.r;
     if (bone) bone.add(src.clone(true));
   }
-  root.rotation.y = Math.PI / 2 - yaw; // KayKit faces +z; sprites face right (+x), turned `yaw` toward the viewer
+  root.rotation.y = Math.PI / 2 - spec.yaw; // KayKit faces +z; sprites face right (+x), turned `yaw` toward the viewer
+  if (spec.extraScale) root.scale.setScalar(spec.extraScale);
+  return { root, gltf };
+}
 
+function stage(spec, root) {
+  const { cell, cellW, worldHeight, pitch, lift } = spec;
   const scene = new THREE.Scene();
   scene.add(root);
   scene.add(new THREE.HemisphereLight('#ffffff', '#5a4a60', 1.6));
@@ -64,7 +116,13 @@ window.bake = async (spec) => {
   const target = new THREE.Vector3(0, lift, 0);
   cam.position.copy(target).add(new THREE.Vector3(0, Math.sin(r), Math.cos(r)).multiplyScalar(20));
   cam.lookAt(target);
+  return { scene, renderer, cam };
+}
 
+window.bake = async (spec) => {
+  const { root, gltf } = await build(spec);
+  const { scene, renderer, cam } = stage(spec, root);
+  const { clips } = spec;
   const mixer = new THREE.AnimationMixer(root);
   const out = {};
   for (const c of clips) {
@@ -86,6 +144,31 @@ window.bake = async (spec) => {
     out[c.name] = { frames, duration: clip.duration };
   }
   renderer.dispose();
+  return out;
+};
+// For each atlas swatch: how many pixels of an idle render change when that swatch turns magenta.
+window.cellUsage = async (spec) => {
+  const shot = async (recolor) => {
+    const { root, gltf } = await build({ ...spec, recolor });
+    const { scene, renderer, cam } = stage(spec, root);
+    const mixer = new THREE.AnimationMixer(root);
+    const idle = gltf.animations.find((a) => a.name === 'Idle');
+    if (idle) { mixer.clipAction(idle).play(); mixer.update(0.3); }
+    renderer.render(scene, cam);
+    const gl = renderer.getContext();
+    const px = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+    gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    renderer.dispose();
+    return px;
+  };
+  const base = await shot([]);
+  const out = {};
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) {
+    const px = await shot([{ cell: `${c}${r}`, color: '#ff00ff' }]);
+    let n = 0;
+    for (let i = 0; i < px.length; i += 4) if (Math.abs(px[i] - base[i]) + Math.abs(px[i + 1] - base[i + 1]) + Math.abs(px[i + 2] - base[i + 2]) > 60) n++;
+    if (n) out[`${c}${r}`] = n;
+  }
   return out;
 };
 window.ready = true;

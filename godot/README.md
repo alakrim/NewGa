@@ -29,6 +29,7 @@ Point the client at another server with `godot --path godot -- --server=ws://hos
 | `assets/tinyswords_free/` | Tiny Swords (Free Pack) | Free for commercial use, **no redistribution** | no, fetched by `tools/fetch-tinyswords.mjs` |
 | `assets/kaykit/` | KayKit Medieval Hexagon Pack | CC0 | yes |
 | `assets/hd2d/` | Grass, flowers and glow made by `tools/mkgrass.py` | CC0 | yes |
+| `assets/baked/` | Characters baked from KayKit CC0 models by `tools/bake-sprites.ts` (one sheet per unit and colour, one per hero) | project, from CC0 | yes |
 | `assets/fonts/PixelifySans.ttf` | Pixelify Sans | SIL OFL 1.1 | yes |
 
 The Free Pack supplies knights, buildings, terrain and UI. The CC0 pack supplies goblins (assassin and
@@ -40,7 +41,7 @@ mage bodies), effects, construction sites, ruins and small decorations.
 |---|---|
 | `scripts/net.gd` (autoload `Net`) | WebSocket client, JSON protocol from `src/shared/protocol.ts` |
 | `scripts/sprites.gd` (autoload `Sprites`) | Texture cache, builds `SpriteFrames` from sheets |
-| `scripts/visuals.gd` | Which sheet and animation rows each unit, hero role, building and effect uses |
+| `scripts/visuals.gd` | Which sheet and animation rows each unit, hero, building and effect uses; `unit_def()` picks baked or classic characters (Settings → Characters, or `-- --chars=classic` on the command line) |
 | `scripts/fl_map.gd` | Static map features, mirrored from `src/shared/frontline/data.ts` |
 | `scripts/world3d.gd` | 3D island, road, plateaus, water, ground cover, trees, lighting and atmosphere |
 | `scripts/game.gd` | Applies snapshots and events: units, buildings, projectiles, effects, camera, bars |

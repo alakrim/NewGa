@@ -26,7 +26,8 @@ units = sys.argv[5:]
 
 
 def frames_of(unit, row):
-    files = sorted((f for f in os.listdir(raw) if f.startswith(f"{unit}__{row}__")), key=lambda f: int(f.rsplit("__", 1)[1][:-4]))
+    stem = unit.replace("/", "--")  # "blue/swordsman" frames are saved flat as "blue--swordsman__..."
+    files = sorted((f for f in os.listdir(raw) if f.startswith(f"{stem}__{row}__")), key=lambda f: int(f.rsplit("__", 1)[1][:-4]))
     return [Image.open(os.path.join(raw, f)).convert("RGBA") for f in files]
 
 
@@ -76,12 +77,15 @@ for unit in units:
             sheet.paste(Image.fromarray(px, "RGBA"), (x * cw, y * ch))
     sheet.save(os.path.join(out, f"{unit}.png"), optimize=True)
     meta["palette_colors"] = len(pal.getcolors() or []) or PALETTE
-    meta["sheet"] = f"{unit}.png"
+    meta["sheet"] = f"{os.path.basename(unit)}.png"
     json.dump(meta, open(meta_path, "w"), indent=2)
     open(meta_path, "a").write("\n")
     print(f"sheet {unit}.png {sheet.size[0]}x{sheet.size[1]}")
 
-# contact sheet: each unit's sheet on a ground card
+# contact sheet: each unit's sheet on a ground card (skipped with BAKE_NO_CONTACT=1, e.g. when baking into the
+# Godot project, where a 16k px tall image would exceed the texture size limit)
+if os.environ.get("BAKE_NO_CONTACT") == "1":
+    sys.exit(0)
 cards = [Image.open(os.path.join(out, f"{u}.png")) for u in units]
 w = max(c.width for c in cards)
 h = sum(c.height for c in cards)

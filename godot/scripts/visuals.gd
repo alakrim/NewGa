@@ -87,7 +87,54 @@ const UNITS := {
 	},
 }
 
-## Hero body by role (the 20 heroes keep their kits; v1 art reuses the elite unit sprites, bigger and glowing).
+## Baked characters (tools/bake-sprites.ts): the KayKit CC0 3D models rendered to pixel sprite sheets. Units
+## have one sheet per player colour, heroes one sheet each in their identity colour. Every sheet has the same
+## rows in 192 x 128 frames: idle 8, run 8, attack 6, death 6. All frames share one ground line, 12 px above the
+## frame bottom. `feet` is how far the frame centre sits above the ground (it becomes the sprite offset): the
+## Tiny Swords frames put their centre 36 px above the feet and use 30, so baked ones use 64 - 12 - 6 = 46.
+const BAKED := "res://assets/baked/"
+const BAKED_FRAME := Vector2i(192, 128)
+const BAKED_FEET := 46
+const BAKED_SCALE := {"miner": 0.66, "giant": 1.35}  # others 0.72: the same on-screen height as Tiny Swords units
+
+
+static func baked_def(sheet: String, scale: float) -> Dictionary:
+	var run := {"row": 1, "count": 8, "fps": 12}
+	return {
+		"sheet": sheet, "frame": BAKED_FRAME, "scale": scale, "feet": BAKED_FEET,
+		"anims": {
+			"idle": {"row": 0, "count": 8, "fps": 8},
+			"run": run,
+			"attack": {"row": 2, "count": 6, "fps": 12, "loop": false},
+			"death": {"row": 3, "count": 6, "fps": 10, "loop": false},
+			"carry_idle": {"row": 0, "count": 8, "fps": 8},
+			"carry_run": run,
+		},
+	}
+
+
+## "baked" (default) or "classic" (Tiny Swords sprites). Settings saves it; `--chars=` on the command line
+## overrides it for one run (tests).
+static func chars_mode() -> String:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--chars="):
+			return a.trim_prefix("--chars=")
+	return Prefs.get_value("chars", "baked")
+
+
+## Sprite definition for a body id: a unit type ("swordsman") or, in baked mode, a hero ("hero:aldric").
+static func unit_def(id: String) -> Dictionary:
+	if chars_mode() == "baked":
+		if id.begins_with("hero:"):
+			return baked_def(BAKED + "heroes/" + id.trim_prefix("hero:") + ".png", 0.72)
+		if UNITS.has(id):
+			return baked_def(BAKED + "units/{c}/" + id + ".png", BAKED_SCALE.get(id, 0.72))
+	if id.begins_with("hero:"):
+		id = "swordsman"
+	return UNITS.get(id, UNITS["swordsman"])
+
+
+## Hero body by role (classic mode: the 20 heroes reuse the elite unit sprites, bigger and glowing).
 const HERO_BODY := {
 	"Tank": "shieldbearer", "Fighter": "swordsman", "Assassin": "assassin",
 	"Mage": "battlemage", "Marksman": "archer", "Support": "healer",

@@ -73,7 +73,7 @@ func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: Stri
 	color = p_color
 	is_me = me
 	hero_name = name_text
-	var def: Dictionary = V.UNITS.get(body_id, V.UNITS["swordsman"])
+	var def: Dictionary = V.unit_def(body_id)
 	_scale = def.get("scale", 1.0) * (V.HERO_SCALE if kind == "hero" else 1.0) * UNIT_SCALE
 	_frame_h = float(def.get("frame", Vector2i(192, 192)).y)
 	var glow: Texture2D = load(W3.HD + "glow.png")
@@ -126,6 +126,13 @@ func hit() -> void:
 func _on_anim_done() -> void:
 	if _body.animation.begins_with("attack"):
 		_attack_until = 0.0
+	elif _body.animation == "death" and dead:
+		visible = false
+
+
+## Baked characters have a death animation; classic sprites use the game's "dead" effect instead.
+func has_death() -> bool:
+	return _body != null and _body.sprite_frames != null and _body.sprite_frames.has_animation("death")
 
 
 func apply(snap: Array) -> void:
@@ -148,7 +155,12 @@ func apply(snap: Array) -> void:
 	var now_dead := (flags & F_DEAD) != 0
 	if now_dead != dead:
 		dead = now_dead
-		visible = not dead
+		if dead and has_death():
+			_body.play("death")  # baked characters fall over; _on_anim_done hides them
+		else:
+			visible = not dead
+			if not dead:
+				_play("idle")
 
 
 func _process(delta: float) -> void:

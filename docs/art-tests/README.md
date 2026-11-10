@@ -5,12 +5,16 @@ images are crops of its output.
 
 | File | What it shows |
 |---|---|
-| `baked-units.png` | The 8 Frontline units baked from the KayKit CC0 characters: idle, run, attack and death frames. Team tint blue (still too weak) |
-| `baked-heroes.png` | All 20 heroes in their identity tints, attack frame. The 9 free bodies give about 12 distinct looks |
+| `ingame-1-fight.jpg`, `ingame-2-blue-base.jpg`, `ingame-4-close.jpg` | **In-engine renders** of `tests/hd2d.tscn`: classic (top) against baked (bottom) |
+| `baked-units-teams.png` | The 8 units in the 4 player colours, after the cloth and shield swatch recolour |
+| `baked-heroes.png` | All 20 heroes after the per-hero recolour and gear pass, attack frame |
+| `baked-units.png` | The first bake (single multiply tint, before the swatch recolour): idle, run, attack and death |
 | `mock-baked-units-in-battle.jpg` | A paste-in mock-up, not an in-engine render: baked units at game scale beside the Tiny Swords units in `docs/screenshots/godot/battle.jpg`. In the game they would also get the HD-2D lighting, shadows and grade |
 
 ```bash
-npx tsx tools/bake-sprites.ts                       # 8 units  -> build/sprites/
-npx tsx tools/bake-sprites.ts --heroes --out=build/heroes
-npx tsx tools/bake-sprites.ts swordsman --tint=red  # one unit, red team
+npx tsx tools/bake-sprites.ts --tint=all --out=godot/assets/baked/units --no-contact   # the game's unit sheets
+npx tsx tools/bake-sprites.ts --heroes --out=godot/assets/baked/heroes --no-contact    # the game's hero sheets
+npx tsx tools/bake-sprites.ts swordsman --tint=red   # one unit into build/sprites/ with a contact sheet
+npx tsx tools/bake-sprites.ts --probe=Knight:Rectangle_Shield   # which atlas swatches a body and its gear show
+VT_SHOTS=/tmp/s xvfb-run -a godot --path godot --resolution 1280x720 res://tests/hd2d.tscn -- --chars=classic
 ```

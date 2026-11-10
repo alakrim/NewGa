@@ -186,7 +186,8 @@ func _on_snapshot(s: Dictionary) -> void:
 			var body := ""
 			var color := ""
 			if kind == "hero":
-				body = V.HERO_BODY.get(info.get("role", "Fighter"), "swordsman")
+				# baked mode: every hero has its own sprite ("h:aldric" -> "hero:aldric"); classic reuses a unit by role
+				body = "hero:" + vis.trim_prefix("h:") if V.chars_mode() == "baked" else V.HERO_BODY.get(info.get("role", "Fighter"), "swordsman")
 				color = _player_color_of_hero(uid)
 			else:
 				var parsed := V.parse_vis(vis)
@@ -379,7 +380,7 @@ func _on_event(e: Dictionary) -> void:
 				_float_text(u.position + Vector3(0, u.head_height(), 0), "+%d" % int(e.a), Color("ffd34d"), false)
 		"death":
 			var u: Node3D = units.get(int(e.id))
-			if u:
+			if u and not u.has_death():
 				_spawn_effect("dead", u.position, 0.8)
 			var b: Node3D = buildings.get(int(e.id))
 			if b:

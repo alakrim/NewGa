@@ -40,7 +40,7 @@ func frames(id: String, color: String) -> SpriteFrames:
 	var key := id + ":" + color
 	if _frames.has(key):
 		return _frames[key]
-	var def: Dictionary = Visuals.UNITS.get(id, Visuals.UNITS["swordsman"])
+	var def: Dictionary = Visuals.unit_def(id)
 	var sf := SpriteFrames.new()
 	sf.remove_animation("default")
 	for anim_name in def.anims:

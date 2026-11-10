@@ -12,10 +12,11 @@ One dated line per decision, newest first. **Open** items wait for the project o
 
 ## Log
 
-- 2026-11-10 **Open:** move characters from Tiny Swords sprites to KayKit 3D characters baked to pixel sprites
-  (`docs/REVIEW-ART.md`). Evidence: `docs/art-tests/`. All 8 units read well; heroes need more bodies (about
-  $16 of CC0 KayKit Extra tiers, or Quaternius) and a recolour pass. Team colour needs the hue-swap shader.
-  Merge criterion: an in-engine screenshot beside `battle.jpg` that the owner prefers.
+- 2026-11-10 Characters are KayKit CC0 3D models baked to pixel sprites, free assets only for now. This is the
+  default, with Classic (Tiny Swords) kept in Settings. All 20 heroes have their own sprites from the 9 free
+  bodies, recoloured and kitted out per hero; Hallen and Kraghul are still close. Team colour is baked per
+  colour rather than swapped in a shader, because the client already loads one sheet per colour. Evidence:
+  `docs/art-tests/ingame-*.jpg`. Paid KayKit Extra tiers (5 more bodies, about $16): not yet.
 - 2026-11-10 Paint-over: the projected ground stays as an optional map skin (kill date 2026-12-01, see
   `godot/paintover/README.md`). The photoreal painted buildings and the depth variant were deleted. Their
   magenta key-out moved to `tools/magenta_key.py`.

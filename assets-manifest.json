@@ -103,6 +103,13 @@
       "licence": "OFL-1.1"
     },
     {
+      "glob": "godot/assets/baked/**",
+      "name": "Baked characters (KayKit CC0 models rendered to sprites)",
+      "author": "Bannerfall project, from models by Kay Lousberg",
+      "licence": "project",
+      "notes": "Made by tools/bake-sprites.ts from the KayKit Adventurers and Skeletons packs (CC0 1.0)."
+    },
+    {
       "glob": "godot/assets/hd2d/**",
       "name": "HD-2D ground cover",
       "author": "Bannerfall project",
