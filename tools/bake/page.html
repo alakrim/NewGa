@@ -1,0 +1,92 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Sprite bake</title>
+<style>html,body{margin:0;background:transparent}</style>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/three/build/three.module.js", "three/addons/": "/node_modules/three/examples/jsm/" } }
+</script>
+<script type="module">
+// Renders one KayKit character's animation frames (orthographic, low pitch, facing right)
+// on a transparent background. Driven by tools/bake-sprites.ts through window.bake(spec).
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+
+const OPTIONAL_MESH = /^(1H_|2H_|Badge_Shield|Rectangle_Shield|Round_Shield|Spike_Shield|Barbarian_Round_Shield|Mug|Spellbook|Knife|Throwable|Knight_Helmet|Knight_Cape|Barbarian_Hat|Barbarian_Cape|Mage_Hat|Mage_Cape|Rogue_Cape)/;
+const CLOTH = /(Cape|Hat|Helmet|Hood|Cloak|Body)/;
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const cache = new Map();
+const load = (url) => { if (!cache.has(url)) cache.set(url, loader.loadAsync(url)); return cache.get(url); };
+const findBone = (root, names) => { let f = null; root.traverse((o) => { if (!f && names.includes(o.name.toLowerCase())) f = o; }); return f; };
+
+window.bake = async (spec) => {
+  const { model, weapons, tint, tintAmount, clips, cell, cellW, worldHeight, pitch, yaw, lift } = spec;
+  const gltf = await load(`/public/assets/characters/${model}.glb`);
+  const root = SkeletonUtils.clone(gltf.scene);
+  const show = new Set(weapons);
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.frustumCulled = false;
+    if (OPTIONAL_MESH.test(o.name) && !show.has(o.name)) o.visible = false;
+    if (tint && CLOTH.test(o.name)) { o.material = o.material.clone(); o.material.color = new THREE.Color('#ffffff').lerp(new THREE.Color(tint), tintAmount); }
+  });
+  const hands = { r: findBone(root, ['handslotr', 'handslot.r', 'handslot_r']), l: findBone(root, ['handslotl', 'handslot.l', 'handslot_l']) };
+  for (const w of weapons) {
+    if (!w.startsWith('Skeleton_')) continue;
+    const src = (await load(`/public/assets/skeleton-weapons/${w}.gltf`)).scene;
+    const bone = /Shield/.test(w) ? hands.l : hands.r;
+    if (bone) bone.add(src.clone(true));
+  }
+  root.rotation.y = Math.PI / 2 - yaw; // KayKit faces +z; sprites face right (+x), turned `yaw` toward the viewer
+
+  const scene = new THREE.Scene();
+  scene.add(root);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#5a4a60', 1.6));
+  const key = new THREE.DirectionalLight('#ffe6c0', 2.8); // warm golden-hour key from the upper left, like the HD-2D sun
+  key.position.set(-4, 6, 5);
+  const rim = new THREE.DirectionalLight('#bcd4ff', 1.2);
+  rim.position.set(3, 2, -4);
+  scene.add(key, rim);
+
+  const scale = 2; // render at 2x; the post step downsamples to `cell`
+  const w = cellW * scale, h = cell * scale;
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(w, h, false);
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; // same as the web client's hero portraits
+  renderer.toneMappingExposure = 1.15;
+  const half = worldHeight / 2;
+  const halfW = half * cellW / cell;
+  const cam = new THREE.OrthographicCamera(-halfW, halfW, half, -half, 0.1, 100);
+  const r = THREE.MathUtils.degToRad(pitch);
+  const target = new THREE.Vector3(0, lift, 0);
+  cam.position.copy(target).add(new THREE.Vector3(0, Math.sin(r), Math.cos(r)).multiplyScalar(20));
+  cam.lookAt(target);
+
+  const mixer = new THREE.AnimationMixer(root);
+  const out = {};
+  for (const c of clips) {
+    const clip = gltf.animations.find((a) => a.name === c.clip);
+    if (!clip) { out[c.name] = { error: `no clip ${c.clip}` }; continue; }
+    mixer.stopAllAction();
+    const action = mixer.clipAction(clip);
+    action.reset().play();
+    if (c.once) { action.setLoop(THREE.LoopOnce, 1); action.clampWhenFinished = true; }
+    const frames = [];
+    for (let i = 0; i < c.frames; i++) {
+      // loops sample [0, d) so the last frame flows into the first; one-shots end on the final pose
+      const t = c.once ? (clip.duration * i) / (c.frames - 1) : (clip.duration * i) / c.frames;
+      action.time = Math.min(t, clip.duration - 1e-4);
+      mixer.update(0);
+      renderer.render(scene, cam);
+      frames.push(renderer.domElement.toDataURL('image/png'));
+    }
+    out[c.name] = { frames, duration: clip.duration };
+  }
+  renderer.dispose();
+  return out;
+};
+window.ready = true;
+</script>

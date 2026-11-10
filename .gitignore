@@ -11,3 +11,6 @@ assets-src/
 /godot/assets/tinyswords_free/
 /godot/.godot/
 /godot/build/
+
+# sprite bakes and other generated output (tools/bake-sprites.ts)
+/build/
