@@ -13,11 +13,9 @@ const SHIFT := -46.0  # moves the staged units from the middle of the lane to th
 
 func _paint_world() -> void:
 	_strip_world()
-	var img := Image.load_from_file(ProjectSettings.globalize_path("res://paintover/depth/painting.jpg"))
-	img.generate_mipmaps()
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://paintover/projection.gdshader")
-	mat.set_shader_parameter("pano", ImageTexture.create_from_image(img))
+	mat.set_shader_parameter("pano", load("res://paintover/depth/painting.jpg"))  # imported with mipmaps
 	mat.set_shader_parameter("rect", RECT)
 	mat.set_shader_parameter("fallback", Color(0.36, 0.2, 0.09))
 	var env: Environment = world.environment

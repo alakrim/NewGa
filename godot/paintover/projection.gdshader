@@ -7,6 +7,10 @@ shader_type spatial;
 render_mode specular_disabled, cull_back;
 
 uniform sampler2D pano : source_color, filter_linear_mipmap, repeat_disable;
+// The stitched panorama is wider than the 4096 px many phone GPUs allow, so it ships as two halves:
+// `pano` covers u < split and `pano2` the rest. split = 1 uses `pano` alone.
+uniform sampler2D pano2 : source_color, filter_linear_mipmap, repeat_disable;
+uniform float split = 1.0;
 uniform vec4 rect = vec4(-104.25, 33.0, 208.5, 51.0); // u0, v at the top, width, height
 uniform float pitch = 52.0;
 uniform vec3 fallback : source_color = vec3(0.25, 0.48, 0.62);
@@ -26,9 +30,12 @@ void fragment() {
 	float r = radians(pitch);
 	float v = wp.y * cos(r) - wp.z * sin(r);
 	vec2 uv = vec2((wp.x - rect.x) / rect.z, (rect.y - v) / rect.w);
+	// sample both halves outside any branch so mip selection sees continuous derivatives
+	vec3 ca = texture(pano, vec2(uv.x / split, uv.y)).rgb;
+	vec3 cb = texture(pano2, vec2((uv.x - split) / max(1.0 - split, 1e-4), uv.y)).rgb;
 	vec3 c = fallback;
 	if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0)
-		c = texture(pano, uv).rgb;
+		c = uv.x < split ? ca : cb;
 	ALBEDO = c * gain;
 }
 

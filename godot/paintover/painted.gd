@@ -21,11 +21,14 @@ func _ready() -> void:
 ## Replaces the game's terrain and dressing with the painted blocks.
 func _paint_world() -> void:
 	_strip_world()
-	var img := Image.load_from_file(ProjectSettings.globalize_path("res://paintover/pano.jpg"))
-	img.generate_mipmaps()
+	# two halves (stitch.py), each under the 4096 px texture limit of many phone GPUs; imported with mipmaps
+	var left: Texture2D = load("res://paintover/pano_0.jpg")
+	var right: Texture2D = load("res://paintover/pano_1.jpg")
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://paintover/projection.gdshader")
-	mat.set_shader_parameter("pano", ImageTexture.create_from_image(img))
+	mat.set_shader_parameter("pano", left)
+	mat.set_shader_parameter("pano2", right)
+	mat.set_shader_parameter("split", float(left.get_width()) / float(left.get_width() + right.get_width()))
 	mat.set_shader_parameter("rect", Vector4(Tiles.PANO.position.x, Tiles.PANO.end.y, Tiles.PANO.size.x, Tiles.PANO.size.y))
 	mat.set_shader_parameter("fallback", Color(0.36, 0.2, 0.09))  # autumn canopy beyond the painting
 	var env: Environment = world.environment

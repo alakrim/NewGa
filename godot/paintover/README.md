@@ -22,7 +22,9 @@ pans or zooms, so a single painting of that plane fits the 3D blocks from every 
    - Muse Image refines that pass (`paint/tile_*.jpg`): richer texture, same layout.
    The middle tile goes first; the outer tiles get a strip of it pasted into their guide.
 4. **Stitch.** `stitch.py` evens out each tile's large-scale colour against its guide and joins the tiles
-   along the lowest-difference seam (`pano.jpg`).
+   along the lowest-difference seam, then saves it as two halves (`pano_0.jpg`, `pano_1.jpg`): the whole
+   panorama is 5098 px wide, over the 4096 px texture limit of many phone GPUs. `projection.gdshader` samples
+   the halves as one image.
 5. **Play.** `painted.tscn` stages the battle from `tests/hd2d.tscn`, swaps the game's terrain, water, grass,
    trees and props for the blocks with `projection.gdshader`, turns on the orthographic camera and turns the
    game's haze down, since the painting has its own light (`shots/`).
@@ -37,8 +39,9 @@ VT_SHOTS=$PWD/godot/paintover/shots godot --path godot --resolution 1280x720 res
 ```
 
 Known gaps: the painting is about 22 px per unit, so it softens at the closest zoom; the trenches came out
-flatter than in the concept; `pano.jpg` is loaded from disk at runtime, which only works when running from
-the project, not in an exported build.
+flatter than in the concept. The paintings are loaded as imported textures (mipmaps on, no VRAM compression),
+so they work in an exported build; `depth/height.bin` is read with `FileAccess` and needs `*.bin` in the
+export preset's non-resource include filter.
 
 ## Depth paint-over (`depth/`): the art first, the 3D from the art
 

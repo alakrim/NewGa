@@ -17,12 +17,11 @@ static var _shader: Shader
 
 static func apply(b: Node3D) -> bool:
 	var path := "res://paintover/buildings/%s.png" % b.bid
-	if b.dead or b.progress < 1.0 or not FileAccess.file_exists(path):
+	# ResourceLoader, not FileAccess: an exported build ships the imported texture, not the PNG
+	if b.dead or b.progress < 1.0 or not ResourceLoader.exists(path):
 		return false
 	if not _tex.has(b.bid):
-		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
-		img.generate_mipmaps()
-		_tex[b.bid] = ImageTexture.create_from_image(img)
+		_tex[b.bid] = load(path)  # imported with mipmaps
 	if _shader == null:
 		_shader = load("res://paintover/buildings/building.gdshader")
 	var tex: Texture2D = _tex[b.bid]

@@ -2,7 +2,8 @@
 plane (see tiles.gd). Neighbouring tiles are joined along the lowest-difference vertical path through their
 overlap (image quilting), with a short feather across it. Before that, each tile's large-scale colour is
 evened out against its guide (the model drifts in brightness and tint from tile to tile and inside a tile):
-the blurred ratio paint/guide should be one constant everywhere. Writes pano.jpg."""
+the blurred ratio paint/guide should be one constant everywhere. Writes the panorama as two halves,
+pano_0.jpg and pano_1.jpg, since the whole is wider than the 4096 px texture limit of many phone GPUs."""
 import os
 import numpy as np
 from PIL import Image, ImageFilter
@@ -65,5 +66,9 @@ for i in range(1, N):
     wb = np.clip((cols - path[:, None]) / FEATHER + 0.5, 0.0, 1.0)[..., None]
     out[:, x0:x0 + OV] = a * (1 - wb) + b * wb
     out[:, x0 + OV:x0 + TW] = tiles[i][:, OV:]
-Image.fromarray(out.clip(0, 255).astype(np.uint8)).save(f"{HERE}/pano.jpg", quality=90, subsampling=0)
-print("pano", out.shape, "overlap", OV)
+# the game loads two halves: the full panorama is wider than the 4096 px texture limit of many phone GPUs
+pano = Image.fromarray(out.clip(0, 255).astype(np.uint8))
+half = pano.width // 2
+pano.crop((0, 0, half, pano.height)).save(f"{HERE}/pano_0.jpg", quality=95, subsampling=0)
+pano.crop((half, 0, pano.width, pano.height)).save(f"{HERE}/pano_1.jpg", quality=95, subsampling=0)
+print("pano", out.shape, "overlap", OV, "halves", half, pano.width - half)
