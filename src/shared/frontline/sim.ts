@@ -21,6 +21,8 @@ export interface FlPlayer {
   research: Record<FlResearch, number>;
   queues: Record<Trainer, { unit: FlUnitId; left: number }[]>;
   garrison: Unit[];
+  /** Game time the oldest waiting reinforcement started mustering (0 = nobody waiting). */
+  musterSince: number;
 }
 interface PlotState { owner: string; building: FlBuildingId | ''; progress: number; unitId: number }
 interface BannerState { key: FlBannerKey; name: string; x: number; z: number; owner: number; progress: number; capTeam: number }
@@ -34,6 +36,10 @@ export interface FlUnitState {
   t: number;
   healAt: number;
   fleeing?: boolean;
+  /** Attack stance: a reinforcement waiting at the muster point for a group to form. */
+  muster?: boolean;
+  /** Inside the keep (the unit is parked in `FlPlayer.garrison`, not in `Game.units`). */
+  garrisoned?: boolean;
 }
 
 const TRAINERS: Trainer[] = ['castle', 'barracks', 'archery', 'sanctum', 'giantpit'];
@@ -71,7 +77,7 @@ export class Frontline {
       const slot = Math.min(1, slots[s.team]++) as 0 | 1;
       this.players.push({
         pid: s.pid, name: s.name, team: s.team, slot, color: PLAYER_COLORS[s.team][slot], heroUnit: 0, stance: 'defend', rallyX: 0,
-        research: { weapons: 0, armor: 0 }, queues: { castle: [], barracks: [], archery: [], sanctum: [], giantpit: [] }, garrison: [],
+        research: { weapons: 0, armor: 0 }, queues: { castle: [], barracks: [], archery: [], sanctum: [], giantpit: [] }, garrison: [], musterSince: 0,
       });
     }
   }
@@ -101,14 +107,19 @@ export class Frontline {
     for (const u of this.g.units.values()) if (u.fl?.owner === p.pid && !u.dead && (!filter || filter(u))) out.push(u);
     return out;
   }
+  /** Every unit of the player, garrisoned ones included (they are parked outside `Game.units`). */
+  everyone(p: FlPlayer, filter?: (u: Unit) => boolean): Unit[] {
+    const out = this.owned(p, filter);
+    for (const u of p.garrison) if (!filter || filter(u)) out.push(u);
+    return out;
+  }
   completed(p: FlPlayer, b: FlBuildingId) {
     return this.plots.filter((s) => s.owner === p.pid && s.building === b && s.progress >= 1).length;
   }
   countBuilding(p: FlPlayer, b: FlBuildingId) { return this.plots.filter((s) => s.owner === p.pid && s.building === b).length; }
   pop(p: FlPlayer) {
     let n = 0;
-    for (const u of this.owned(p)) n += FL_UNITS[u.fl!.type].pop;
-    for (const u of p.garrison) n += FL_UNITS[u.fl!.type].pop;
+    for (const u of this.everyone(p)) n += FL_UNITS[u.fl!.type].pop;
     for (const t of TRAINERS) for (const q of p.queues[t]) n += FL_UNITS[q.unit].pop;
     return n;
   }
@@ -177,8 +188,19 @@ export class Frontline {
         if (!r || lvl >= r.costs.length || !this.completed(p, 'forge') || purse.gold < r.costs[lvl]) return true;
         purse.gold -= r.costs[lvl];
         p.research[cmd.kind] = lvl + 1;
-        for (const u of this.owned(p)) this.applyStats(p, u);
+        for (const u of this.everyone(p)) this.applyStats(p, u); // garrisoned units too
         this.g.emit({ e: 'msg', text: `${p.name} researched ${r.name} ${lvl + 1}`, color: PLAYER_HEX[p.color] }, { team: p.team });
+        return true;
+      }
+      case 'giveGold': {
+        const mate = this.players.find((o) => o.team === p.team && o.pid !== p.pid);
+        const to = mate && this.purse(mate);
+        const chunks = Math.floor(Number(cmd.chunks ?? 1));
+        if (!mate || !to || !(chunks >= 1)) return true;
+        const amount = FL.giveChunk * Math.min(chunks, FL.giveMaxChunks);
+        if (purse.gold < amount) return true;
+        purse.gold -= amount; to.gold += amount;
+        this.g.emit({ e: 'msg', text: `${p.name} sent ${amount} gold to ${mate.name}`, color: PLAYER_HEX[p.color] }, { team: p.team });
         return true;
       }
       case 'stance': {
@@ -240,6 +262,7 @@ export class Frontline {
     const def = FL_UNITS[type];
     const u = this.g.spawnArmyUnit(p.team, def, p.color, this.spawnPoint(p.team));
     u.fl = { owner: p.pid, type, state: 'idle', node: -1, carry: 0, t: 0, healAt: 0 };
+    if (p.stance === 'attack' && def.role !== 'worker') u.fl.muster = true;
     u.splash = def.splash;
     this.applyStats(p, u);
     u.hp = u.stats.maxHp;
@@ -267,6 +290,8 @@ export class Frontline {
   private garrisonUnit(p: FlPlayer, u: Unit) {
     if (u.fl!.node >= 0) { this.nodeMiners[u.fl!.node].delete(u.id); u.fl!.node = -1; }
     u.fl!.state = 'idle';
+    u.fl!.garrisoned = true;
+    u.fl!.muster = false;
     this.g.units.delete(u.id);
     p.garrison.push(u);
   }
@@ -274,6 +299,11 @@ export class Frontline {
     for (const u of p.garrison) {
       const s = this.spawnPoint(p.team);
       u.x = s.x; u.z = s.z; u.order = { type: 'idle' }; u.path = [];
+      // timers did not run while parked: start clean (statuses and buffs are absolute-time and may be stale)
+      u.fl!.garrisoned = false;
+      u.windup = null; u.cast = null; u.dash = null; u.displaced = null; u.attackCd = 0; u.aiAt = 0;
+      u.statuses = []; u.buffs = []; u.shields = [];
+      this.applyStats(p, u);
       this.g.units.set(u.id, u);
       this.g.emit({ e: 'blink', id: u.id, x: u.x, z: u.z });
     }
@@ -306,8 +336,28 @@ export class Frontline {
     }
   }
 
-  private anchorX(p: FlPlayer): number {
+  /** Where reinforcements gather in Attack: a little on our side of the Heart Banner. */
+  musterX(team: Team): number { return (team === 0 ? -1 : 1) * FL.musterX; }
+
+  /** Attack stance: waiting units are released once a group has formed, the front group is near, or the wait ran long. */
+  private updateMuster(p: FlPlayer) {
+    const waiting = this.owned(p, (u) => !!u.fl!.muster);
+    if (!waiting.length) { p.musterSince = 0; return; }
+    if (p.stance !== 'attack') { for (const u of waiting) u.fl!.muster = false; p.musterSince = 0; return; }
+    if (!p.musterSince) p.musterSince = this.g.time;
+    const mx = this.musterX(p.team);
+    // the front group: any of our team's army units (not waiting, not miners) near the muster point
+    const frontNear = this.players.some((o) => o.team === p.team && this.owned(o, (u) => !u.fl!.muster && u.fl!.type !== 'miner').some((u) => Math.abs(u.x - mx) < FL.musterJoin));
+    const ready = waiting.filter((u) => Math.abs(u.x - mx) < 8).length;
+    if (ready >= FL.musterGroup || frontNear || this.g.time - p.musterSince >= FL.musterMaxWait) {
+      for (const u of waiting) u.fl!.muster = false;
+      p.musterSince = 0;
+    }
+  }
+
+  private anchorX(p: FlPlayer, u?: Unit): number {
     const dir = p.team === 0 ? 1 : -1;
+    if (u?.fl?.muster) return this.musterX(p.team);
     if (p.stance === 'hold') return p.rallyX || defendX(p.team);
     if (p.stance === 'attack') return fortressPos((1 - p.team) as Team).x - dir * 8;
     if (p.stance === 'follow') {
@@ -320,7 +370,7 @@ export class Frontline {
   private formationSpot(p: FlPlayer, u: Unit): Vec2 {
     const def = FL_UNITS[u.fl!.type];
     const dir = p.team === 0 ? 1 : -1;
-    const anchor = this.anchorX(p);
+    const anchor = this.anchorX(p, u);
     const i = this.roleSlot.get(u.id) ?? 0;
     const perRow = 7;
     const row = Math.floor(i / perRow), col = i % perRow;
@@ -330,8 +380,8 @@ export class Frontline {
 
   private pickTarget(p: FlPlayer, u: Unit): Unit | null {
     const def = FL_UNITS[u.fl!.type];
-    const anchor = this.anchorX(p);
-    const leash = p.stance === 'attack' ? Infinity : 16;
+    const anchor = this.anchorX(p, u);
+    const leash = p.stance === 'attack' && !u.fl!.muster ? Infinity : 16;
     const range = Math.max(9, def.stats.attackRange + 4);
     let best: Unit | null = null, bs = Infinity;
     for (const o of this.g.units.values()) {
@@ -464,6 +514,7 @@ export class Frontline {
       counts.set(key, i + 1);
       this.roleSlot.set(u.id, i);
     }
+    for (const p of this.players) this.updateMuster(p);
     // training
     for (const p of this.players) for (const t of TRAINERS) {
       const q = p.queues[t];
@@ -553,7 +604,7 @@ export class Frontline {
     const me = pid ? this.player(pid) : undefined;
     const players = this.players.map((p) => {
       const army: Partial<Record<FlUnitId, number>> = {};
-      for (const u of [...this.owned(p), ...p.garrison]) army[u.fl!.type] = (army[u.fl!.type] ?? 0) + 1;
+      for (const u of this.everyone(p)) army[u.fl!.type] = (army[u.fl!.type] ?? 0) + 1;
       const h = this.purse(p);
       return {
         pid: p.pid, name: p.name, team: p.team, slot: p.slot, color: p.color, hero: p.heroUnit, stance: p.stance, rallyX: Math.round(p.rallyX * 10) / 10,
