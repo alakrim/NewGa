@@ -13,6 +13,9 @@ One dated line per decision, newest first. **Open** items wait for the project o
 
 ## Log
 
+- 2026-11-14 Frontline: the keep's fountain stops healing heroes for 4 s after damage (the cause of the 19-20 min
+  siege stalls), Attack reinforcements muster in groups of 5, `giveGold` command (100-gold chunks to your
+  teammate), bot plans retuned to 43/59/47% win rates (`docs/FRONTLINE-BALANCE.md`). Matches now last ~8 min.
 - 2026-11-14 Readability pass: every unit stands on a team-shaped ground marker (round Dawnguard, diamond Duskborn),
   heroes get a double ring and 1.4x scale; Hallen and Kraghul are re-kitted apart. KayKit buildings bake to sprites
   (`--buildings`) for build-panel icons in baked mode; the world already used the 3D KayKit models, so only the UI

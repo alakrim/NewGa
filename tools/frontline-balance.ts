@@ -8,13 +8,18 @@
 import { Game, type PlayerSetup } from '../src/shared/sim/game';
 import { HEROES } from '../src/shared/data/heroes';
 import { TICK_RATE } from '../src/shared/constants';
-import { FL_UNITS } from '../src/shared/frontline/data';
+import { FL, FL_UNITS } from '../src/shared/frontline/data';
 import { PLANS } from '../src/shared/frontline/bot';
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const SEEDS = Number(args[0] ?? 24);
 const CAP_MIN = Number(args[1] ?? 25);
 const MD = process.argv.includes('--md');
+const FROM = Number(process.argv.find((a) => a.startsWith('--from='))?.slice(7) ?? 1); // first seed; run several processes over ranges to go faster
+// BF_FL='{"musterGroup":8}' overrides FL numbers for parameter sweeps (never committed)
+if (process.env.BF_FL) Object.assign(FL, JSON.parse(process.env.BF_FL));
+// BF_PLANS='{"2":{"army":{...}}}' overrides bot plans for sweeps
+if (process.env.BF_PLANS) for (const [i, v] of Object.entries(JSON.parse(process.env.BF_PLANS))) Object.assign(PLANS[Number(i)], v);
 console.error = () => {}; // the sim reports caught effect exceptions; they are not what we measure here
 
 export interface MatchResult {
@@ -81,6 +86,8 @@ export function summarize(rs: MatchResult[], capMin = CAP_MIN) {
     matches: rs.length,
     unfinished: rs.length - done.length,
     within20: done.filter((r) => r.minutes <= 20).length,
+    late19: done.filter((r) => r.minutes >= 19).length, // mostly decided by Sudden Death crumbling
+    beforeSD: done.filter((r) => r.minutes < 12).length, // decided by a push before Sudden Death
     median: q(0.5), p10: q(0.1), p90: q(0.9), capMin,
     team0Wins: done.filter((r) => r.winner === 0).length,
     plans: plan.map((p, i) => ({ plan: i, games: p.games, winRate: p.games ? p.wins / p.games : NaN })),
@@ -90,17 +97,17 @@ export function summarize(rs: MatchResult[], capMin = CAP_MIN) {
 
 function main() {
   const rs: MatchResult[] = [];
-  for (let s = 1; s <= SEEDS; s++) {
+  for (let s = FROM; s < FROM + SEEDS; s++) {
     const r = playMatch(s);
     rs.push(r);
-    process.stdout.write(`seed ${s}: ${r.winner === null ? 'unfinished' : `team ${r.winner} won`} at ${r.minutes.toFixed(1)} min\n`);
+    process.stdout.write(`seed ${s}: ${r.winner === null ? "unfinished" : `team ${r.winner} won`} at ${r.minutes.toFixed(1)} min plans ${r.plans[0]}|${r.plans[1]} army@10 ${r.armyAt10.map(Math.round)}\n`);
   }
   const s = summarize(rs);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   const lines = [
-    `| Matches | Unfinished (> ${s.capMin} min) | Finished within 20 min | Median | 10th-90th percentile | Team 0 wins |`,
-    '|---|---|---|---|---|---|',
-    `| ${s.matches} | ${s.unfinished} | ${s.within20} | ${s.median.toFixed(1)} min | ${s.p10.toFixed(1)}-${s.p90.toFixed(1)} min | ${s.team0Wins} |`,
+    `| Matches | Unfinished (> ${s.capMin} min) | Finished within 20 min | Ended >= 19 min | Ended before Sudden Death (12 min) | Median | 10th-90th percentile | Team 0 wins |`,
+    '|---|---|---|---|---|---|---|---|',
+    `| ${s.matches} | ${s.unfinished} | ${s.within20} | ${s.late19} | ${s.beforeSD} | ${s.median.toFixed(1)} min | ${s.p10.toFixed(1)}-${s.p90.toFixed(1)} min | ${s.team0Wins} |`,
     '',
     '| Bot plan | Player-games | Win rate |',
     '|---|---|---|',
