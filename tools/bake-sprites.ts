@@ -10,6 +10,8 @@
  * `all` for one sheet per colour in DIR/<colour>/); --heroes bakes all 20 heroes in their identity colours.
  * The game's sheets: --tint=all --out=godot/assets/baked/units --no-contact, and
  * --heroes --out=godot/assets/baked/heroes --no-contact.
+ * --buildings bakes the KayKit Medieval Hexagon buildings (static models, one frame each, fitted to the frame) in the
+ * four KayKit colours into DIR/<colour>/<building>.png: --buildings --out=godot/assets/baked/buildings --cell=160 --no-contact.
  * --probe prints which atlas swatches each body shows, to find the cloth swatches for CLOTH. Output: DIR/<unit>.png (one row per animation),
  * DIR/<unit>.json (rows, frame counts, fps) and DIR/contact.png. Frames are 3:2 (192x128 at the default cell).
  */
@@ -19,7 +21,7 @@ import { createRequire } from 'node:module';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { FL_UNITS, FL_UNIT_ORDER, PLAYER_HEX, type FlUnitId } from '../src/shared/frontline/data';
+import { FL_UNITS, FL_UNIT_ORDER, FL_BUILDINGS, FL_BUILDING_ORDER, PLAYER_HEX, type FlUnitId } from '../src/shared/frontline/data';
 import { HEROES } from '../src/shared/data/heroes';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -94,6 +96,10 @@ const HERO_LOOK: Record<string, { gear?: string[]; hide?: string[]; recolor?: Re
   nerissa: { recolor: [{ cell: '10', color: '#e9eef5' }] },
   skarra: { recolor: [{ cell: '10', color: '#c0392b' }] },
   hrodgar: { gear: ['Barbarian_Cape'] },
+  // Hallen and Kraghul share the Skeleton_Warrior body: Hallen is the cloaked commander in pale steel
+  // armour with a shield; Kraghul is the cloakless pit fighter in blackened iron with a rust-red helmet and an axe.
+  hallen: { recolor: [{ cell: '30', color: '#c9d6e2' }] },
+  kraghul: { hide: ['Skeleton_Warrior_Cloak'], recolor: [{ cell: '62', color: '#8a2a14' }, { cell: '30', color: '#4b3f3d' }, { cell: '40', color: '#c9b49a' }] },
 };
 /** Heroes have no attack animation in their data, so it follows their weapons. */
 function heroAttack(weapons: string[]) {
@@ -114,8 +120,9 @@ function heroSubject(id: string): Subject {
   };
 }
 
+const BUILDINGS = args.includes('--buildings');
 const names = args.filter((a) => !a.startsWith('--'));
-const ids = args.includes('--heroes') ? HEROES.map((h) => h.id) : names.length ? names : FL_UNIT_ORDER;
+const ids = BUILDINGS ? [] : args.includes('--heroes') ? HEROES.map((h) => h.id) : names.length ? names : FL_UNIT_ORDER;
 const list: Subject[] = ids.map((id) => {
   if (FL_UNITS[id as FlUnitId]) return unitSubject(id as FlUnitId);
   if (HEROES.some((h) => h.id === id)) return heroSubject(id);
@@ -165,6 +172,27 @@ async function main() {
     }
     await browser.close();
     server.close();
+    return;
+  }
+  if (BUILDINGS) {
+    const rawB = join(OUT, '_frames');
+    rmSync(rawB, { recursive: true, force: true });
+    mkdirSync(rawB, { recursive: true });
+    const made: string[] = [];
+    const models: Record<string, string> = { castle: 'building_castle_{color}', ...Object.fromEntries(FL_BUILDING_ORDER.map((b) => [b, FL_BUILDINGS[b].model])) };
+    for (const colour of ['blue', 'red', 'green', 'yellow']) for (const [bid, model] of Object.entries(models)) {
+      const id = `${colour}/${bid}`;
+      const url: string = await page.evaluate((s: unknown) => (window as any).bakeStatic(s), { url: `/public/assets/env/${model.replace('{color}', colour)}.gltf`, cell: CELL, cellW: CELL, pitch: PITCH, yaw: YAW });
+      writeFileSync(join(rawB, `${id.replace('/', '--')}__idle__0.png`), Buffer.from(url.split(',')[1], 'base64'));
+      mkdirSync(dirname(join(OUT, id)), { recursive: true });
+      writeFileSync(join(OUT, `${id}.json`), JSON.stringify({ id, model, cell: [CELL, CELL], rows: [{ name: 'idle', clip: '', frames: 1, fps: 1, loop: false }] }, null, 2) + '\n');
+      made.push(id);
+    }
+    await browser.close();
+    server.close();
+    execFileSync('python3', ['-I', join(ROOT, 'tools/sprite-post.py'), rawB, OUT, String(CELL), String(CELL), ...made], { stdio: 'inherit', env: { ...process.env, BAKE_NO_CONTACT: args.includes('--no-contact') ? '1' : '0', BAKE_PALETTE: '48' } });
+    rmSync(rawB, { recursive: true, force: true });
+    if (args.includes('--no-contact')) for (const n of made) rmSync(join(OUT, `${n}.json`), { force: true });
     return;
   }
   const raw = join(OUT, '_frames');
