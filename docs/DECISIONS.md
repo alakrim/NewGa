@@ -13,6 +13,10 @@ One dated line per decision, newest first. **Open** items wait for the project o
 
 ## Log
 
+- 2026-11-14 Readability pass: every unit stands on a team-shaped ground marker (round Dawnguard, diamond Duskborn),
+  heroes get a double ring and 1.4x scale; Hallen and Kraghul are re-kitted apart. KayKit buildings bake to sprites
+  (`--buildings`) for build-panel icons in baked mode; the world already used the 3D KayKit models, so only the UI
+  icons depended on the Free Pack.
 - 2026-11-10 `main` created at the head of `ccr-3e18521d-fh6r1c`, which already contained every other branch
   (`claude/2.5d-hero-tower-defense-odusfc`, `ccr-b746cdda-o5bvbc`); those are kept but fully merged.
 - 2026-11-10 A personal NewGa cloud environment installs Godot 4.7, xvfb and lavapipe and fetches the Tiny
