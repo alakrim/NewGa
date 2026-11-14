@@ -1,6 +1,27 @@
 # Handoff: state of the project
 
-## Last session (2026-11-10, branch `ccr-3e18521d-fh6r1c`, merged into the new `main`)
+## Last session (2026-11-14, branch `ccr-3e18521d-fh6r1c`, pull request into `main`)
+- **Android:** `bash tools/android-setup.sh` once, then `bash tools/android-build.sh` →
+  `godot/build/bannerfall-test.apk` (v0.3.0-test, arm64, about 38 MB). Not yet run on a real device. The phone
+  needs a reachable server (`docs/ANDROID.md`).
+- **Art (Sonnet agent):** team-shaped ground markers (round Dawnguard, diamond Duskborn); heroes have a double
+  ring and are 1.4× larger; Hallen and Kraghul re-kitted apart; KayKit buildings baked
+  (`bake-sprites.ts --buildings`) for the build-panel icons in baked mode.
+- **Architecture (Sonnet agent):**
+  - The real cause of the late siege stalls: the keep fountain healed defending heroes as fast as the army hurt
+    them. It now waits 4 s after damage.
+  - Attack reinforcements muster in groups of 5.
+  - Garrisoned units are flagged, which also fixes research not reaching them.
+  - `giveGold` command (no HUD button yet).
+  - Bot plans retuned to 42/59/48% win rates.
+  - **Matches now last about 8.6 min** (median, 30 seeds), down from 16.7: decide if that is the wanted
+    length (`FL.fountainCombatDelay`, keep HP).
+- Checks: typecheck, validate, 25/25 tests, data drift, asset lint, harness, hd2d render and the full `--uitest`
+  against the merged server.
+- Open: no HUD button or bot use for `giveGold`; no bot builds a Market; swordsman, shieldbearer and healer
+  silhouettes are close at a distance; banner outposts still use a Free Pack sprite.
+
+## Session before (2026-11-10, branch `ccr-3e18521d-fh6r1c`, merged into the new `main`)
 - `main` now exists and holds everything; start new work from it. The NewGa cloud environment installs
   Godot, so the headless Godot tests in `CLAUDE.md` work from the start of a session.
 - Characters: baked KayKit sprites are the default (Settings → Characters → Classic for Tiny Swords). All 20
