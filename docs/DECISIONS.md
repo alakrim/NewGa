@@ -13,6 +13,12 @@ One dated line per decision, newest first. **Open** items wait for the project o
 
 ## Log
 
+- 2026-11-14 Offline play runs the real lobby and match code on the phone. The TypeScript rooms and simulation are
+  bundled into one JavaScript file and run in Android's WebView through JavaClassWrapper (no Java or Gradle), driven
+  once per frame by the game. This keeps one rules engine; a GDScript port was rejected because it would be a second
+  copy that drifts. The room logic moved to the transport-free `src/server/rooms.ts`. The APK starts offline when
+  no server address has been set.
+
 - 2026-11-14 Frontline: the keep's fountain stops healing heroes for 4 s after damage (the cause of the 19-20 min
   siege stalls), Attack reinforcements muster in groups of 5, `giveGold` command (100-gold chunks to your
   teammate), bot plans retuned to 43/59/47% win rates (`docs/FRONTLINE-BALANCE.md`). Matches now last ~8 min.

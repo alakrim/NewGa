@@ -12,7 +12,10 @@ overview: `docs/SUMMARY.md`.
 ## Layout
 - `src/shared`: the deterministic 20 Hz rules engine, run by the server and offline practice. Content is data:
   heroes in `data/heroes/`, Frontline units, buildings and numbers in `frontline/data.ts`.
-- `src/server`: the authoritative Node `ws` server. `src/client`: the older Three.js web client.
+- `src/server`: the authoritative Node `ws` server. `rooms.ts` is the lobby and match loop with no transport, used
+  by the server (`index.ts`, WebSockets) and by offline play (`src/offline/host.ts`, bundled with
+  `npm run build:offline` into `godot/offline/bf-offline.js`, which the APK runs in a WebView). `src/client`: the
+  older Three.js web client.
 - `godot/`: the main client (Godot 4.7, Mobile renderer, touch). `godot/scripts/fl_data.gd` and
   `heroes_data.gd` are generated: run `npx tsx tools/gen-godot-data.ts` after changing the TypeScript data.
 

@@ -1,11 +1,26 @@
 # Android test build
 
-## Install and play
+## Install and play offline
 
-1. Copy `bannerfall-test.apk` to the phone and open it. Allow installing from this source when Android asks.
-   It needs a 64-bit ARM phone (almost every phone since 2017) with Vulkan or OpenGL ES 3.
-2. The game talks to a Bannerfall server, which the phone must be able to reach. The simplest is a PC on
-   the same Wi-Fi:
+Copy `bannerfall-test.apk` to the phone and open it; allow installing from this source when Android asks. It needs
+a 64-bit ARM phone (almost every phone since 2017) with Vulkan or OpenGL ES 3.
+
+The game starts **offline**: the status line under the menu says "Offline: bots on this device". Press **Quick
+Battle** for a 2v2 against three bots. No server, Wi-Fi or account is needed. The same lobby and match code as the
+server runs inside the app (`src/offline/host.ts`, bundled into `godot/offline/bf-offline.js`) in Android's own
+WebView JavaScript engine, driven by the game every frame (`godot/scripts/offline_host.gd`).
+
+The **Online / Offline** button on the main menu switches modes; Settings → Server address → Connect also goes
+online.
+
+If offline play fails on a phone, the game shows "Offline play stopped" or "not available": please report the
+message and the phone model. The WebView glue is the one part that could not be tested before release, because
+the build machine has no Android emulator. Everything behind it runs in the desktop tests (`--offline` on the
+command line uses Node in place of the WebView).
+
+## Play online
+
+1. Online play needs a Bannerfall server that the phone can reach. The simplest is a PC on the same Wi-Fi:
    ```bash
    npm install
    npx tsx src/server/index.ts      # listens on port 8787 on every network interface

@@ -17,6 +17,7 @@ var _status_dot: ColorRect
 var _name_edit: LineEdit
 var _hero_btn: Button
 var _quick_btn: Button
+var _offline_btn: Button
 var _net_buttons: Array = []
 var _join_edit: LineEdit
 var _join_err: Label
@@ -167,8 +168,11 @@ func _build_main() -> void:
 	var r2 := HBoxContainer.new()
 	r2.add_theme_constant_override("separation", 12)
 	col.add_child(r2)
-	r2.add_child(_btn("Heroes", Vector2(244, 72), func(): _open_gallery()))
-	r2.add_child(_btn("Settings", Vector2(244, 72), func(): _url_edit.text = Net.url; show_screen("settings")))
+	r2.add_child(_btn("Heroes", Vector2(158, 72), func(): _open_gallery()))
+	r2.add_child(_btn("Settings", Vector2(158, 72), func(): _url_edit.text = Net.url; show_screen("settings")))
+	# Offline: the match runs on this device against bots (no server needed); Online: the server in Settings
+	_offline_btn = _btn("Offline", Vector2(158, 72), func(): Net.set_offline(not Net.offline); _update_status())
+	r2.add_child(_offline_btn)
 	_net_buttons = [_quick_btn, b_create, b_join]
 	# hero chip (bottom right)
 	_hero_btn = Button.new()
@@ -226,7 +230,12 @@ func _update_status() -> void:
 		return
 	var online := Net.is_open()
 	_status_dot.color = Color("7be08a") if online else Color("ff7a6b")
-	_status_lbl.text = ("Online  %s" % Net.url) if online else ("Connecting to %s ..." % Net.url)
+	if Net.offline:
+		_status_lbl.text = "Offline: bots on this device" if online else "Starting offline play..."
+	else:
+		_status_lbl.text = ("Online  %s" % Net.url) if online else ("Connecting to %s ..." % Net.url)
+	if _offline_btn:
+		_offline_btn.text = "Online" if Net.offline else "Offline"
 	for b in _net_buttons:
 		b.disabled = not online
 
