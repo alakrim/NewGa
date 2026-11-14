@@ -8,6 +8,7 @@
     "dev:server": "tsx watch src/server/index.ts",
     "build": "vite build && esbuild src/server/index.ts --bundle --platform=node --format=esm --outfile=dist/server.js --packages=external",
     "start": "node dist/server.js",
+    "build:offline": "esbuild src/offline/host.ts --bundle --format=iife --platform=browser --target=es2020 --minify --legal-comments=none --outfile=godot/offline/bf-offline.js",
     "typecheck": "tsc",
     "test": "tsx --test tests/*.test.ts",
     "validate": "tsx tools/validate-content.ts",

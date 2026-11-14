@@ -12,7 +12,10 @@ overview: `docs/SUMMARY.md`.
 ## Layout
 - `src/shared`: the deterministic 20 Hz rules engine, run by the server and offline practice. Content is data:
   heroes in `data/heroes/`, Frontline units, buildings and numbers in `frontline/data.ts`.
-- `src/server`: the authoritative Node `ws` server. `src/client`: the older Three.js web client.
+- `src/server`: the authoritative Node `ws` server. `rooms.ts` is the lobby and match loop with no transport, used
+  by the server (`index.ts`, WebSockets) and by offline play (`src/offline/host.ts`, bundled with
+  `npm run build:offline` into `godot/offline/bf-offline.js`, which the APK runs in a WebView). `src/client`: the
+  older Three.js web client.
 - `godot/`: the main client (Godot 4.7, Mobile renderer, touch). `godot/scripts/fl_data.gd` and
   `heroes_data.gd` are generated: run `npx tsx tools/gen-godot-data.ts` after changing the TypeScript data.
 
@@ -31,6 +34,8 @@ VT_SHOTS=/tmp/shots xvfb-run -a -s "-screen 0 1280x720x24" godot --path godot --
 xvfb-run -a -s "-screen 0 1280x720x24" godot --path godot --resolution 1280x720 -- --uitest
 ```
 Look at the screenshots after any visual change; compare with `docs/screenshots/godot/`.
+
+Android test APK: `bash tools/android-setup.sh` once, then `bash tools/android-build.sh` (see `docs/ANDROID.md`).
 
 ## Rules
 - Art comes only from CC0, credited CC BY, OFL or project-made sources (scripts, bakes, AI output with its prompt

@@ -33,17 +33,24 @@ decoration, effects and UI stay.
 
 ## Colour
 
-| Team | Players | Hex | Shape (to add, for colour-blind players) |
+| Team | Players | Hex | Ground marker (colour-blind safe shape) |
 |---|---|---|---|
-| Dawnguard (team 0, left) | blue, purple | `#3d8bfd`, `#9b5de5` | Round ground marker |
-| Duskborn (team 1, right) | red, yellow | `#e5484d`, `#e8b923` | Diamond ground marker |
+| Dawnguard (team 0, left) | blue, purple | `#3d8bfd`, `#9b5de5` | Round ring under every unit |
+| Duskborn (team 1, right) | red, yellow | `#e5484d`, `#e8b923` | Diamond ring under every unit |
 
 Team colour is baked: each unit has one sheet per player colour, with the colour painted into the cloth
 swatches of the model's texture atlas (cape, hood, tunic, robe; shields on their own). The `CLOTH` table in
 `tools/bake-sprites.ts` lists them per body, found with `--probe`. Swatches are shared between parts (the
 shield face swatch is also every blade), so a recolour can be limited to some meshes. Heroes get their
 identity colour (`visual.tint`) the same way, plus per-hero hair, armour and gear in `HERO_LOOK` so heroes on
-the same body read apart. The game shows a hero's team through its ring and name plate.
+the same body read apart. The game shows a hero's team through its ring and name plate. Every unit also stands on a team-shaped ground
+marker (`UnitView.team_marker`, generated, not a file): a round ring for Dawnguard, a diamond ring for Duskborn, in
+the player colour over a dark underlay. Heroes get a larger, double ring and are 1.4x the unit size.
+
+**Buildings:** in the world they are the KayKit CC0 3D models themselves (`building_view.gd`). Their baked sprites
+(`tools/bake-sprites.ts --buildings`, `godot/assets/baked/buildings/<colour>/<id>.png`, 160 px, fitted to the frame,
+same light and angles as units, 48 colours) are the build-panel and trainer icons in baked mode, so the UI no longer
+needs the Tiny Swords Free Pack for them.
 
 ## AI prompts
 

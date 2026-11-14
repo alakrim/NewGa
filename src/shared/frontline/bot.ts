@@ -9,9 +9,12 @@ import type { FlPlayer } from './sim';
 type Plan = { build: FlBuildingId[]; army: Partial<Record<FlUnitId, number>> };
 /** A few personalities so bot opponents don't all play the same. */
 export const PLANS: Plan[] = [ // 7 plots per player
-  { build: ['house', 'archery', 'barracks', 'house', 'forge', 'sanctum', 'house'], army: { swordsman: 3, archer: 4, shieldbearer: 2, battlemage: 1, healer: 1 } },
-  { build: ['house', 'barracks', 'house', 'mineshaft', 'giantpit', 'forge', 'house'], army: { swordsman: 4, shieldbearer: 3, assassin: 2, giant: 1 } },
-  { build: ['house', 'archery', 'sanctum', 'house', 'mineshaft', 'watchtower', 'house'], army: { swordsman: 3, archer: 3, battlemage: 3, healer: 2 } },
+  // Plan 0: Archers + Shieldbearers, a Sanctum for Mages and a Forge. Houses early so the army can grow.
+  { build: ['house', 'archery', 'house', 'barracks', 'sanctum', 'forge', 'house'], army: { swordsman: 3, archer: 4, shieldbearer: 2, battlemage: 2, healer: 1 } },
+  // Plan 1: Giant push. Archers cover the Giant early (it is slow to afford: Pit 900 + Giant 1500).
+  { build: ['house', 'archery', 'barracks', 'mineshaft', 'house', 'giantpit', 'house'], army: { swordsman: 3, archer: 3, shieldbearer: 2, giant: 1 } },
+  // Plan 2: Archers + Mages + healers, Forge and a Watchtower at home. Was 61-69% with Mine Shaft first and no Barracks.
+  { build: ['house', 'archery', 'sanctum', 'house', 'forge', 'watchtower', 'house'], army: { swordsman: 3, archer: 3, battlemage: 3, healer: 2 } },
 ];
 
 export class FrontlineBot {
@@ -70,7 +73,7 @@ export class FrontlineBot {
     }
     // army: pick the most under-represented unit (by plan weight) we can train now
     const have: Partial<Record<FlUnitId, number>> = {};
-    for (const u of [...f.owned(p), ...p.garrison]) have[u.fl!.type] = (have[u.fl!.type] ?? 0) + 1;
+    for (const u of f.everyone(p)) have[u.fl!.type] = (have[u.fl!.type] ?? 0) + 1;
     let best: FlUnitId | null = null, bs = Infinity;
     for (const [id, w] of Object.entries(this.plan.army) as [FlUnitId, number][]) {
       const def = FL_UNITS[id];
