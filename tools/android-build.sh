@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/.."
 [ -d godot/assets/tinyswords_free ] || node tools/fetch-tinyswords.mjs
-npm run build:offline   # the lobby and match code the APK runs offline (src/offline/host.ts)
+npx tsx tools/gen-offline-data.ts   # game data for the offline engine (godot/offline/data.json)
 mkdir -p godot/build
 godot --headless --path godot --import >/dev/null 2>&1
 GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$HOME/.android/debug.keystore" \

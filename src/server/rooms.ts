@@ -1,6 +1,6 @@
 // Rooms, lobby and match loop, independent of the transport. The Node server (index.ts) plugs WebSockets and
-// real timers into it; the offline host (src/offline/host.ts) plugs in an in-memory peer and a clock driven by
-// the client's frames, so a phone runs the very same lobby and match code without a server.
+// real timers into it. Offline play on the phone runs a GDScript port of it (godot/offline/engine/rooms.gd):
+// keep the two in step (docs/ANDROID.md, parity check).
 import type { ClientMsg, LobbySlot, RoomInfo, ServerMsg } from '../shared/protocol';
 import type { GameMode } from '../shared/protocol';
 import type { Team } from '../shared/types';

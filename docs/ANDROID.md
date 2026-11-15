@@ -6,18 +6,35 @@ Copy `bannerfall-test.apk` to the phone and open it; allow installing from this 
 a 64-bit ARM phone (almost every phone since 2017) with Vulkan or OpenGL ES 3.
 
 The game starts **offline**: the status line under the menu says "Offline: bots on this device". Press **Quick
-Battle** for a 2v2 against three bots. No server, Wi-Fi or account is needed. The same lobby and match code as the
-server runs inside the app (`src/offline/host.ts`, bundled into `godot/offline/bf-offline.js`) in Android's own
-WebView JavaScript engine, driven by the game every frame (`godot/scripts/offline_host.gd`).
+Battle** for a 2v2 against three bots. No server, Wi-Fi or account is needed.
 
 The **Online / Offline** button on the main menu switches modes; Settings → Server address → Connect also goes
 online. **Quick Battle always works:** with no server connected it switches to offline play and starts the match.
-The status line at the bottom left of the menu says what offline play is doing, or exactly why it stopped.
 
-If offline play fails on a phone, the game shows "Offline play stopped" or "not available": please report the
-message and the phone model. The WebView glue is the one part that could not be tested before release, because
-the build machine has no Android emulator. Everything behind it runs in the desktop tests (`--offline` on the
-command line uses Node in place of the WebView).
+### How offline play works
+
+The match runs inside the app in GDScript (`godot/offline/engine/`): a line-for-line port of the TypeScript rules in
+`src/shared` (Frontline only) plus the single-player path of the server's lobby (`src/server/rooms.ts`). The data
+(heroes, abilities, units, numbers) is not ported: `npm run offline:data` exports it to `godot/offline/data.json`
+(a test fails when it is stale). The match runs on its own thread, so a slow tick never freezes the screen.
+
+The port is checked against the TypeScript engine tick by tick from the same seed (every unit's position and
+health to six decimals, gold, and the exact number of random draws):
+
+```bash
+npx tsx tools/offline-parity.ts 3 30000 /tmp/ts.txt --exact-hypot
+godot --headless --path godot -s res://offline/tests/parity.gd -- --seed=3 --ticks=30000 --out=/tmp/gd.txt
+node tools/offline-parity-compare.mjs /tmp/ts.txt /tmp/gd.txt      # seed 3: identical for the whole match
+godot --headless --path godot -s res://offline/tests/match.gd      # a whole offline match through the real host
+godot --headless --path godot -s res://offline/tests/profile.gd    # cost per tick, slowest ticks
+```
+
+`--exact-hypot` makes the TypeScript compute lengths with the same formula as GDScript. Without it, `Math.hypot`
+rounds the last bit differently now and then, and matches drift apart after a minute or two; the remaining drift
+with it (after 5-7 minutes on some seeds) is JavaScript's own sin/cos rounding, not a rule difference.
+
+**Any change to the rules in `src/shared` must be made in `godot/offline/engine/` too**, then the parity check
+re-run. A change that only touches numbers needs `npm run offline:data` only.
 
 ## Play online
 
@@ -42,7 +59,7 @@ In a cloud session on the NewGa environment, or any Linux machine with Godot 4.7
 
 ```bash
 bash tools/android-setup.sh    # once: apksigner + adb from apt, SDK folder, debug keystore, export templates (1.3 GB download)
-bash tools/android-build.sh    # -> godot/build/bannerfall-test.apk (about 38 MB)
+bash tools/android-build.sh    # -> godot/build/bannerfall-test.apk (about 38 MB), offline data refreshed first
 ```
 
 The preset is `godot/export_presets.cfg`. It builds arm64 only, without Gradle, as a release build signed with

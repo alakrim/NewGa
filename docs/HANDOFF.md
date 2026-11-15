@@ -2,10 +2,10 @@
 
 ## Last session (2026-11-14, branch `ccr-3e18521d-fh6r1c`, pull request into `main`)
 - **Android:** `bash tools/android-setup.sh` once, then `bash tools/android-build.sh` →
-  `godot/build/bannerfall-test.apk` (v0.4.0-test, arm64, about 38 MB). **Plays offline against bots**: the
-  rooms and simulation run in the phone's WebView (`src/offline/host.ts`, `godot/scripts/offline_host.gd`). Tested
-  on desktop through Node (`-- --uitest --offline`); the Android WebView glue is untested until it runs on a phone
-  (`docs/ANDROID.md`).
+  `godot/build/bannerfall-test.apk` (v0.5.0-test, arm64, about 38 MB). **Plays offline against bots** with a
+  GDScript port of the rules (`godot/offline/engine/`, on its own thread), checked against the TypeScript tick by
+  tick. The earlier WebView approach failed on the owner's phone and was removed. Rule changes must now be made in
+  both engines (`docs/ANDROID.md`, parity check).
 - **Art (Sonnet agent):** team-shaped ground markers (round Dawnguard, diamond Duskborn); heroes have a double
   ring and are 1.4× larger; Hallen and Kraghul re-kitted apart; KayKit buildings baked
   (`bake-sprites.ts --buildings`) for the build-panel icons in baked mode.
