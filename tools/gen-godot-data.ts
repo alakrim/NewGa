@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { FL, FL_BUILDING_ORDER, FL_BUILDINGS, FL_PLOTS, FL_RESEARCH, FL_UNIT_ORDER, FL_UNITS, STANCES, STANCE_ORDER, CASTLE, WATCHTOWER } from '../src/shared/frontline/data';
 import { HEROES } from '../src/shared/data/heroes';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'godot', 'scripts');
+// GEN_OUT redirects the output (tests/godot-data.test.ts compares it with the committed files)
+const root = process.env.GEN_OUT ?? join(dirname(fileURLToPath(import.meta.url)), '..', 'godot', 'scripts');
 
 /** GDScript literal for a JSON-like value. */
 function gd(v: unknown, ind = 0): string {

@@ -14,7 +14,7 @@ import sys
 import numpy as np
 from PIL import Image
 
-PALETTE = 32
+PALETTE = int(os.environ.get("BAKE_PALETTE", "32"))  # buildings bake with more
 OUTLINE = (27, 20, 38)  # dark plum, like the Tiny Swords outlines
 OUTLINE_PX = 3  # Tiny Swords outlines are about 3 px at their 192x192 frame size; thinner ones vanish in game
 SATURATION = 1.3  # the renders come out cooler and greyer than the hand-painted art they stand next to

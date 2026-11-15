@@ -328,6 +328,12 @@ static func building_icon(bid: String, color := "blue") -> Texture2D:
 	if _crop.has(key):
 		return _crop[key]
 	var def: Dictionary = V.BUILDINGS.get(bid, V.BUILDINGS["house"])
+	if V.chars_mode() == "baked":
+		# KayKit CC0 models baked to sprites (tools/bake-sprites.ts --buildings); no Free Pack needed
+		var bt := load_tex(V.BAKED + "buildings/%s/%s.png" % ["green" if color == "purple" else color, bid if V.BUILDINGS.has(bid) or bid == "castle" else "house"])
+		if bt:
+			_crop[key] = _cropped(bt, Rect2i(0, 0, bt.get_width(), bt.get_height()))
+			return _crop[key]
 	var path: String = Sprites.sheet_path(def.sheet, color)
 	var t := load_tex(path)
 	var out: Texture2D = null

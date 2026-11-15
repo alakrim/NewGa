@@ -27,6 +27,13 @@ export const FL = {
   suddenDeathArmorLoss: 5, // keep armour lost every 30 s of Sudden Death
   suddenDeathGoldPerMin: 1, // extra passive gold per second per player for each minute of Sudden Death
   suddenDeathCrumble: 15, // true damage per second to both keeps during Sudden Death: no match outlasts ~20 min
+  musterGroup: 5, // Attack stance: reinforcements wait at the muster point until this many have gathered
+  musterX: 14, // muster point: this far on our side of the Heart Banner
+  musterJoin: 30, // ...or until the front group is within this distance of the muster point
+  musterMaxWait: 40, // seconds the first waiting unit holds the group before it is sent anyway
+  giveChunk: 100, // giveGold sends gold to your teammate in chunks of this size
+  giveMaxChunks: 5,
+  fountainCombatDelay: 4, // seconds after taking damage before the keep's fountain heals a hero again
   followOffset: 3, // Follow stance: the army forms up this far behind the hero
   bannerGold: 1.5, // per second per member for each lane banner held
   heartGold: 3, // per second per member for the central banner

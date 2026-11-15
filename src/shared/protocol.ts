@@ -30,7 +30,9 @@ export type Command =
   | { c: 'cancelTrain'; unit: FlUnitId }
   | { c: 'buildAt'; plot: number; building: FlBuildingId }
   | { c: 'research'; kind: FlResearch }
-  | { c: 'stance'; stance: Stance; x?: number };
+  | { c: 'stance'; stance: Stance; x?: number }
+  /** Send 100-gold chunks (default 1, max 5) to your teammate. */
+  | { c: 'giveGold'; chunks?: number };
 
 // ---------- static info sent at game start ----------
 export interface VisualInfo { model: ModelId | 'tower' | 'fortress' | 'env'; tint?: string; scale: number; weapons: string[]; name: string; kind: string; towerKind?: TowerKind; env?: string; width?: number; color?: PlayerColor; role?: string }

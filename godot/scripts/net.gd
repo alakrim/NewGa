@@ -1,5 +1,7 @@
 extends Node
 ## WebSocket client for the Bannerfall server (same JSON protocol as the web client, see src/shared/protocol.ts).
+## Offline mode swaps the WebSocket for an OfflineHost: the same lobby and match code running on this device, so
+## the rest of the game sees exactly the same messages either way.
 
 signal connected(pid: String)
 signal disconnected()
@@ -9,10 +11,19 @@ signal snapshot(snap: Dictionary)
 signal chat(line: Dictionary)
 signal replay(data: Dictionary)
 signal error(msg: String)
+## Offline host progress or failure changed (see `offline_status()`).
+signal status_changed()
 
 const SAVE_PATH := "user://net.cfg"
+const DEFAULT_URL := "ws://127.0.0.1:8787/ws"
 
-var url := "ws://127.0.0.1:8787/ws"
+var url := DEFAULT_URL
+## Playing against bots on this device instead of a server (see OfflineHost).
+var offline := false
+## Why offline play is not running, shown on the menu; empty when fine.
+var offline_error := ""
+var _host: OfflineHost
+var _host_stage := ""
 var pid := ""
 var player_name := "Hero"
 var rtt_ms := 0.0
@@ -33,17 +44,45 @@ func _ready() -> void:
 		url = cfg.get_value("net", "url", url)
 		pid = cfg.get_value("net", "pid", "")
 		player_name = cfg.get_value("net", "name", player_name)
+	# phones start offline (bots on this device) until the player picks Online; "offline2" so an older build's
+	# saved online choice does not leave a phone waiting for a server it never had
+	offline = cfg.get_value("net", "offline2", OS.get_name() == "Android")
 	_saved_url = url
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--server="):
 			url = arg.substr(9)
+			offline = false
+		elif arg == "--offline":
+			offline = true
 
 
-## Sets the server address chosen by the player and remembers it.
+## Sets the server address chosen by the player and remembers it (this also leaves offline mode).
 func set_url(u: String) -> void:
 	url = u
 	_saved_url = u
+	offline = false
 	save()
+
+
+## Switches between offline play (bots on this device) and the server, and connects.
+func set_offline(on: bool) -> void:
+	close()
+	offline = on
+	offline_error = ""
+	save()
+	connect_to_server()
+	status_changed.emit()
+
+
+## One line for the menu about offline play: "" when online, else its progress or why it stopped.
+func offline_status() -> String:
+	if offline_error != "":
+		return offline_error
+	if not offline:
+		return ""
+	if _host == null:
+		return "Offline play is off"
+	return "Offline: bots on this device" if _host.ready else "Starting offline play (%s)..." % _host.stage
 
 
 func save() -> void:
@@ -51,10 +90,14 @@ func save() -> void:
 	cfg.set_value("net", "url", _saved_url)
 	cfg.set_value("net", "pid", pid)
 	cfg.set_value("net", "name", player_name)
+	cfg.set_value("net", "offline2", offline)
 	cfg.save(SAVE_PATH)
 
 
 func connect_to_server() -> void:
+	if offline:
+		_start_offline()
+		return
 	_want_open = true
 	var full := url + ("?pid=" + pid.uri_encode() if pid != "" else "")
 	_ws = WebSocketPeer.new()
@@ -66,17 +109,44 @@ func connect_to_server() -> void:
 
 
 func is_open() -> bool:
+	if offline:
+		return _host != null and _host.ready
 	return _state == WebSocketPeer.STATE_OPEN
 
 
 func close() -> void:
 	_want_open = false
 	_ws.close()
+	if _host:
+		_host.stop()
+		_host = null
+		disconnected.emit()
 
 
 func send(msg: Dictionary) -> void:
+	if offline:
+		if _host:
+			_host.send(msg)
+		return
 	if _ws.get_ready_state() == WebSocketPeer.STATE_OPEN:
 		_ws.send_text(JSON.stringify(msg))
+
+
+func _start_offline() -> void:
+	if _host:
+		return
+	offline_error = ""
+	var why: Array = [""]
+	_host = OfflineHost.create(why)
+	if _host == null:
+		offline = false
+		offline_error = "Offline play is not available on this device: " + str(why[0])
+		error.emit(offline_error)
+		status_changed.emit()
+		connect_to_server()
+		return
+	_host.open(pid)
+	status_changed.emit()
 
 
 ## In-game command (see `Command` in protocol.ts), e.g. {"c": "train", "unit": "archer"}.
@@ -85,6 +155,23 @@ func cmd(command: Dictionary) -> void:
 
 
 func _process(delta: float) -> void:
+	if offline:
+		if _host:
+			for m in _host.poll(delta):
+				if m is Dictionary:
+					_handle_msg(m)
+			if _host and _host.stage != _host_stage:
+				_host_stage = _host.stage
+				status_changed.emit()
+			if _host and _host.failed != "":
+				var why := _host.failed
+				_host.stop()
+				_host = null
+				offline_error = "Offline play stopped: " + why
+				error.emit(offline_error)
+				disconnected.emit()
+				status_changed.emit()
+		return
 	_ws.poll()
 	var st := _ws.get_ready_state()
 	if st != _state:
@@ -109,6 +196,10 @@ func _handle(text: String) -> void:
 	var m = JSON.parse_string(text)
 	if typeof(m) != TYPE_DICTIONARY:
 		return
+	_handle_msg(m)
+
+
+func _handle_msg(m: Dictionary) -> void:
 	match m.get("t", ""):
 		"welcome":
 			pid = m.pid

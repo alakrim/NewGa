@@ -139,7 +139,7 @@ const HERO_BODY := {
 	"Tank": "shieldbearer", "Fighter": "swordsman", "Assassin": "assassin",
 	"Mage": "battlemage", "Marksman": "archer", "Support": "healer",
 }
-const HERO_SCALE := 1.3
+const HERO_SCALE := 1.4
 
 const EFFECTS := {
 	"explosion": {"sheet": FREE + "Particle FX/Explosion_01.png", "frame": F192, "count": 8, "fps": 16},

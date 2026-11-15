@@ -63,6 +63,9 @@ func tap_ctrl(c: Control, hold := 0.08) -> void:
 
 
 func _run() -> void:
+	if "--fallback" in OS.get_cmdline_user_args():
+		await _run_fallback()
+		return
 	while not Net.is_open():
 		await get_tree().process_frame
 	var menu = main.menu
@@ -184,4 +187,22 @@ func _run() -> void:
 	await wait(0.3)
 	await shot("20-end")
 	print("UITEST DONE")
+	get_tree().quit()
+
+
+## `--fallback`: the game starts online with no server reachable (a phone with an old saved address). Quick Battle
+## must still work: it switches to offline play and the match starts.
+func _run_fallback() -> void:
+	var menu = main.menu
+	await wait(1.5)
+	await shot("f1-no-server")
+	print("fallback: online=", not Net.offline, " open=", Net.is_open(), " quick disabled=", menu._quick_btn.disabled)
+	await tap_ctrl(menu._quick_btn)
+	var t := 0.0
+	while Net.init_data.is_empty() and t < 30.0:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	await wait(2.0)
+	await shot("f2-match")
+	print("FALLBACK ", "OK" if not Net.init_data.is_empty() and Net.offline else "FAIL", " after %.1f s, status: %s" % [t, Net.offline_status()])
 	get_tree().quit()

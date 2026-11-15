@@ -171,5 +171,34 @@ window.cellUsage = async (spec) => {
   }
   return out;
 };
+// A static model (a building) in one frame: same light and camera angles as the characters, but the frustum is
+// fitted to the model's bounding box so any building fills the frame. spec: { url, cell, cellW, pitch, yaw }
+window.bakeStatic = async (spec) => {
+  const gltf = await load(spec.url);
+  const root = SkeletonUtils.clone(gltf.scene);
+  root.rotation.y = -spec.yaw;
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root);
+  const c = box.getCenter(new THREE.Vector3());
+  const { renderer, scene, cam } = stage({ ...spec, worldHeight: 3.2, lift: c.y }, root);
+  cam.position.set(c.x, c.y, c.z).add(new THREE.Vector3(0, Math.sin(THREE.MathUtils.degToRad(spec.pitch)), Math.cos(THREE.MathUtils.degToRad(spec.pitch))).multiplyScalar(40));
+  cam.lookAt(c);
+  cam.updateMatrixWorld(true);
+  const inv = cam.matrixWorldInverse;
+  const lo = new THREE.Vector3(1e9, 1e9, 0), hi = new THREE.Vector3(-1e9, -1e9, 0);
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+    const v = new THREE.Vector3(x, y, z).applyMatrix4(inv);
+    lo.min(v); hi.max(v);
+  }
+  const aspect = spec.cellW / spec.cell, pad = 1.06;
+  const halfH = Math.max((hi.y - lo.y) / 2, (hi.x - lo.x) / 2 / aspect) * pad;
+  const mx = (hi.x + lo.x) / 2, my = (hi.y + lo.y) / 2;
+  cam.left = mx - halfH * aspect; cam.right = mx + halfH * aspect; cam.top = my + halfH; cam.bottom = my - halfH;
+  cam.updateProjectionMatrix();
+  renderer.render(scene, cam);
+  const url = renderer.domElement.toDataURL('image/png');
+  renderer.dispose();
+  return url;
+};
 window.ready = true;
 </script>

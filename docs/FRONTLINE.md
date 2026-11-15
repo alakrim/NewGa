@@ -21,6 +21,7 @@ Stick War's loop (mine gold → train an army → push the lane → smash the st
 | Banners held | +1.5 gold/s per outpost, +3 gold/s for the Heart, per player |
 | Banner capture | 150 to every player on the capturing team |
 | Kills | 20% of a unit's cost to its killer's owner; 200 for a hero, scaled by victim level ÷ killer level (0.5× to 1.5×) |
+| Gift to teammate | `giveGold` command: 100-gold chunks (1-5 per command) to your teammate |
 | Underdog bounty | ×1.5 on all kill gold while your team's army is worth less than 70% of the enemy's |
 | Sudden Death | from 12:00, +1 gold/s per player, and +1 more every minute |
 
@@ -49,18 +50,19 @@ Units ignore enemy buildings they can't hit from the lane (melee can't climb to 
 - **Defend:** a formation line in front of your base.
 - **Hold line:** a formation at your rally point (set with C over the battlefield).
 - **Follow:** the army forms up 3 units behind your hero and fights wherever you lead it. Falls back to Defend while your hero is dead.
-- **Attack:** march on the enemy keep and fight everything on the way.
+- **Attack:** march on the enemy keep and fight everything on the way. Units you train while in Attack wait at a muster point just on your side of the Heart Banner and join as a group of 5 (or when the front group is near, or after 40 s), so reinforcements don't walk the lane alone.
 
 Formations put heavies and melee in front, then archers, then mages, then healers, spread across the lane.
 
 ## Sudden Death
 
-At 12:00 both keeps start to crumble (15 true damage per second, no regeneration) and lose 5 armour every 30 s, and income ramps (see Economy). The keep that took more siege damage falls first, and no match outlasts about 20 minutes. Garrisoned units add keep firepower only up to 12 units (+144%).
+At 12:00 both keeps start to crumble (15 true damage per second, no regeneration) and lose 5 armour every 30 s, and income ramps (see Economy). The keep that took more siege damage falls first, and no match outlasts about 20 minutes. Garrisoned units add keep firepower only up to 12 units (+144%). A hero standing in its keep's fountain only heals while it has taken no damage for 4 s, so a siege can kill defenders.
 
 ## How it maps to the code
 
 - Data: `src/shared/frontline/data.ts` (units, buildings, research, map features, stances).
 - Systems: `src/shared/frontline/sim.ts` (economy, training queues, construction, stances and formations, miners, healers, banners, garrison). It plugs into the shared `Game`, so heroes, abilities, effects, projectiles, replays and the server all work unchanged.
+- Garrisoned units are parked in `FlPlayer.garrison` (outside `Game.units`) with `fl.garrisoned = true`; use `Frontline.everyone(p)` for "all of a player's units" (pop, research, snapshots, bots). They come back with statuses cleared and stats reapplied.
 - Bots: `src/shared/frontline/bot.ts` (three build personalities; stances follow relative army value).
 - Rendering: `src/client/render/frontline.ts` (side-view lane, veins, plots, banners) plus `World`'s side camera, construction scaffolding, carried gold sacks and bloom.
 

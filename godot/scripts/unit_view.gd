@@ -65,6 +65,52 @@ static func flat_sprite(tex: Texture2D, size_units: float, col: Color, additive:
 	return s
 
 
+static var _marker_tex := {}
+
+
+## Team-shaped ground marker texture: a round ring for team 0 (Dawnguard), a diamond ring for team 1 (Duskborn),
+## so teams read without colour. `heavy` draws the thicker double ring heroes get. Generated once, white (tinted
+## by the sprite's modulate).
+static func marker_texture(p_team: int, heavy := false) -> Texture2D:
+	var key := "%d:%s" % [p_team, heavy]
+	if _marker_tex.has(key):
+		return _marker_tex[key]
+	var n := 96
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	for y in range(n):
+		for x in range(n):
+			var u := (float(x) + 0.5) / n * 2.0 - 1.0
+			var v := (float(y) + 0.5) / n * 2.0 - 1.0
+			var d := sqrt(u * u + v * v) if p_team == 0 else (absf(u) + absf(v)) * 0.86
+			var a := 0.0
+			var edge := 0.92
+			var w := 0.2 if heavy else 0.14
+			a = maxf(a, clampf(1.0 - absf(d - (edge - w * 0.5)) / (w * 0.5 + 0.03), 0.0, 1.0))  # ring
+			if heavy:
+				a = maxf(a, clampf(1.0 - absf(d - 0.62) / 0.07, 0.0, 1.0) * 0.8)  # inner ring
+			if d < edge - w:
+				a = maxf(a, 0.22)  # faint fill
+			img.set_pixel(x, y, Color(1, 1, 1, a))
+	var t := ImageTexture.create_from_image(img)
+	_marker_tex[key] = t
+	return t
+
+
+## The marker sprite for a unit on `p_team` in `col`; `size_units` is its width on the ground.
+static func team_marker(p_team: int, col: String, size_units: float, heavy := false) -> Node3D:
+	var c: Color = V.PLAYER_COLORS.get(col, Color.WHITE)
+	var root := Node3D.new()
+	var tex := marker_texture(p_team, heavy)
+	# a dark copy a little larger underneath keeps the shape readable on sand and grass alike
+	var under := flat_sprite(tex, size_units * 1.06, Color(0.08, 0.05, 0.12, 0.45), false)
+	under.position.y = 0.04
+	root.add_child(under)
+	var s := flat_sprite(tex, size_units, Color(c.r, c.g, c.b, 0.95 if heavy else 0.85), false)
+	s.position.y = 0.045
+	root.add_child(s)
+	return root
+
+
 func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: String, me: bool, name_text := "") -> void:
 	id = p_id
 	team = p_team
@@ -80,6 +126,7 @@ func setup(p_id: int, p_team: int, p_kind: String, p_body: String, p_color: Stri
 	# contact shadow keeps feet planted even when the sun shadow falls far behind
 	var w := (1.5 if body_id == "giant" else 0.95) * _scale
 	add_child(flat_sprite(glow, w * 1.6, Color(0, 0, 0, 0.42), false))
+	add_child(team_marker(team, color, w * (2.3 if kind == "hero" else 1.8), kind == "hero"))
 	if kind == "hero":
 		var c: Color = Color("7cff8a") if me else V.PLAYER_COLORS.get(color, Color.WHITE)
 		_aura = flat_sprite(glow, 3.4 * _scale, c * Color(1.6, 1.6, 1.6, 0.8), true)

@@ -14,3 +14,6 @@ assets-src/
 
 # sprite bakes and other generated output (tools/bake-sprites.ts)
 /build/
+
+# agent worktrees (Claude Code); each is its own checkout, never part of this repo
+/.claude/worktrees/

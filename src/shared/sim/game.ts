@@ -1066,7 +1066,8 @@ export class Game {
       for (let i = 0; i < 4; i++) h.cd[i] = Math.max(0, h.cd[i] - dt);
       for (let i = 0; i < 6; i++) h.itemCd[i] = Math.max(0, h.itemCd[i] - dt);
       const f = this.homeSpot(u.team);
-      if (Math.hypot(u.x - f.x, u.z - f.z) <= (this.front ? 8 : TIMING.fountainRadius)) {
+      // Frontline: the keep's fountain stops healing a hero for a few seconds after it takes damage, so a siege can kill defenders
+      if (Math.hypot(u.x - f.x, u.z - f.z) <= (this.front ? 8 : TIMING.fountainRadius) && (!this.front || this.time - u.lastDamagedAt > FL.fountainCombatDelay)) {
         u.hp = Math.min(u.stats.maxHp, u.hp + u.stats.maxHp * 0.08 * dt);
         u.mana = Math.min(u.stats.maxMana, u.mana + u.stats.maxMana * 0.08 * dt);
       }

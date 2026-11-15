@@ -6,6 +6,7 @@ const M = preload("res://scripts/fl_map.gd")
 const World3D_ = preload("res://scripts/world3d.gd")
 
 const Game = preload("res://scripts/game.gd")
+const UnitView = preload("res://scripts/unit_view.gd")
 const BuildingView = preload("res://scripts/building_view.gd")
 
 var game: Node3D
@@ -32,8 +33,12 @@ func _unit(body: String, color: String, x: float, z: float, anim: String, face_l
 	var a := AnimatedSprite3D.new()
 	a.sprite_frames = Sprites.frames(body, color)
 	var fh: float = def.frame.y
-	World3D_.standee(a, fh, fh / 2.0 - def.get("feet", 30.0), def.get("scale", 1.0) * (1.35 if hero else 1.0) * 1.15)
+	World3D_.standee(a, fh, fh / 2.0 - def.get("feet", 30.0), def.get("scale", 1.0) * (V.HERO_SCALE if hero else 1.0) * 1.15)
 	a.position = Vector3(x, World3D_.ground_y(x, z), z)
+	var team := 0 if color in ["blue", "purple"] else 1
+	var mk: Node3D = UnitView.team_marker(team, color, (1.5 if body == "giant" else 0.95) * def.get("scale", 1.0) * 1.15 * (V.HERO_SCALE * 2.3 if hero else 1.8), hero)
+	mk.position = Vector3(x, World3D_.ground_y(x, z) + 0.045, z)
+	world.actors.add_child(mk)
 	a.flip_h = face_left
 	if a.sprite_frames.has_animation(anim):
 		a.play(anim)

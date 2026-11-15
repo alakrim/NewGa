@@ -13,6 +13,19 @@ One dated line per decision, newest first. **Open** items wait for the project o
 
 ## Log
 
+- 2026-11-15 Offline play runs a GDScript port of the Frontline rules (`godot/offline/engine/`), checked tick by
+  tick against the TypeScript engine (identical for a whole match on seed 3). The first approach, the TypeScript
+  bundled into Android's WebView through JavaClassWrapper, failed on the owner's phone ("the engine didn't start in
+  20 s") and could not be tested here (no Android emulator). The data stays single-source (`data.json`); the rules
+  are now in two places, so every rule change must be ported and the parity test re-run. The lobby logic moved to
+  the transport-free `src/server/rooms.ts` and is ported too.
+- 2026-11-14 Frontline: the keep's fountain stops healing heroes for 4 s after damage (the cause of the 19-20 min
+  siege stalls), Attack reinforcements muster in groups of 5, `giveGold` command (100-gold chunks to your
+  teammate), bot plans retuned to 43/59/47% win rates (`docs/FRONTLINE-BALANCE.md`). Matches now last ~8 min.
+- 2026-11-14 Readability pass: every unit stands on a team-shaped ground marker (round Dawnguard, diamond Duskborn),
+  heroes get a double ring and 1.4x scale; Hallen and Kraghul are re-kitted apart. KayKit buildings bake to sprites
+  (`--buildings`) for build-panel icons in baked mode; the world already used the 3D KayKit models, so only the UI
+  icons depended on the Free Pack.
 - 2026-11-10 `main` created at the head of `ccr-3e18521d-fh6r1c`, which already contained every other branch
   (`claude/2.5d-hero-tower-defense-odusfc`, `ccr-b746cdda-o5bvbc`); those are kept but fully merged.
 - 2026-11-10 A personal NewGa cloud environment installs Godot 4.7, xvfb and lavapipe and fetches the Tiny

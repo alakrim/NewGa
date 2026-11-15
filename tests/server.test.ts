@@ -13,8 +13,8 @@ before(async () => { srv = await startServer({ port: 0, staticDir: '/nonexistent
 // a failing test must not leak rooms into the next one
 afterEach(() => {
   for (const c of open.splice(0)) c.ws.terminate();
-  for (const r of _internals.rooms.values()) if (r.loop) clearInterval(r.loop);
-  for (const c of _internals.clients.values()) if (c.timer) clearTimeout(c.timer);
+  for (const r of _internals.rooms.values()) if (r.loop) clearInterval(r.loop as NodeJS.Timeout);
+  for (const c of _internals.clients.values()) if (c.timer) clearTimeout(c.timer as NodeJS.Timeout);
   _internals.rooms.clear();
   _internals.clients.clear();
 });
