@@ -18,6 +18,7 @@ var _name_edit: LineEdit
 var _hero_btn: Button
 var _quick_btn: Button
 var _offline_btn: Button
+var _quick_pending := false  # Quick Battle pressed while not connected: start it once offline play is up
 var _net_buttons: Array = []
 var _join_edit: LineEdit
 var _join_err: Label
@@ -49,7 +50,11 @@ func _ready() -> void:
 	_build_lobby()
 	_build_overlay()
 	show_screen("main")
-	Net.connected.connect(func(_p): _update_status())
+	Net.connected.connect(func(_p):
+		_update_status()
+		if _quick_pending and Net.is_open():
+			_quick_battle())
+	Net.status_changed.connect(_update_status)
 	Net.disconnected.connect(_update_status)
 	Net.room.connect(on_room)
 	Net.error.connect(on_error)
@@ -173,7 +178,8 @@ func _build_main() -> void:
 	# Offline: the match runs on this device against bots (no server needed); Online: the server in Settings
 	_offline_btn = _btn("Offline", Vector2(158, 72), func(): Net.set_offline(not Net.offline); _update_status())
 	r2.add_child(_offline_btn)
-	_net_buttons = [_quick_btn, b_create, b_join]
+	# Quick Battle always works: without a server it switches to offline play and starts there
+	_net_buttons = [b_create, b_join]
 	# hero chip (bottom right)
 	_hero_btn = Button.new()
 	_hero_btn.theme_type_variation = "ButtonSmall"
@@ -230,8 +236,10 @@ func _update_status() -> void:
 		return
 	var online := Net.is_open()
 	_status_dot.color = Color("7be08a") if online else Color("ff7a6b")
-	if Net.offline:
-		_status_lbl.text = "Offline: bots on this device" if online else "Starting offline play..."
+	if Net.offline or Net.offline_error != "":
+		_status_lbl.text = Net.offline_status()
+		if Net.offline_error != "":
+			_status_dot.color = Color("ff7a6b")
 	else:
 		_status_lbl.text = ("Online  %s" % Net.url) if online else ("Connecting to %s ..." % Net.url)
 	if _offline_btn:
@@ -247,6 +255,13 @@ func _open_gallery() -> void:
 
 func _quick_battle() -> void:
 	_commit_name()
+	if not Net.is_open():
+		_quick_pending = true
+		_set_busy("Starting a battle against bots...")
+		if not Net.offline:
+			Net.set_offline(true)
+		return
+	_quick_pending = false
 	_quick = true
 	_auto_hero_sent = true
 	_set_busy("Raising the banners...")
@@ -565,6 +580,7 @@ func _quick_step(info: Dictionary) -> void:
 func on_error(msg: String) -> void:
 	if screen == "join":
 		_join_err.text = msg
+	_quick_pending = false
 	_set_busy("")
 	if _quick:
 		_quick = false

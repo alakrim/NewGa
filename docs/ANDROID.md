@@ -11,7 +11,8 @@ server runs inside the app (`src/offline/host.ts`, bundled into `godot/offline/b
 WebView JavaScript engine, driven by the game every frame (`godot/scripts/offline_host.gd`).
 
 The **Online / Offline** button on the main menu switches modes; Settings → Server address → Connect also goes
-online.
+online. **Quick Battle always works:** with no server connected it switches to offline play and starts the match.
+The status line at the bottom left of the menu says what offline play is doing, or exactly why it stopped.
 
 If offline play fails on a phone, the game shows "Offline play stopped" or "not available": please report the
 message and the phone model. The WebView glue is the one part that could not be tested before release, because

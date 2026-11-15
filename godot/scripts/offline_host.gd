@@ -16,6 +16,7 @@ const READY_TIMEOUT := 20.0
 
 var ready := false
 var failed := ""  # why the host could not start; empty while fine
+var stage := "starting"  # shown on the menu while offline play starts: what the host is waiting for
 
 var _queue: Array = []  # client messages since the last frame (main thread)
 var _ms := 0.0  # real time since the last frame
@@ -31,6 +32,7 @@ var _pipe: FileAccess
 var _android := false
 var _activity: JavaObject
 var _webview_class: JavaClass
+var _layout_class: JavaClass
 var _ui_job: JavaObject  # Runnable that runs _on_ui_thread
 var _value_cb: JavaObject  # ValueCallback that receives evaluateJavascript results
 var _html := ""
@@ -43,15 +45,17 @@ var _ui_error := ""  # guarded by _mutex
 
 
 ## An offline host for this platform, or null when there is none (Android without AndroidRuntime, desktop without
-## Node, or a missing bundle).
-static func create() -> OfflineHost:
+## Node, or a missing bundle); then `why[0]` says which.
+static func create(why: Array = [""]) -> OfflineHost:
 	if not FileAccess.file_exists(BUNDLE):
-		push_warning("offline: missing " + BUNDLE)
+		why[0] = "the game files are missing " + BUNDLE
 		return null
 	var h := OfflineHost.new()
-	if OS.get_name() == "Android":
-		return h if h._start_android() else null
-	return h if h._start_desktop() else null
+	var err := h._start_android() if OS.get_name() == "Android" else h._start_desktop()
+	if err != "":
+		why[0] = err
+		return null
+	return h
 
 
 func open(pid: String) -> void:
@@ -78,15 +82,15 @@ func stop() -> void:
 
 
 # ------------------------------------------------------------------ desktop: Node through a pipe
-func _start_desktop() -> bool:
+func _start_desktop() -> String:
 	var cli := ProjectSettings.globalize_path("res://").path_join("../tools/offline-cli.cjs")
 	if not FileAccess.file_exists(cli):
-		return false
+		return "tools/offline-cli.cjs not found"
 	var p := OS.execute_with_pipe("/usr/bin/env", ["node", cli, ProjectSettings.globalize_path(BUNDLE)])
 	if p.is_empty():
-		return false
+		return "could not start Node"
 	_pipe = p.stdio
-	return true
+	return ""
 
 
 func _request(req: Dictionary) -> Array:
@@ -104,6 +108,7 @@ func _poll_desktop() -> Array:
 	if not _opened:
 		_opened = true
 		ready = true
+		stage = "ready"
 		return _request({"open": _pid})
 	var out := _request({"msgs": _queue, "ms": _ms})
 	_queue = []
@@ -112,23 +117,29 @@ func _poll_desktop() -> Array:
 
 
 # ------------------------------------------------------------------ Android: the system WebView via JavaClassWrapper
-func _start_android() -> bool:
+func _start_android() -> String:
 	if not Engine.has_singleton("AndroidRuntime"):
-		return false
+		return "no AndroidRuntime"
 	var rt = Engine.get_singleton("AndroidRuntime")
 	_activity = rt.getActivity()
+	if _activity == null:
+		return "no activity"
 	_webview_class = JavaClassWrapper.wrap("android.webkit.WebView")
-	if _activity == null or _webview_class == null:
-		return false
+	_layout_class = JavaClassWrapper.wrap("android.view.ViewGroup$LayoutParams")
+	if _webview_class == null or _layout_class == null:
+		return "no WebView class"
 	_ui_job = JavaClassWrapper.create_sam_callback("java.lang.Runnable", _on_ui_thread)
 	_value_cb = JavaClassWrapper.create_sam_callback("android.webkit.ValueCallback", _on_js_result)
 	if _ui_job == null or _value_cb == null:
-		return false
+		return "could not create Java callbacks"
 	var js := FileAccess.get_file_as_string(BUNDLE)
+	if js.length() < 1000:
+		return "could not read " + BUNDLE
 	_html = "<!doctype html><html><head><meta charset=\"utf-8\"><script>" + js + "</script></head><body></body></html>"
 	_android = true
+	stage = "creating the engine view"
 	_run_js("")  # creates the WebView and loads the bundle
-	return true
+	return ""
 
 
 ## Posts `js` to the UI thread (empty: only make sure the WebView exists). One call is in flight at a time.
@@ -147,14 +158,18 @@ func _on_ui_thread() -> void:
 	_mutex.unlock()
 	if _webview == null:
 		_webview = _webview_class.WebView(_activity)
+		if _webview == null or JavaClassWrapper.get_exception() != null:
+			_fail_ui("could not create a WebView")
+			return
 		_webview.getSettings().setJavaScriptEnabled(true)
+		# attached to the window (1 x 1 px, invisible) so Android treats the page as a live, visible one
+		_webview.setAlpha(0.0)
+		_activity.addContentView(_webview, _layout_class.LayoutParams(1, 1))
+		JavaClassWrapper.get_exception()  # not fatal if attaching fails: the page also runs detached
 		_webview.loadDataWithBaseURL("https://offline.bannerfall.invalid/", _html, "text/html", "utf-8", "about:blank")
 		var ex = JavaClassWrapper.get_exception()
 		if ex != null:
-			_mutex.lock()
-			_ui_error = "WebView: %s" % ex.toString()
-			_in_flight = false
-			_mutex.unlock()
+			_fail_ui("WebView: %s" % ex.toString())
 			return
 	if js == "":
 		_mutex.lock()
@@ -162,6 +177,14 @@ func _on_ui_thread() -> void:
 		_mutex.unlock()
 		return
 	_webview.evaluateJavascript(js, _value_cb)
+
+
+## Runs on Android's UI thread.
+func _fail_ui(why: String) -> void:
+	_mutex.lock()
+	_ui_error = why
+	_in_flight = false
+	_mutex.unlock()
 
 
 ## Runs on Android's UI thread with the JSON-encoded value of the evaluated script.
@@ -189,6 +212,7 @@ func _poll_android(delta: float) -> Array:
 			# readiness probe: the page has defined __bf (until then the probe answers false or null)
 			if v is float and int(v) >= 1:
 				ready = true
+				stage = "ready"
 			continue
 		if v is Array:
 			out.append_array(v)
@@ -204,8 +228,9 @@ func _poll_android(delta: float) -> Array:
 	_busy_for = 0.0
 	if not ready:
 		_waited += delta
+		stage = "loading the game engine %ds" % int(_waited)
 		if _waited > READY_TIMEOUT:
-			failed = "the offline host did not start"
+			failed = "the game engine page did not load in %d s" % int(READY_TIMEOUT)
 			return out
 		_run_js("(typeof __bf === 'object' && __bf.version) || 0")
 		return out

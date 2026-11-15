@@ -11,6 +11,8 @@ signal snapshot(snap: Dictionary)
 signal chat(line: Dictionary)
 signal replay(data: Dictionary)
 signal error(msg: String)
+## Offline host progress or failure changed (see `offline_status()`).
+signal status_changed()
 
 const SAVE_PATH := "user://net.cfg"
 const DEFAULT_URL := "ws://127.0.0.1:8787/ws"
@@ -18,7 +20,10 @@ const DEFAULT_URL := "ws://127.0.0.1:8787/ws"
 var url := DEFAULT_URL
 ## Playing against bots on this device instead of a server (see OfflineHost).
 var offline := false
+## Why offline play is not running, shown on the menu; empty when fine.
+var offline_error := ""
 var _host: OfflineHost
+var _host_stage := ""
 var pid := ""
 var player_name := "Hero"
 var rtt_ms := 0.0
@@ -39,8 +44,9 @@ func _ready() -> void:
 		url = cfg.get_value("net", "url", url)
 		pid = cfg.get_value("net", "pid", "")
 		player_name = cfg.get_value("net", "name", player_name)
-	# a phone with no server address set starts offline, so the game plays straight away
-	offline = cfg.get_value("net", "offline", OS.get_name() == "Android" and url == DEFAULT_URL)
+	# phones start offline (bots on this device) until the player picks Online; "offline2" so an older build's
+	# saved online choice does not leave a phone waiting for a server it never had
+	offline = cfg.get_value("net", "offline2", OS.get_name() == "Android")
 	_saved_url = url
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--server="):
@@ -62,8 +68,21 @@ func set_url(u: String) -> void:
 func set_offline(on: bool) -> void:
 	close()
 	offline = on
+	offline_error = ""
 	save()
 	connect_to_server()
+	status_changed.emit()
+
+
+## One line for the menu about offline play: "" when online, else its progress or why it stopped.
+func offline_status() -> String:
+	if offline_error != "":
+		return offline_error
+	if not offline:
+		return ""
+	if _host == null:
+		return "Offline play is off"
+	return "Offline: bots on this device" if _host.ready else "Starting offline play (%s)..." % _host.stage
 
 
 func save() -> void:
@@ -71,7 +90,7 @@ func save() -> void:
 	cfg.set_value("net", "url", _saved_url)
 	cfg.set_value("net", "pid", pid)
 	cfg.set_value("net", "name", player_name)
-	cfg.set_value("net", "offline", offline)
+	cfg.set_value("net", "offline2", offline)
 	cfg.save(SAVE_PATH)
 
 
@@ -116,13 +135,18 @@ func send(msg: Dictionary) -> void:
 func _start_offline() -> void:
 	if _host:
 		return
-	_host = OfflineHost.create()
+	offline_error = ""
+	var why: Array = [""]
+	_host = OfflineHost.create(why)
 	if _host == null:
 		offline = false
-		error.emit("Offline play is not available on this device")
+		offline_error = "Offline play is not available on this device: " + str(why[0])
+		error.emit(offline_error)
+		status_changed.emit()
 		connect_to_server()
 		return
 	_host.open(pid)
+	status_changed.emit()
 
 
 ## In-game command (see `Command` in protocol.ts), e.g. {"c": "train", "unit": "archer"}.
@@ -136,12 +160,17 @@ func _process(delta: float) -> void:
 			for m in _host.poll(delta):
 				if m is Dictionary:
 					_handle_msg(m)
+			if _host and _host.stage != _host_stage:
+				_host_stage = _host.stage
+				status_changed.emit()
 			if _host and _host.failed != "":
 				var why := _host.failed
 				_host.stop()
 				_host = null
-				error.emit("Offline play stopped: " + why)
+				offline_error = "Offline play stopped: " + why
+				error.emit(offline_error)
 				disconnected.emit()
+				status_changed.emit()
 		return
 	_ws.poll()
 	var st := _ws.get_ready_state()
